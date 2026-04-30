@@ -49,11 +49,11 @@ namespace BingoHistoricoEditor {
             var clrVerde       = Color.FromArgb( 72, 187, 120);
             var clrRojo        = Color.FromArgb(220,  80,  80);
             var clrNaranja     = Color.FromArgb(237, 137,  54);
-            var fntTitulo      = new Font("Segoe UI", 14f, FontStyle.Bold);
-            var fntLabel       = new Font("Segoe UI", 9f);
-            var fntLabelBold   = new Font("Segoe UI", 9f, FontStyle.Bold);
-            var fntMono        = new Font("Consolas", 10f);
-            var fntGrid        = new Font("Segoe UI", 9f);
+            var fntTitulo      = new Font("Segoe UI", 15.5f, FontStyle.Bold);
+            var fntLabel       = new Font("Segoe UI", 10f);
+            var fntLabelBold   = new Font("Segoe UI", 10f, FontStyle.Bold);
+            var fntMono        = new Font("Consolas", 11f);
+            var fntGrid        = new Font("Segoe UI", 10f);
 
             SuspendLayout();
 
@@ -64,22 +64,33 @@ namespace BingoHistoricoEditor {
             BackColor       = clrFondo;
             ForeColor       = clrTexto;
             Font            = fntLabel;
+            AutoScaleMode   = AutoScaleMode.Dpi;
             StartPosition   = FormStartPosition.CenterScreen;
 
             // ── Panel superior ────────────────────────────────────────────────
             pnlTop = new Panel {
                 Dock      = DockStyle.Top,
-                Height    = 64,
+                Height    = 70,
                 BackColor = clrPanel,
                 Padding   = new Padding(16, 0, 16, 0),
             };
+
+            var tlpTop = new TableLayoutPanel {
+                Dock = DockStyle.Fill,
+                ColumnCount = 3,
+                RowCount = 1,
+            };
+            tlpTop.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            tlpTop.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            tlpTop.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+            pnlTop.Controls.Add(tlpTop);
 
             lblTitulo = new Label {
                 Text      = "HISTÓRICO",
                 Font      = fntTitulo,
                 ForeColor = clrAcento,
                 AutoSize  = true,
-                Location  = new Point(16, 18),
+                Anchor    = AnchorStyles.Left,
             };
 
             lblSalaConc = new Label {
@@ -87,7 +98,8 @@ namespace BingoHistoricoEditor {
                 Font      = fntLabel,
                 ForeColor = clrSubtexto,
                 AutoSize  = true,
-                Location  = new Point(156, 23),
+                Anchor    = AnchorStyles.Left,
+                Margin    = new Padding(20, 0, 0, 0),
             };
 
             lblEstado = new Label {
@@ -95,11 +107,12 @@ namespace BingoHistoricoEditor {
                 Font      = fntLabel,
                 ForeColor = clrSubtexto,
                 AutoSize  = true,
-                Anchor    = AnchorStyles.Top | AnchorStyles.Right,
-                Location  = new Point(650, 23),
+                Anchor    = AnchorStyles.Right,
             };
 
-            pnlTop.Controls.AddRange(new Control[] { lblTitulo, lblSalaConc, lblEstado });
+            tlpTop.Controls.Add(lblTitulo, 0, 0);
+            tlpTop.Controls.Add(lblSalaConc, 1, 0);
+            tlpTop.Controls.Add(lblEstado, 2, 0);
 
             // ── Panel izquierdo: búsqueda + grid ──────────────────────────────
             pnlLeft = new Panel {
@@ -109,10 +122,11 @@ namespace BingoHistoricoEditor {
             };
 
             // Barra de búsqueda por fecha
-            var pnlBusqueda = new Panel {
-                Height    = 38,
+            var pnlBusqueda = new FlowLayoutPanel {
+                Height    = 45,
                 Dock      = DockStyle.Top,
                 BackColor = clrFondo,
+                Padding   = new Padding(0, 8, 0, 0),
             };
 
             lblFecha = new Label {
@@ -120,19 +134,18 @@ namespace BingoHistoricoEditor {
                 Font     = fntLabel,
                 ForeColor= clrSubtexto,
                 AutoSize = true,
-                Location = new Point(0, 10),
+                Margin   = new Padding(0, 6, 8, 0),
             };
 
             dtpFecha = new DateTimePicker {
                 Format     = DateTimePickerFormat.Short,
-                Width      = 110,
-                Location   = new Point(100, 6),
+                Width      = 120,
                 BackColor  = clrGrupo,
                 ForeColor  = clrTexto,
                 CalendarMonthBackground = clrPanel,
             };
 
-            btnBuscar = CrearBoton("Buscar", clrAcento, clrFondo, new Point(220, 4), new Size(80, 28));
+            btnBuscar = CrearBoton("Buscar", clrAcento, clrFondo, Point.Empty, new Size(90, 30));
             btnBuscar.Click += btnBuscar_Click;
 
             pnlBusqueda.Controls.AddRange(new Control[] { lblFecha, dtpFecha, btnBuscar });
@@ -184,92 +197,102 @@ namespace BingoHistoricoEditor {
             // ── Panel derecho: formulario de edición ─────────────────────────
             pnlBottom = new Panel {
                 Dock      = DockStyle.Right,
-                Width     = 260,
+                Width     = 280,
                 BackColor = clrPanel,
                 Padding   = new Padding(16),
+                AutoScroll = true,
             };
 
             grpEdicion = new GroupBox {
                 Text      = "Edición de partida",
                 Dock      = DockStyle.Top,
-                Height    = 340,
+                AutoSize  = true,
                 ForeColor = clrAcento,
                 Font      = fntLabelBold,
                 BackColor = clrPanel,
-                Padding   = new Padding(10),
+                Padding   = new Padding(12),
             };
+
+            var tlpEdicion = new TableLayoutPanel {
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                ColumnCount = 2,
+                RowCount = 7,
+            };
+            tlpEdicion.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 100));
+            tlpEdicion.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            grpEdicion.Controls.Add(tlpEdicion);
 
             // Campos del formulario
-            int y = 22;
-            int lblW = 80; int ctrlX = 96; int ctrlW = 120;
-
-            HistoricoLabel(grpEdicion, "Partida nº",    lblW, new Point(10, y), clrSubtexto);
+            lblPartida = HistoricoLabel(null, "Partida nº", 0, Point.Empty, clrSubtexto);
+            tlpEdicion.Controls.Add(lblPartida, 0, 0);
             nudPartida = new NumericUpDown {
-                Location = new Point(ctrlX, y - 3), Width = ctrlW,
                 Minimum = 1, Maximum = 9999, Value = 1,
                 BackColor = clrGrupo, ForeColor = clrTexto, BorderStyle = BorderStyle.FixedSingle,
+                Dock = DockStyle.Fill,
             };
-            grpEdicion.Controls.Add(nudPartida);
-            y += 34;
+            tlpEdicion.Controls.Add(nudPartida, 1, 0);
 
-            HistoricoLabel(grpEdicion, "Precio €",      lblW, new Point(10, y), clrSubtexto);
+            lblPrecio = HistoricoLabel(null, "Precio €", 0, Point.Empty, clrSubtexto);
+            tlpEdicion.Controls.Add(lblPrecio, 0, 1);
             nudPrecio = new NumericUpDown {
-                Location = new Point(ctrlX, y - 3), Width = ctrlW,
                 DecimalPlaces = 2, Minimum = 0, Maximum = 9999, Value = 0,
                 BackColor = clrGrupo, ForeColor = clrTexto, BorderStyle = BorderStyle.FixedSingle,
+                Dock = DockStyle.Fill,
             };
             nudPrecio.ValueChanged += nudPrecio_ValueChanged;
-            grpEdicion.Controls.Add(nudPrecio);
-            y += 34;
+            tlpEdicion.Controls.Add(nudPrecio, 1, 1);
 
-            HistoricoLabel(grpEdicion, "Vendidos",      lblW, new Point(10, y), clrSubtexto);
+            lblVendidos = HistoricoLabel(null, "Vendidos", 0, Point.Empty, clrSubtexto);
+            tlpEdicion.Controls.Add(lblVendidos, 0, 2);
             nudVendidos = new NumericUpDown {
-                Location = new Point(ctrlX, y - 3), Width = ctrlW,
                 Minimum = 0, Maximum = 99999, Value = 0,
                 BackColor = clrGrupo, ForeColor = clrTexto, BorderStyle = BorderStyle.FixedSingle,
+                Dock = DockStyle.Fill,
             };
             nudVendidos.ValueChanged += nudVendidos_ValueChanged;
-            grpEdicion.Controls.Add(nudVendidos);
-            y += 34;
+            tlpEdicion.Controls.Add(nudVendidos, 1, 2);
 
-            HistoricoLabel(grpEdicion, "Premio línea €",lblW, new Point(10, y), clrSubtexto);
+            lblLinea = HistoricoLabel(null, "Premio línea €", 0, Point.Empty, clrSubtexto);
+            tlpEdicion.Controls.Add(lblLinea, 0, 3);
             nudLinea = new NumericUpDown {
-                Location = new Point(ctrlX, y - 3), Width = ctrlW,
                 DecimalPlaces = 2, Minimum = 0, Maximum = 999999, Value = 0,
                 BackColor = clrGrupo, ForeColor = clrTexto, BorderStyle = BorderStyle.FixedSingle,
+                Dock = DockStyle.Fill,
             };
-            grpEdicion.Controls.Add(nudLinea);
-            y += 34;
+            tlpEdicion.Controls.Add(nudLinea, 1, 3);
 
-            HistoricoLabel(grpEdicion, "Premio bingo €",lblW, new Point(10, y), clrSubtexto);
+            lblBingo = HistoricoLabel(null, "Premio bingo €", 0, Point.Empty, clrSubtexto);
+            tlpEdicion.Controls.Add(lblBingo, 0, 4);
             nudBingo = new NumericUpDown {
-                Location = new Point(ctrlX, y - 3), Width = ctrlW,
                 DecimalPlaces = 2, Minimum = 0, Maximum = 999999, Value = 0,
                 BackColor = clrGrupo, ForeColor = clrTexto, BorderStyle = BorderStyle.FixedSingle,
+                Dock = DockStyle.Fill,
             };
-            grpEdicion.Controls.Add(nudBingo);
-            y += 34;
+            tlpEdicion.Controls.Add(nudBingo, 1, 4);
 
             // Preview venta
             lblVentaPreview = new Label {
                 Text      = "Venta: 0.00 €",
-                Location  = new Point(ctrlX, y),
                 AutoSize  = true,
-                Font      = new Font("Segoe UI", 10f, FontStyle.Bold),
+                Font      = new Font("Segoe UI", 11f, FontStyle.Bold),
                 ForeColor = clrVerde,
+                Anchor    = AnchorStyles.Left,
+                Margin    = new Padding(0, 10, 0, 0)
             };
-            grpEdicion.Controls.Add(lblVentaPreview);
-            y += 30;
+            tlpEdicion.Controls.Add(lblVentaPreview, 1, 5);
 
             // Nota: campos PK auto-rellenados
             var lblNota = new Label {
                 Text      = $"Sala/Conc/Fecha: auto",
-                Location  = new Point(10, y + 4),
                 AutoSize  = true,
-                Font      = new Font("Segoe UI", 7.5f, FontStyle.Italic),
+                Font      = new Font("Segoe UI", 8.5f, FontStyle.Italic),
                 ForeColor = clrSubtexto,
+                Anchor    = AnchorStyles.Left,
+                Margin    = new Padding(0, 10, 0, 0)
             };
-            grpEdicion.Controls.Add(lblNota);
+            tlpEdicion.Controls.Add(lblNota, 0, 6);
+            tlpEdicion.SetColumnSpan(lblNota, 2);
 
             // Botones de acción
             btnGuardar  = CrearBoton("💾  Guardar",  clrVerde,   clrFondo, Point.Empty, new Size(228, 36));
@@ -316,7 +339,7 @@ namespace BingoHistoricoEditor {
                 BackColor = fondo,
                 ForeColor = texto2,
                 FlatStyle = FlatStyle.Flat,
-                Font      = new Font("Segoe UI", 9f, FontStyle.Bold),
+                Font      = new Font("Segoe UI", 10f, FontStyle.Bold),
                 Cursor    = Cursors.Hand,
                 FlatAppearance = { BorderSize = 0 },
             };
@@ -326,14 +349,13 @@ namespace BingoHistoricoEditor {
                                              Point loc, Color color) {
             var lbl = new Label {
                 Text      = texto,
-                Location  = loc,
-                Width     = ancho,
-                AutoSize  = false,
+                AutoSize  = true,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Font      = new Font("Segoe UI", 8.5f),
+                Font      = new Font("Segoe UI", 9.5f),
                 ForeColor = color,
+                Anchor    = AnchorStyles.Left,
             };
-            parent.Controls.Add(lbl);
+            if (parent != null) parent.Controls.Add(lbl);
             return lbl;
         }
     }
