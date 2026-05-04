@@ -19,7 +19,6 @@ namespace BingoHistoricoEditor {
         }
 
         // ── Inicialización ────────────────────────────────────────────────────
-
         protected override async void OnLoad(EventArgs e) {
             base.OnLoad(e);
             dtpFecha.Value = DateTime.Today;
@@ -44,7 +43,6 @@ namespace BingoHistoricoEditor {
         }
 
         // ── Carga de datos ────────────────────────────────────────────────────
-
         private async Task CargarPartidasAsync() {
             try {
                 SetBusy(true);
@@ -74,7 +72,6 @@ namespace BingoHistoricoEditor {
         }
 
         // ── Eventos de UI ─────────────────────────────────────────────────────
-
         private async void btnBuscar_Click(object sender, EventArgs e)
             => await CargarPartidasAsync();
 
@@ -160,7 +157,6 @@ namespace BingoHistoricoEditor {
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────
-
         private void CargarEnFormulario(HistoricoEntry e) {
             nudPartida.Value  = e.PartidaDia;
             nudPrecio.Value   = e.Precio;
