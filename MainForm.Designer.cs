@@ -152,6 +152,10 @@ namespace BingoHistoricoEditor {
             btnBuscar.BackColor = Color.FromArgb(0, 120, 215);
             btnBuscar.ForeColor = Color.White;
             btnBuscar.FlatStyle = FlatStyle.Flat;
+            // Ajustes para que el texto "Cargar" quepa correctamente dentro del botón
+            btnBuscar.AutoSize = true;
+            btnBuscar.AutoSizeMode = AutoSizeMode.GrowOnly;
+            btnBuscar.Padding = new Padding(12, 6, 12, 6);
             btnBuscar.Text = "Cargar";
             btnBuscar.Click += btnBuscar_Click;
 
