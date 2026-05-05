@@ -1,5 +1,6 @@
 using BingoHistoricoEditor.Data;
 using BingoHistoricoEditor.Models;
+using BingoHistoricoEditor.Services;
 using Microsoft.Extensions.Configuration;
 
 namespace BingoHistoricoEditor {
@@ -11,21 +12,20 @@ namespace BingoHistoricoEditor {
         private HistoricoEntry? _seleccionada;
 
         public MainForm(FirebirdService db, IConfiguration config) {
-            _db      = db;
+            InitializeComponent();    // siempre primero
+            _db = db;
             _codSala = GetConfigInt(config, "BingoSettings:CodSala", 1);
             _codConc = GetConfigInt(config, "BingoSettings:CodConc", 1);
-            InitializeComponent();
-            ConfigurarGrid();
+            ConfigurarGrid();         // despues de InitializeComponent: grid ya existe
         }
 
-        // ── Inicialización ────────────────────────────────────────────────────
         protected override async void OnLoad(EventArgs e) {
             base.OnLoad(e);
             dtpFecha.Value = DateTime.Today;
             lblSalaConc.Text = $"Sala: {_codSala}  |  Conc: {_codConc}";
 
             bool ok = await _db.TestConnectionAsync();
-            lblEstado.Text = ok ? "✓ Conectado a Firebird" : "✗ Sin conexión";
+            lblEstado.Text = ok ? "Conectado a Firebird" : "Sin conexion";
             lblEstado.ForeColor = ok ? Color.FromArgb(80, 200, 120) : Color.FromArgb(220, 80, 80);
 
             if (ok) await CargarPartidasAsync();
@@ -34,44 +34,33 @@ namespace BingoHistoricoEditor {
         private void ConfigurarGrid() {
             grid.AutoGenerateColumns = false;
             grid.Columns.Clear();
-            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "PartidaDia", HeaderText = "Partida",   Width = 65  });
-            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Precio",     HeaderText = "Precio €",  Width = 80, DefaultCellStyle = { Format = "F2" } });
-            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Vendidos",   HeaderText = "Vendidos",  Width = 80  });
-            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Venta",      HeaderText = "Venta €",   Width = 90, DefaultCellStyle = { Format = "F2" } });
-            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Premio1",    HeaderText = "Línea €",   Width = 80, DefaultCellStyle = { Format = "F2" } });
-            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Premio2",    HeaderText = "Bingo €",   Width = 80, DefaultCellStyle = { Format = "F2" } });
+            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "PartidaDia", HeaderText = "Partida", Width = 65 });
+            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Precio", HeaderText = "Precio", Width = 80, DefaultCellStyle = { Format = "F2" } });
+            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Vendidos", HeaderText = "Vendidos", Width = 80 });
+            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Venta", HeaderText = "Venta", Width = 90, DefaultCellStyle = { Format = "F2" } });
+            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Premio1", HeaderText = "Linea", Width = 80, DefaultCellStyle = { Format = "F2" } });
+            grid.Columns.Add(new DataGridViewTextBoxColumn { DataPropertyName = "Premio2", HeaderText = "Bingo", Width = 80, DefaultCellStyle = { Format = "F2" } });
         }
 
-        // ── Carga de datos ────────────────────────────────────────────────────
         private async Task CargarPartidasAsync() {
             try {
                 SetBusy(true);
                 _partidas = await _db.CargarPorFechaAsync(dtpFecha.Value, _codSala, _codConc);
-
-                //// ── DEBUG TEMPORAL — quitar cuando funcione ───────────────
-                //MessageBox.Show(
-                //    $"Parámetros enviados:\n" +
-                //    $"  FECHA_SESION = {dtpFecha.Value.Date:yyyy-MM-dd}\n" +
-                //    $"  COD_SALA     = {_codSala}\n" +
-                //    $"  COD_CONC     = {_codConc}\n\n" +
-                //    $"Filas devueltas: {_partidas.Count}",
-                //    "DEBUG", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                //// ─────────────────────────────────────────────────────────
-
                 grid.DataSource = null;
                 grid.DataSource = _partidas;
-                lblTotal.Text = $"{_partidas.Count} partidas  |  Venta total: {_partidas.Sum(p => p.Venta):F2} €";
+                btnVerificarHuecos.Enabled = _partidas.Count > 1;
+                lblTotal.Text = $"{_partidas.Count} partidas | Venta: {_partidas.Sum(p => p.Venta):F2}";
                 LimpiarFormulario();
             }
             catch (Exception ex) {
-                MostrarError(ex.Message);
+                LogService.Error("Error al cargar partidas", ex);
+                MostrarError($"No se pudieron cargar los datos:\n{ex.Message}");
             }
             finally {
                 SetBusy(false);
             }
         }
 
-        // ── Eventos de UI ─────────────────────────────────────────────────────
         private async void btnBuscar_Click(object sender, EventArgs e)
             => await CargarPartidasAsync();
 
@@ -85,9 +74,7 @@ namespace BingoHistoricoEditor {
         private void btnNueva_Click(object sender, EventArgs e) {
             _seleccionada = null;
             LimpiarFormulario();
-            // Sugerir el siguiente número de partida
-            int siguiente = _partidas.Count > 0 ? _partidas.Max(p => p.PartidaDia) + 1 : 1;
-            nudPartida.Value = siguiente;
+            nudPartida.Value = _partidas.Count > 0 ? _partidas.Max(p => p.PartidaDia) + 1 : 1;
             nudPartida.Focus();
         }
 
@@ -95,24 +82,30 @@ namespace BingoHistoricoEditor {
             if (!ValidarFormulario()) return;
 
             var entrada = new HistoricoEntry {
-                CodSala     = _codSala,
-                CodConc     = _codConc,
+                CodSala = _codSala,
+                CodConc = _codConc,
                 FechaSesion = dtpFecha.Value.Date,
-                PartidaDia  = (int)nudPartida.Value,
-                Precio      = nudPrecio.Value,
-                Vendidos    = (int)nudVendidos.Value,
-                Premio1     = nudLinea.Value,
-                Premio2     = nudBingo.Value,
+                PartidaDia = (int)nudPartida.Value,
+                Precio = nudPrecio.Value,
+                Vendidos = (int)nudVendidos.Value,
+                Premio1 = nudLinea.Value,
+                Premio2 = nudBingo.Value,
             };
 
             try {
                 SetBusy(true);
                 await _db.GuardarAsync(entrada);
+                LogService.Write("Partida guardada", new {
+                    entrada.PartidaDia,
+                    entrada.FechaSesion,
+                    VentaCalculada = entrada.Precio * entrada.Vendidos
+                });
                 await CargarPartidasAsync();
                 MostrarInfo($"Partida {entrada.PartidaDia} guardada correctamente.");
             }
             catch (Exception ex) {
-                MostrarError(ex.Message);
+                LogService.Error($"Error al guardar partida {entrada.PartidaDia}", ex);
+                MostrarError($"No se pudo guardar la partida:\n{ex.Message}");
             }
             finally {
                 SetBusy(false);
@@ -124,22 +117,20 @@ namespace BingoHistoricoEditor {
                 MostrarAviso("Selecciona una partida en la tabla para eliminarla.");
                 return;
             }
-
             var confirm = MessageBox.Show(
-                $"¿Eliminar la partida {_seleccionada.PartidaDia} del {_seleccionada.FechaSesion:dd/MM/yyyy}?",
-                "Confirmar eliminación",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning);
-
+                $"Eliminar la partida {_seleccionada.PartidaDia} del {_seleccionada.FechaSesion:dd/MM/yyyy}?",
+                "Confirmar eliminacion", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
             if (confirm != DialogResult.Yes) return;
 
             try {
                 SetBusy(true);
                 await _db.EliminarAsync(_seleccionada);
+                LogService.Write("Partida eliminada", new { _seleccionada.PartidaDia, _seleccionada.FechaSesion });
                 await CargarPartidasAsync();
                 MostrarInfo("Partida eliminada.");
             }
             catch (Exception ex) {
+                LogService.Error($"Error al eliminar partida {_seleccionada.PartidaDia}", ex);
                 MostrarError(ex.Message);
             }
             finally {
@@ -147,75 +138,67 @@ namespace BingoHistoricoEditor {
             }
         }
 
-        // Recalcular venta total en tiempo real mientras el usuario escribe
-        private void nudPrecio_ValueChanged(object sender, EventArgs e)    => ActualizarVentaPreview();
-        private void nudVendidos_ValueChanged(object sender, EventArgs e)  => ActualizarVentaPreview();
+        private void nudPrecio_ValueChanged(object sender, EventArgs e) => ActualizarVentaPreview();
+        private void nudVendidos_ValueChanged(object sender, EventArgs e) => ActualizarVentaPreview();
+        private void ActualizarVentaPreview() =>
+            lblVentaPreview.Text = $"Venta: {nudPrecio.Value * nudVendidos.Value:F2}";
 
-        private void ActualizarVentaPreview() {
-            decimal venta = nudPrecio.Value * nudVendidos.Value;
-            lblVentaPreview.Text = $"Venta: {venta:F2} €";
+        private void btnVerificarHuecos_Click(object sender, EventArgs e) {
+            if (_partidas.Count < 2) { MostrarInfo("No hay suficientes partidas para comparar."); return; }
+            var ordenadas = _partidas.OrderBy(p => p.PartidaDia).ToList();
+            var faltantes = new List<int>();
+            for (int i = 0; i < ordenadas.Count - 1; i++)
+                for (int j = ordenadas[i].PartidaDia + 1; j < ordenadas[i + 1].PartidaDia; j++)
+                    faltantes.Add(j);
+
+            if (faltantes.Count > 0)
+                MostrarAviso("Partidas faltantes:\n" + string.Join(", ", faltantes));
+            else
+                MostrarInfo("No hay huecos. Todas las partidas son consecutivas.");
         }
 
-        // ── Helpers ───────────────────────────────────────────────────────────
         private void CargarEnFormulario(HistoricoEntry e) {
-            nudPartida.Value  = e.PartidaDia;
-            nudPrecio.Value   = e.Precio;
+            nudPartida.Value = e.PartidaDia;
+            nudPrecio.Value = e.Precio;
             nudVendidos.Value = e.Vendidos;
-            nudLinea.Value    = e.Premio1;
-            nudBingo.Value    = e.Premio2;
+            nudLinea.Value = e.Premio1;
+            nudBingo.Value = e.Premio2;
             ActualizarVentaPreview();
         }
 
         private void LimpiarFormulario() {
-            nudPartida.Value  = 1;
-            nudPrecio.Value   = 0;
+            nudPartida.Value = 1;
+            nudPrecio.Value = 0;
             nudVendidos.Value = 0;
-            nudLinea.Value    = 0;
-            nudBingo.Value    = 0;
+            nudLinea.Value = 0;
+            nudBingo.Value = 0;
             ActualizarVentaPreview();
-            _seleccionada     = null;
+            _seleccionada = null;
         }
 
         private bool ValidarFormulario() {
-            if (nudPartida.Value < 1) {
-                MostrarAviso("El número de partida debe ser mayor que 0.");
-                nudPartida.Focus(); return false;
-            }
-            if (nudPrecio.Value <= 0) {
-                MostrarAviso("El precio del cartón debe ser mayor que 0.");
-                nudPrecio.Focus(); return false;
-            }
-            if (nudVendidos.Value < 0) {
-                MostrarAviso("El número de cartones vendidos no puede ser negativo.");
-                nudVendidos.Focus(); return false;
-            }
+            if (nudPartida.Value < 1) { MostrarAviso("El numero de partida debe ser mayor que 0."); nudPartida.Focus(); return false; }
+            if (nudPrecio.Value <= 0) { MostrarAviso("El precio del carton debe ser mayor que 0."); nudPrecio.Focus(); return false; }
+            if (nudVendidos.Value < 0) { MostrarAviso("Los cartones vendidos no pueden ser negativos."); nudVendidos.Focus(); return false; }
             return true;
         }
 
         private void SetBusy(bool ocupado) {
             Cursor = ocupado ? Cursors.WaitCursor : Cursors.Default;
-            btnGuardar.Enabled  = !ocupado;
+            btnGuardar.Enabled = !ocupado;
             btnEliminar.Enabled = !ocupado;
-            btnBuscar.Enabled   = !ocupado;
+            btnBuscar.Enabled = !ocupado;
+            btnNueva.Enabled = !ocupado;
+            btnVerificarHuecos.Enabled = !ocupado && _partidas.Count > 1;
         }
 
-        private void MostrarError (string msg) => MessageBox.Show(msg, "Error",   MessageBoxButtons.OK, MessageBoxIcon.Error);
-        private void MostrarAviso (string msg) => MessageBox.Show(msg, "Aviso",   MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        private void MostrarInfo  (string msg) => MessageBox.Show(msg, "Listo",   MessageBoxButtons.OK, MessageBoxIcon.Information);
+        private void MostrarError(string msg) => MessageBox.Show(msg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        private void MostrarAviso(string msg) => MessageBox.Show(msg, "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        private void MostrarInfo(string msg) => MessageBox.Show(msg, "Listo", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-        // Helper para leer enteros desde IConfiguration sin depender de GetValue<T>
-        private static int GetConfigInt(IConfiguration config, string key, int defaultValue) {
-            try {
-                var section = config.GetSection(key);
-                if (section is not null) {
-                    var val = section.Value;
-                    if (!string.IsNullOrEmpty(val) && int.TryParse(val, out var parsed)) return parsed;
-                }
-            }
-            catch {
-                // ignorar y devolver valor por defecto
-            }
-            return defaultValue;
+        private static int GetConfigInt(IConfiguration config, string key, int def) {
+            var val = config.GetSection(key)?.Value;
+            return int.TryParse(val, out int v) ? v : def;
         }
     }
 }
