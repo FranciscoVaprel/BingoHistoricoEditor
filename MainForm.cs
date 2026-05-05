@@ -29,6 +29,7 @@ namespace BingoHistoricoEditor {
             lblEstado.ForeColor = ok ? Color.FromArgb(80, 200, 120) : Color.FromArgb(220, 80, 80);
 
             if (ok) await CargarPartidasAsync();
+
         }
 
         private void ConfigurarGrid() {
@@ -61,8 +62,10 @@ namespace BingoHistoricoEditor {
             }
         }
 
-        private async void btnBuscar_Click(object sender, EventArgs e)
-            => await CargarPartidasAsync();
+        private async void btnBuscar_Click(object sender, EventArgs e) {
+            pnlResultados.Visible = false; // Ocultar resultados anteriores al iniciar nueva búsqueda
+            await CargarPartidasAsync();
+        }
 
         private void grid_SelectionChanged(object sender, EventArgs e) {
             if (grid.CurrentRow?.DataBoundItem is HistoricoEntry entrada) {
@@ -144,17 +147,32 @@ namespace BingoHistoricoEditor {
             lblVentaPreview.Text = $"Venta: {nudPrecio.Value * nudVendidos.Value:F2}";
 
         private void btnVerificarHuecos_Click(object sender, EventArgs e) {
-            if (_partidas.Count < 2) { MostrarInfo("No hay suficientes partidas para comparar."); return; }
+            if (_partidas.Count < 2) {
+                txtResultados.Text = "No hay suficientes partidas para comparar.";
+                pnlResultados.Visible = true;
+                return;
+            }
+
             var ordenadas = _partidas.OrderBy(p => p.PartidaDia).ToList();
             var faltantes = new List<int>();
-            for (int i = 0; i < ordenadas.Count - 1; i++)
-                for (int j = ordenadas[i].PartidaDia + 1; j < ordenadas[i + 1].PartidaDia; j++)
-                    faltantes.Add(j);
 
-            if (faltantes.Count > 0)
-                MostrarAviso("Partidas faltantes:\n" + string.Join(", ", faltantes));
-            else
-                MostrarInfo("No hay huecos. Todas las partidas son consecutivas.");
+            for (int i = 0; i < ordenadas.Count - 1; i++) {
+                for (int j = ordenadas[i].PartidaDia + 1; j < ordenadas[i + 1].PartidaDia; j++) {
+                    faltantes.Add(j);
+                }
+            }
+
+            // En lugar de usar MostrarAviso/MostrarInfo, escribimos en el TextBox
+            if (faltantes.Count > 0) {
+                txtResultados.Text = "PARTIDAS FALTANTES:" + Environment.NewLine +
+                                     string.Join(", ", faltantes);
+            }
+            else {
+                txtResultados.Text = "No hay huecos. Todas las partidas son consecutivas.";
+            }
+
+            // Hacemos visible el panel de resultados
+            pnlResultados.Visible = true;
         }
 
         private void CargarEnFormulario(HistoricoEntry e) {
@@ -174,6 +192,10 @@ namespace BingoHistoricoEditor {
             nudBingo.Value = 0;
             ActualizarVentaPreview();
             _seleccionada = null;
+
+            // Ocultar resultados previos
+            txtResultados.Clear();
+            pnlResultados.Visible = false;
         }
 
         private bool ValidarFormulario() {
@@ -199,6 +221,11 @@ namespace BingoHistoricoEditor {
         private static int GetConfigInt(IConfiguration config, string key, int def) {
             var val = config.GetSection(key)?.Value;
             return int.TryParse(val, out int v) ? v : def;
+        }
+
+        private void btnCerrarResultados_Click(object sender, EventArgs e) {
+            pnlResultados.Visible = false;
+            txtResultados.Clear();
         }
     }
 }
