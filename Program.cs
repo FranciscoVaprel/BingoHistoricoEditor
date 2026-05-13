@@ -1,6 +1,5 @@
 using BingoHistoricoEditor.Data;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 
 namespace BingoHistoricoEditor {
     internal static class Program {
@@ -30,12 +29,12 @@ namespace BingoHistoricoEditor {
                     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
                     .Build();
             }
-
+            
             // Login normal
             using var login = new LoginForm(Configuration);
             if (login.ShowDialog() != DialogResult.OK) return;
 
-            Application.Run(new MainForm(new FirebirdService(Configuration), Configuration));
+           Application.Run(new MainForm(new FirebirdService(Configuration), Configuration, login.UsuarioLogueado));
         }
 
         /// <summary>

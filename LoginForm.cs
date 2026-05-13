@@ -11,6 +11,7 @@ namespace BingoHistoricoEditor {
         private readonly string _usuarioEsperado;
         private int _intentosFallidos = 0;
         private const int MaxIntentos = 3;
+        public string UsuarioLogueado { get; private set; } = "";
 
         public LoginForm(IConfiguration config) {
             // Leemos los valores directamente de tu JSON
@@ -43,18 +44,14 @@ namespace BingoHistoricoEditor {
         }
 
         private void IntentarLogin() {
-            string usuarioInput = txtUsuario.Text.Trim();
-            string passInput = txtPassword.Text;
-
-            // Validación de Usuario (insensible a mayúsculas/minúsculas)
-            bool usuarioOk = usuarioInput.Equals(_usuarioEsperado, StringComparison.OrdinalIgnoreCase);
-
-            // Validación de Password (verifica Hash o texto plano)
-            bool passOk = PasswordHelper.Verify(passInput, _hashAlmacenado) || passInput == _hashAlmacenado;
+            bool usuarioOk = txtUsuario.Text.Trim().ToLower() == _usuarioEsperado.ToLower();
+            bool passOk = PasswordHelper.Verify(txtPassword.Text, _hashAlmacenado) || txtPassword.Text == _hashAlmacenado;
 
             if (usuarioOk && passOk) {
-                DialogResult = DialogResult.OK;
-                Close();
+                // Guardamos el nombre antes de cerrar
+                this.UsuarioLogueado = txtUsuario.Text.Trim();
+                this.DialogResult = DialogResult.OK;
+                this.Close();
                 return;
             }
 
