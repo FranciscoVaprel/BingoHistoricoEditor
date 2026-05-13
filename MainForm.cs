@@ -1,5 +1,6 @@
 using BingoHistoricoEditor.Data;
 using BingoHistoricoEditor.Models;
+using BingoHistoricoEditor.Services;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,7 @@ namespace BingoHistoricoEditor {
             _codSala = GetConfigInt(config, "BingoSettings:CodSala", 1);
             _codConc = GetConfigInt(config, "BingoSettings:CodConc", 1);
             _usuarioActual = usuario; // Guardamos quién entró
+            LogService.SetCurrentUser(usuario); // Establecer usuario en logs
             ConfigurarGrid();
             ConfigurarLimitesNumericos();
         }
@@ -63,16 +65,19 @@ namespace BingoHistoricoEditor {
         }
 
         // Método de Log actualizado con el usuario
-        private void EscribirLog(string accion, string detalles) {
-            if (txtLog.IsDisposed) return;
-            
+        private void EscribirLog(string accion, string detalles, bool registrarEnArchivo = false) {
+             if (txtLog.IsDisposed) return;
+
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             string usuario = _usuarioActual.ToUpper().PadRight(10);
             string linea = $"[{timestamp}] | {usuario} | {accion.PadRight(12)} | {detalles}{Environment.NewLine}";
 
             txtLog.AppendText(linea);
             txtLog.ScrollToCaret();
-            Services.LogService.Write(linea, null);
+            
+            if (registrarEnArchivo) {
+                Services.LogService.Write(linea, null);
+            }
         }
 
         private async void btnBuscar_Click(object sender, EventArgs e) => await CargarPartidasAsync();
@@ -80,17 +85,17 @@ namespace BingoHistoricoEditor {
         private async Task CargarPartidasAsync() {
             try {
                 SetBusy(true);
-                EscribirLog("DB", $"Cargando datos del día {dtpFecha.Value:dd/MM/yyyy}...");
+                EscribirLog("DB", $"Cargando datos del día {dtpFecha.Value:dd/MM/yyyy}...", registrarEnArchivo: false);
 
                 // USANDO EL NOMBRE CORRECTO DEL MÉTODO DE TU SERVICIO
                 _partidas = await _db.CargarPorFechaAsync(dtpFecha.Value, _codSala, _codConc);
 
                 grid.DataSource = null;
                 grid.DataSource = _partidas;
-                EscribirLog("INFO", $"Carga completa: {_partidas.Count} registros encontrados.");
+                //EscribirLog("INFO", $"Carga completa: {_partidas.Count} registros encontrados.", registrarEnArchivo: false);
             }
             catch (Exception ex) {
-                EscribirLog("ERROR", ex.Message);
+                EscribirLog("ERROR", ex.Message, registrarEnArchivo: false);
             }
             finally {
                 SetBusy(false);
@@ -106,7 +111,7 @@ namespace BingoHistoricoEditor {
                     nudVendidos.Value = _seleccionada.Vendidos;
                     nudLinea.Value = _seleccionada.Premio1;
                     nudBingo.Value = _seleccionada.Premio2;
-                    EscribirLog("GRID", $"Registro {_seleccionada.PartidaDia} seleccionado para editar.");
+                    EscribirLog("GRID", $"Registro {_seleccionada.PartidaDia} seleccionado para editar.", registrarEnArchivo: false);
                 }
             }
         }
@@ -127,14 +132,14 @@ namespace BingoHistoricoEditor {
                 entry.Premio1 = nudLinea.Value;
                 entry.Premio2 = nudBingo.Value;
 
-                EscribirLog("DB_INSERT/UPDATE", $"Iniciando guardado de Partida {entry.PartidaDia}");
+                EscribirLog("DB_INSERT/UPDATE", $"Iniciando guardado de Partida {entry.PartidaDia}", registrarEnArchivo: true);
                 await _db.GuardarAsync(entry);
 
-                EscribirLog("EXITO", $"Partida {entry.PartidaDia} procesada correctamente.");
+                EscribirLog("EXITO", $"Partida {entry.PartidaDia} procesada correctamente.", registrarEnArchivo: true);
                 await CargarPartidasAsync();
             }
             catch (Exception ex) {
-                EscribirLog("ERROR", ex.Message);
+                EscribirLog("ERROR", ex.Message, registrarEnArchivo: true);
             }
             finally {
                 SetBusy(false);
@@ -149,7 +154,7 @@ namespace BingoHistoricoEditor {
             nudVendidos.Value = 0;
             nudLinea.Value = 0;
             nudBingo.Value = 0;
-            EscribirLog("ACCION", "Limpieza de campos para nueva partida.");
+            //EscribirLog("ACCION", "Limpieza de campos para nueva partida.", registrarEnArchivo: false);
         }
 
         private async void btnEliminar_Click(object sender, EventArgs e) {
@@ -159,14 +164,14 @@ namespace BingoHistoricoEditor {
             if (res == DialogResult.Yes) {
                 try {
                     SetBusy(true);
-                    EscribirLog("DB_DELETE", $"Eliminando Partida {_seleccionada.PartidaDia}");
+                    EscribirLog("DB_DELETE", $"Eliminando Partida {_seleccionada.PartidaDia}", registrarEnArchivo: true);
                     await _db.EliminarAsync(_seleccionada);
 
-                    EscribirLog("EXITO", $"Partida {_seleccionada.PartidaDia} eliminada de la base de datos.");
+                    EscribirLog("EXITO", $"Partida {_seleccionada.PartidaDia} eliminada de la base de datos.", registrarEnArchivo: true);
                     await CargarPartidasAsync();
                 }
                 catch (Exception ex) {
-                    EscribirLog("ERROR_CRITICO", $"Fallo al eliminar: {ex.Message}");
+                    EscribirLog("ERROR_CRITICO", $"Fallo al eliminar: {ex.Message}", registrarEnArchivo: true);
                 }
                 finally {
                     SetBusy(false);
@@ -185,5 +190,6 @@ namespace BingoHistoricoEditor {
             var val = config.GetSection(key)?.Value;
             return int.TryParse(val, out int v) ? v : def;
         }
+
     }
 }

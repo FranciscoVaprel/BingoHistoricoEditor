@@ -136,7 +136,8 @@ namespace BingoHistoricoEditor {
 
             this.Controls.Add(this.tlpContent);
             this.Controls.Add(this.pnlTop);
-
+            
+            this.FormClosed += (s, e) => BingoHistoricoEditor.Services.LogService.Close();
             this.ResumeLayout(false);
             this.PerformLayout();
         }
