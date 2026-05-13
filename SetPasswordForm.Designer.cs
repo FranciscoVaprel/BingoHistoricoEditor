@@ -2,15 +2,17 @@ namespace BingoHistoricoEditor {
     partial class SetPasswordForm {
         private System.ComponentModel.IContainer components = null;
 
-        private Label   lblTitulo;
-        private Label   lblSubtitulo;
-        private Label   lblNuevaLabel;
-        private TextBox txtNueva;
-        private Label   lblRepetirLabel;
-        private TextBox txtRepetir;
-        private Label   lblError;
-        private Button  btnAceptar;
-        private Button  btnCancelar;
+        private System.Windows.Forms.Label   lblTitulo;
+        private System.Windows.Forms.Label   lblSubtitulo;
+        private System.Windows.Forms.Label   lblUsuarioLabel;
+        private System.Windows.Forms.TextBox txtUsuario;
+        private System.Windows.Forms.Label   lblNuevaLabel;
+        private System.Windows.Forms.TextBox txtNueva;
+        private System.Windows.Forms.Label   lblRepetirLabel;
+        private System.Windows.Forms.TextBox txtRepetir;
+        private System.Windows.Forms.Label   lblError;
+        private System.Windows.Forms.Button  btnAceptar;
+        private System.Windows.Forms.Button  btnCancelar;
 
         protected override void Dispose(bool disposing) {
             if (disposing && components != null) components.Dispose();
@@ -18,119 +20,108 @@ namespace BingoHistoricoEditor {
         }
 
         private void InitializeComponent() {
-            var clrFondo    = Color.FromArgb(18,  20,  28);
-            var clrPanel    = Color.FromArgb(26,  29,  40);
-            var clrTexto    = Color.FromArgb(220, 225, 240);
-            var clrSubtexto = Color.FromArgb(130, 140, 165);
-            var clrAcento   = Color.FromArgb( 99, 179, 237);
-            var clrVerde    = Color.FromArgb( 72, 187, 120);
-            var clrRojo     = Color.FromArgb(220,  80,  80);
-            var clrInput    = Color.FromArgb(32,   36,  50);
+            var clrFondo    = System.Drawing.Color.FromArgb(18,  20,  28);
+            var clrPanel    = System.Drawing.Color.FromArgb(26,  29,  40);
+            var clrTexto    = System.Drawing.Color.FromArgb(220, 225, 240);
+            var clrSubtexto = System.Drawing.Color.FromArgb(130, 140, 165);
+            var clrVerde    = System.Drawing.Color.FromArgb( 72, 187, 120);
+            var clrRojo     = System.Drawing.Color.FromArgb(220,  80,  80);
+            var clrInput    = System.Drawing.Color.FromArgb( 32,  36,  50);
+            var fntNormal   = new System.Drawing.Font("Segoe UI", 9f);
+            var fntInput    = new System.Drawing.Font("Segoe UI", 10f);
 
-            SuspendLayout();
+            this.SuspendLayout();
 
-            Text            = "Establecer contraseña";
-            Size            = new Size(360, 320);
-            FormBorderStyle = FormBorderStyle.FixedDialog;
-            MaximizeBox     = false;
-            MinimizeBox     = false;
-            StartPosition   = FormStartPosition.CenterParent;
-            BackColor       = clrFondo;
-            ForeColor       = clrTexto;
-            Font            = new Font("Segoe UI", 9f);
+            this.Text            = "Configurar credenciales";
+            this.Size            = new System.Drawing.Size(380, 420);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MaximizeBox     = false;
+            this.MinimizeBox     = false;
+            this.StartPosition   = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.BackColor       = clrFondo;
+            this.ForeColor       = clrTexto;
+            this.Font            = fntNormal;
 
-            int cx = 30; int cw = 290;
+            int cx = 40; int cw = 300;
 
-            lblTitulo = new Label {
-                Text      = "Cambiar contraseña",
-                Font      = new Font("Segoe UI", 12f, FontStyle.Bold),
-                ForeColor = clrAcento,
-                Location  = new Point(cx, 24),
-                AutoSize  = true,
+            lblTitulo = new System.Windows.Forms.Label {
+                Text = "Configurar acceso", AutoSize = true,
+                Font = new System.Drawing.Font("Segoe UI", 13f, System.Drawing.FontStyle.Bold),
+                ForeColor = System.Drawing.Color.FromArgb(99, 179, 237),
+                Location = new System.Drawing.Point(cx, 24),
+            };
+            lblSubtitulo = new System.Windows.Forms.Label {
+                Text = "Introduce el usuario y contraseña de acceso.",
+                AutoSize = true, Font = fntNormal, ForeColor = clrSubtexto,
+                Location = new System.Drawing.Point(cx, 52),
             };
 
-            lblSubtitulo = new Label {
-                Text      = "Introduce y confirma la nueva contraseña.",
-                Font      = new Font("Segoe UI", 8f),
-                ForeColor = clrSubtexto,
-                Location  = new Point(cx, 52),
-                AutoSize  = true,
+            lblUsuarioLabel = new System.Windows.Forms.Label {
+                Text = "Usuario", AutoSize = true, ForeColor = clrSubtexto,
+                Location = new System.Drawing.Point(cx, 90),
+            };
+            txtUsuario = new System.Windows.Forms.TextBox {
+                Size = new System.Drawing.Size(cw, 28), Location = new System.Drawing.Point(cx, 110),
+                BackColor = clrInput, ForeColor = clrTexto,
+                BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle, Font = fntInput,
             };
 
-            lblNuevaLabel = new Label {
-                Text      = "Nueva contraseña",
-                Font      = new Font("Segoe UI", 8.5f),
-                ForeColor = clrSubtexto,
-                Location  = new Point(cx, 88),
-                AutoSize  = true,
+            lblNuevaLabel = new System.Windows.Forms.Label {
+                Text = "Nueva contraseña", AutoSize = true, ForeColor = clrSubtexto,
+                Location = new System.Drawing.Point(cx, 152),
             };
-
-            txtNueva = new TextBox {
+            txtNueva = new System.Windows.Forms.TextBox {
                 UseSystemPasswordChar = true,
-                Width      = cw, Location   = new Point(cx, 108),
-                BackColor  = clrInput, ForeColor  = clrTexto,
-                BorderStyle= BorderStyle.FixedSingle,
-                Font       = new Font("Segoe UI", 10f),
+                Size = new System.Drawing.Size(cw, 28), Location = new System.Drawing.Point(cx, 172),
+                BackColor = clrInput, ForeColor = clrTexto,
+                BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle, Font = fntInput,
             };
 
-            lblRepetirLabel = new Label {
-                Text      = "Repite la contraseña",
-                Font      = new Font("Segoe UI", 8.5f),
-                ForeColor = clrSubtexto,
-                Location  = new Point(cx, 142),
-                AutoSize  = true,
+            lblRepetirLabel = new System.Windows.Forms.Label {
+                Text = "Repite la contraseña", AutoSize = true, ForeColor = clrSubtexto,
+                Location = new System.Drawing.Point(cx, 214),
             };
-
-            txtRepetir = new TextBox {
+            txtRepetir = new System.Windows.Forms.TextBox {
                 UseSystemPasswordChar = true,
-                Width      = cw, Location   = new Point(cx, 162),
-                BackColor  = clrInput, ForeColor  = clrTexto,
-                BorderStyle= BorderStyle.FixedSingle,
-                Font       = new Font("Segoe UI", 10f),
+                Size = new System.Drawing.Size(cw, 28), Location = new System.Drawing.Point(cx, 234),
+                BackColor = clrInput, ForeColor = clrTexto,
+                BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle, Font = fntInput,
             };
 
-            lblError = new Label {
-                Text      = "",
-                Font      = new Font("Segoe UI", 8f),
-                ForeColor = clrRojo,
-                Location  = new Point(cx, 192),
-                AutoSize  = false,
-                Width     = cw, Height = 18,
-                Visible   = false,
+            lblError = new System.Windows.Forms.Label {
+                Text = "", ForeColor = clrRojo, Font = fntNormal, Visible = false,
+                Size = new System.Drawing.Size(cw, 20), Location = new System.Drawing.Point(cx, 272),
             };
 
-            btnAceptar = new Button {
-                Text      = "Guardar contraseña",
-                Size      = new Size(140, 34),
-                Location  = new Point(cx, 220),
+            btnAceptar = new System.Windows.Forms.Button {
+                Text = "Guardar", Size = new System.Drawing.Size(144, 36),
+                Location = new System.Drawing.Point(cx, 300),
                 BackColor = clrVerde, ForeColor = clrFondo,
-                FlatStyle = FlatStyle.Flat,
-                Font      = new Font("Segoe UI", 9f, FontStyle.Bold),
-                Cursor    = Cursors.Hand,
-                FlatAppearance = { BorderSize = 0 },
+                FlatStyle = System.Windows.Forms.FlatStyle.Flat,
+                Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Bold),
+                Cursor = System.Windows.Forms.Cursors.Hand,
             };
+            btnAceptar.FlatAppearance.BorderSize = 0;
             btnAceptar.Click += btnAceptar_Click;
 
-            btnCancelar = new Button {
-                Text      = "Cancelar",
-                Size      = new Size(90, 34),
-                Location  = new Point(cx + 150, 220),
-                BackColor = Color.FromArgb(48, 54, 72), ForeColor = clrTexto,
-                FlatStyle = FlatStyle.Flat,
-                Font      = new Font("Segoe UI", 9f),
-                Cursor    = Cursors.Hand,
-                FlatAppearance = { BorderSize = 0 },
+            btnCancelar = new System.Windows.Forms.Button {
+                Text = "Cancelar", Size = new System.Drawing.Size(100, 36),
+                Location = new System.Drawing.Point(cx + 154, 300),
+                BackColor = System.Drawing.Color.FromArgb(48, 54, 72), ForeColor = clrTexto,
+                FlatStyle = System.Windows.Forms.FlatStyle.Flat,
+                Font = fntNormal, Cursor = System.Windows.Forms.Cursors.Hand,
             };
+            btnCancelar.FlatAppearance.BorderSize = 0;
             btnCancelar.Click += btnCancelar_Click;
 
-            Controls.AddRange(new Control[] {
+            this.Controls.AddRange(new System.Windows.Forms.Control[] {
                 lblTitulo, lblSubtitulo,
+                lblUsuarioLabel, txtUsuario,
                 lblNuevaLabel, txtNueva,
                 lblRepetirLabel, txtRepetir,
                 lblError, btnAceptar, btnCancelar
             });
-
-            ResumeLayout(false);
+            this.ResumeLayout(false);
         }
     }
 }

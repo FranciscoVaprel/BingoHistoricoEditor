@@ -1,25 +1,30 @@
 namespace BingoHistoricoEditor {
     /// <summary>
-    /// Diálogo para establecer una nueva contraseña.
-    /// Se muestra en el primer arranque (sin hash configurado)
-    /// o desde el menú "Cambiar contraseña".
-    /// Devuelve el hash generado en la propiedad HashGenerado.
+    /// Diálogo para establecer o cambiar usuario y contraseña.
+    /// Se muestra en el primer arranque o desde ajustes.
+    /// Devuelve UsuarioGenerado y HashGenerado tras aceptar.
     /// </summary>
     public partial class SetPasswordForm : Form {
-        public string HashGenerado { get; private set; } = "";
+        public string UsuarioGenerado { get; private set; } = "";
+        public string HashGenerado    { get; private set; } = "";
 
         public SetPasswordForm(bool primerArranque = false) {
             InitializeComponent();
             if (primerArranque) {
                 lblTitulo.Text    = "Primera ejecución";
-                lblSubtitulo.Text = "Establece una contraseña para proteger el acceso.";
+                lblSubtitulo.Text = "Crea las credenciales de acceso a la aplicación.";
             }
         }
 
         private void btnAceptar_Click(object sender, EventArgs e) {
-            string pwd1 = txtNueva.Text;
-            string pwd2 = txtRepetir.Text;
+            string usuario = txtUsuario.Text.Trim();
+            string pwd1    = txtNueva.Text;
+            string pwd2    = txtRepetir.Text;
 
+            if (usuario.Length < 2) {
+                MostrarError("El nombre de usuario debe tener al menos 2 caracteres.");
+                txtUsuario.Focus(); return;
+            }
             if (pwd1.Length < 4) {
                 MostrarError("La contraseña debe tener al menos 4 caracteres.");
                 txtNueva.Focus(); return;
@@ -29,8 +34,9 @@ namespace BingoHistoricoEditor {
                 txtRepetir.Clear(); txtRepetir.Focus(); return;
             }
 
-            HashGenerado = PasswordHelper.Hash(pwd1);
-            DialogResult = DialogResult.OK;
+            UsuarioGenerado = usuario;
+            HashGenerado    = PasswordHelper.Hash(pwd1);
+            DialogResult    = DialogResult.OK;
             Close();
         }
 
