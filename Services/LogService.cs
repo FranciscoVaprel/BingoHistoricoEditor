@@ -7,7 +7,6 @@ using System.Text.Json;
 using System.Collections.Generic;
 
 namespace BingoHistoricoEditor.Services {
-    // Esta clase es estática: todo lo que hay dentro debe ser 'static'
     public static class LogService {
         private static ILogger _logger;
         private static string _currentUser = "SISTEMA";
@@ -19,7 +18,6 @@ namespace BingoHistoricoEditor.Services {
 
                 string logPath = Path.Combine(logDir, "operaciones.json");
 
-                // Pasamos una función que devuelve el usuario actual al formateador
                 _logger = new LoggerConfiguration()
                     .MinimumLevel.Debug()
                     .WriteTo.File(new JsonLogFormatter(() => _currentUser),
@@ -36,39 +34,49 @@ namespace BingoHistoricoEditor.Services {
 
         public static void SetCurrentUser(string username) => _currentUser = username?.ToUpper() ?? "SISTEMA";
 
+        /// <summary>
+        /// Registro general de operaciones
+        /// </summary>
         public static void Write(string operacion, object datos = null) {
             try {
-                // El @ es vital para que Serilog desestructure el objeto (entry)
+                // El uso de @ es crítico para que Serilog desestructure objetos complejos
                 _logger?.Information("{Operacion} {@Datos}", operacion, datos);
             }
             catch { }
         }
 
+        /// <summary>
+        /// Registro de eventos internos del sistema o flujo de la aplicación
+        /// </summary>
+        public static void Sistema(string mensaje) {
+            Write("SISTEMA", mensaje);
+        }
+
+        /// <summary>
+        /// Registro de auditoría para cambios en base de datos
+        /// </summary>
+        public static void AuditDB(string operacion, object datos) {
+            Write(operacion, datos);
+        }
+
         public static void Close() => Log.CloseAndFlush();
     }
 
-    // Esta clase NO es estática porque implementa una interfaz (instancia)
     public class JsonLogFormatter : ITextFormatter {
         private readonly Func<string> _getUserName;
-
-        public JsonLogFormatter(Func<string> getUserName) {
-            _getUserName = getUserName;
-        }
+        public JsonLogFormatter(Func<string> getUserName) => _getUserName = getUserName;
 
         public void Format(LogEvent logEvent, TextWriter output) {
             try {
-                // Extraer la operación
                 string operacionValue = "";
                 if (logEvent.Properties.TryGetValue("Operacion", out var op))
                     operacionValue = op.ToString().Trim('"');
 
-                // Extraer los datos desestructurados (el objeto entry)
                 object detallesValue = null;
                 if (logEvent.Properties.TryGetValue("Datos", out var datosProp)) {
                     detallesValue = datosProp;
                 }
 
-                // Construimos el diccionario para el JSON
                 var dictionary = new Dictionary<string, object>
                 {
                     { "fecha", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") },

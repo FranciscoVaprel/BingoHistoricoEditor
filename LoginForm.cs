@@ -1,85 +1,84 @@
-using Microsoft.Extensions.Configuration;
 using BingoHistoricoEditor.Services;
-using System;
-using System.Drawing;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+using Microsoft.Extensions.Configuration;
 
 namespace BingoHistoricoEditor {
     public partial class LoginForm : Form {
-        private readonly string _hashAlmacenado;
-        private readonly string _usuarioEsperado;
         private int _intentosFallidos = 0;
         private const int MaxIntentos = 3;
         public string UsuarioLogueado { get; private set; } = "";
 
         public LoginForm(IConfiguration config) {
-            // Leemos los valores directamente de tu JSON
-            _usuarioEsperado = config["BingoSettings:AppUser"] ?? "admin";
-            // Soporta tanto el Hash como la password en texto plano para desarrollo
-            _hashAlmacenado = config["BingoSettings:AppPasswordHash"] ?? config["BingoSettings:AppPassword"] ?? "";
+            // Migrar usuario antiguo de appsettings → users.json si hace falta
+            UserStore.MigrarDesdeAppSettings(
+                config["BingoSettings:AppUser"],
+                config["BingoSettings:AppPasswordHash"]);
 
             InitializeComponent();
         }
 
         protected override void OnLoad(EventArgs e) {
             base.OnLoad(e);
-            txtUsuario.Focus(); // El foco siempre inicia en el nombre de usuario
+            txtUsuario.Focus();
         }
 
-        private void btnEntrar_Click(object sender, EventArgs e) => IntentarLogin();
+        // ── Eventos ───────────────────────────────────────────────────────────
+
+        private void btnEntrar_Click(object sender, EventArgs e)    => IntentarLogin();
+        private void btnGestionar_Click(object sender, EventArgs e) => AbrirGestionUsuarios();
 
         private void txtUsuario_KeyDown(object sender, KeyEventArgs e) {
-            if (e.KeyCode == Keys.Enter) {
-                e.SuppressKeyPress = true;
-                txtPassword.Focus(); // Al pulsar Enter en usuario, pasa a password
-            }
+            if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; txtPassword.Focus(); }
+        }
+        private void txtPassword_KeyDown(object sender, KeyEventArgs e) {
+            if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; IntentarLogin(); }
         }
 
-        private void txtPassword_KeyDown(object sender, KeyEventArgs e) {
-            if (e.KeyCode == Keys.Enter) {
-                e.SuppressKeyPress = true;
-                IntentarLogin(); // Al pulsar Enter en password, intenta entrar
-            }
-        }
+        // ── Lógica de login ───────────────────────────────────────────────────
 
         private void IntentarLogin() {
-            bool usuarioOk = txtUsuario.Text.Trim().ToLower() == _usuarioEsperado.ToLower();
-            bool passOk = PasswordHelper.Verify(txtPassword.Text, _hashAlmacenado) || txtPassword.Text == _hashAlmacenado;
+            string? usuarioOk = UserStore.VerificarLogin(txtUsuario.Text, txtPassword.Text);
 
-            if (usuarioOk && passOk) {
-                // Guardamos el nombre antes de cerrar
-                this.UsuarioLogueado = txtUsuario.Text.Trim();
-                this.DialogResult = DialogResult.OK;
-                this.Close();
+            if (usuarioOk is not null) {
+                UsuarioLogueado = usuarioOk;
+                LogService.Sistema($"LOGIN OK: {usuarioOk}");
+                DialogResult = DialogResult.OK;
+                Close();
                 return;
             }
 
-            // Gestión de errores e intentos
             _intentosFallidos++;
             txtPassword.Clear();
 
             int restantes = MaxIntentos - _intentosFallidos;
             if (restantes <= 0) {
-                MessageBox.Show("Acceso bloqueado por seguridad.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                LogService.Sistema($"LOGIN BLOQUEADO: {txtUsuario.Text.Trim()} (3 intentos)");
+                MessageBox.Show("Acceso bloqueado por seguridad.", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Stop);
                 DialogResult = DialogResult.Cancel;
                 Close();
                 return;
             }
 
-            lblError.Text = $"Credenciales incorrectas ({restantes} intentos)";
+            lblError.Text    = $"Credenciales incorrectas — {restantes} intento{(restantes > 1 ? "s" : "")} restante{(restantes > 1 ? "s" : "")}";
             lblError.Visible = true;
 
-            // Si el usuario es el que está mal, devolvemos el foco allí
-            if (!usuarioOk) {
+            if (!UserStore.ExisteUsuario(txtUsuario.Text.Trim()))
                 txtUsuario.Focus();
-                txtUsuario.SelectAll();
-            }
-            else {
+            else
                 txtPassword.Focus();
-            }
 
             AnimarError();
+        }
+
+        // ── Gestión de usuarios ───────────────────────────────────────────────
+
+        private void AbrirGestionUsuarios() {
+            // Para gestionar usuarios hay que autenticarse primero
+            using var auth = new AutenticacionPrevia();
+            if (auth.ShowDialog() != DialogResult.OK) return;
+
+            using var gestor = new UserManagerForm();
+            gestor.ShowDialog();
         }
 
         private async void AnimarError() {
@@ -89,6 +88,71 @@ namespace BingoHistoricoEditor {
                 await Task.Delay(30);
             }
             pnlCentro.Left = x;
+        }
+    }
+
+    // ── Diálogo de autenticación previa ──────────────────────────────────────
+
+    /// <summary>
+    /// Pide las credenciales de cualquier usuario existente antes
+    /// de permitir abrir la gestión de usuarios.
+    /// </summary>
+    internal class AutenticacionPrevia : Form {
+        private TextBox _txtUser = null!, _txtPass = null!;
+        private Label   _lblErr  = null!;
+
+        public AutenticacionPrevia() {
+            var clrFondo = Color.FromArgb(18,  20,  28);
+            var clrInput = Color.FromArgb(32,  36,  50);
+            var clrTexto = Color.FromArgb(220, 225, 240);
+            var clrSub   = Color.FromArgb(130, 140, 165);
+            var clrVerde = Color.FromArgb( 72, 187, 120);
+            var clrRojo  = Color.FromArgb(220,  80,  80);
+
+            Text = "Verificar identidad"; Size = new Size(320, 270);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false; MinimizeBox = false;
+            StartPosition = FormStartPosition.CenterParent;
+            BackColor = clrFondo; ForeColor = clrTexto;
+
+            var lbl1 = new Label { Text = "Confirma tu usuario y contraseña", ForeColor = clrSub,
+                AutoSize = true, Location = new Point(24, 20) };
+            var lbl2 = new Label { Text = "Usuario",     ForeColor = clrSub, AutoSize = true, Location = new Point(24,  52) };
+            var lbl3 = new Label { Text = "Contraseña",  ForeColor = clrSub, AutoSize = true, Location = new Point(24,  98) };
+
+            _txtUser = new TextBox { Size = new Size(268, 26), Location = new Point(24, 70),
+                BackColor = clrInput, ForeColor = clrTexto, BorderStyle = BorderStyle.FixedSingle,
+                Font = new Font("Segoe UI", 10f) };
+            _txtPass = new TextBox { Size = new Size(268, 26), Location = new Point(24, 116),
+                UseSystemPasswordChar = true,
+                BackColor = clrInput, ForeColor = clrTexto, BorderStyle = BorderStyle.FixedSingle,
+                Font = new Font("Segoe UI", 10f) };
+
+            _lblErr = new Label { Text = "Credenciales incorrectas", ForeColor = clrRojo,
+                AutoSize = true, Location = new Point(24, 150), Visible = false };
+
+            var btnOk = new Button { Text = "Verificar", Size = new Size(268, 36),
+                Location = new Point(24, 172),
+                BackColor = clrVerde, ForeColor = clrFondo,
+                FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                Cursor = Cursors.Hand };
+            btnOk.FlatAppearance.BorderSize = 0;
+            btnOk.Click += (_, _) => Verificar();
+
+            _txtUser.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; _txtPass.Focus(); } };
+            _txtPass.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Verificar(); } };
+
+            Controls.AddRange(new Control[] { lbl1, lbl2, lbl3, _txtUser, _txtPass, _lblErr, btnOk });
+        }
+
+        private void Verificar() {
+            if (UserStore.VerificarLogin(_txtUser.Text, _txtPass.Text) is not null) {
+                DialogResult = DialogResult.OK; Close();
+            }
+            else {
+                _lblErr.Visible = true;
+                _txtPass.Clear(); _txtPass.Focus();
+            }
         }
     }
 }
