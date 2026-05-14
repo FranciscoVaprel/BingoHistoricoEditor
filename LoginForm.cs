@@ -25,6 +25,7 @@ namespace BingoHistoricoEditor {
 
         private void btnEntrar_Click(object sender, EventArgs e)    => IntentarLogin();
         private void btnGestionar_Click(object sender, EventArgs e) => AbrirGestionUsuarios();
+        private void btnCerrar_Click(object sender, EventArgs e)    => CerrarAplicacion();
 
         private void txtUsuario_KeyDown(object sender, KeyEventArgs e) {
             if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; txtPassword.Focus(); }
@@ -79,6 +80,11 @@ namespace BingoHistoricoEditor {
 
             using var gestor = new UserManagerForm();
             gestor.ShowDialog();
+        }
+
+        private void CerrarAplicacion() {
+            DialogResult = DialogResult.Cancel;
+            Close();
         }
 
         private async void AnimarError() {

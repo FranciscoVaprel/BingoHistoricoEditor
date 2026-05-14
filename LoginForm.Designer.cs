@@ -11,6 +11,7 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.TextBox txtPassword;
         private System.Windows.Forms.Button btnEntrar;
         private System.Windows.Forms.Button btnGestionar;
+        private System.Windows.Forms.Button btnCerrar;
         private System.Windows.Forms.Label  lblError;
 
         protected override void Dispose(bool disposing) {
@@ -31,14 +32,14 @@ namespace BingoHistoricoEditor {
 
             // ── Formulario ────────────────────────────────────────────────────
             this.Text            = "Acceso — Histórico Bingo";
-            this.Size            = new System.Drawing.Size(360, 400);  // un poco más alto
+            this.Size            = new System.Drawing.Size(360, 440);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
             this.StartPosition   = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.BackColor       = clrFondo;
 
             // ── Panel central ─────────────────────────────────────────────────
             this.pnlCentro = new System.Windows.Forms.Panel {
-                Size      = new System.Drawing.Size(300, 340),
+                Size      = new System.Drawing.Size(300, 380),
                 Location  = new System.Drawing.Point(30, 30),
                 BackColor = clrPanel,
             };
@@ -137,6 +138,21 @@ namespace BingoHistoricoEditor {
             this.btnGestionar.FlatAppearance.BorderSize = 0;
             this.btnGestionar.Click += this.btnGestionar_Click;
 
+            // Botón Cerrar
+            this.btnCerrar = new System.Windows.Forms.Button {
+                Text      = "✕  Cerrar",
+                Size      = new System.Drawing.Size(252, 30),
+                Location  = new System.Drawing.Point(24, 326),
+                BackColor = clrRojo,
+                ForeColor = System.Drawing.Color.White,
+                FlatStyle = System.Windows.Forms.FlatStyle.Flat,
+                Font      = new System.Drawing.Font("Segoe UI", 8.5f),
+                Cursor    = System.Windows.Forms.Cursors.Hand,
+                TabIndex  = 4,
+            };
+            this.btnCerrar.FlatAppearance.BorderSize = 0;
+            this.btnCerrar.Click += this.btnCerrar_Click;
+
             this.pnlCentro.Controls.AddRange(new System.Windows.Forms.Control[] {
                 this.lblTitulo, this.lblSubtitulo,
                 this.lblUserLabel, this.txtUsuario,
@@ -144,6 +160,7 @@ namespace BingoHistoricoEditor {
                 this.lblError,
                 this.btnEntrar,
                 this.btnGestionar,
+                this.btnCerrar,
             });
 
             this.Controls.Add(this.pnlCentro);
