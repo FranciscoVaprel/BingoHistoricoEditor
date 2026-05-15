@@ -85,7 +85,7 @@ namespace BingoHistoricoEditor {
         private async Task CargarPartidasAsync() {
             try {
                 SetBusy(true);
-                EscribirLog("DB", $"Cargando datos del día {dtpFecha.Value:dd/MM/yyyy}...", registrarEnArchivo: false);
+                //EscribirLog("DB", $"Cargando datos del día {dtpFecha.Value:dd/MM/yyyy}...", registrarEnArchivo: false);
 
                 // USANDO EL NOMBRE CORRECTO DEL MÉTODO DE TU SERVICIO
                 _partidas = await _db.CargarPorFechaAsync(dtpFecha.Value, _codSala, _codConc);
