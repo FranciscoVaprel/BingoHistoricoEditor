@@ -26,6 +26,10 @@ namespace BingoHistoricoEditor {
             LogService.SetCurrentUser(usuario); // Establecer usuario en logs
             ConfigurarGrid();
             ConfigurarLimitesNumericos();
+            for (int i = 0; i < 5; i++)
+                this.tlpEdicion.RowStyles.Add(new System.Windows.Forms.RowStyle(
+                    System.Windows.Forms.SizeType.Percent, 20f));
+            this.FormClosed += (s, e) => BingoHistoricoEditor.Services.LogService.Close();
         }
 
         protected override async void OnLoad(EventArgs e) {
@@ -189,6 +193,20 @@ namespace BingoHistoricoEditor {
         private static int GetConfigInt(IConfiguration config, string key, int def) {
             var val = config.GetSection(key)?.Value;
             return int.TryParse(val, out int v) ? v : def;
+        }
+
+        private void btnNuevaPartida_Click(object sender, EventArgs e) {
+            _seleccionada = null;
+            grid.ClearSelection();
+
+            // Limpiar controles
+            nudPartida.Value = 0;
+            nudPrecio.Value = 0;
+            nudVendidos.Value = 0;
+            nudLinea.Value = 0;
+            nudBingo.Value = 0;
+
+            EscribirLog("SISTEMA", "Listo para crear nueva partida.");
         }
 
     }

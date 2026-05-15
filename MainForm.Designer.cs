@@ -3,9 +3,7 @@ namespace BingoHistoricoEditor {
         private System.ComponentModel.IContainer components = null;
 
         protected override void Dispose(bool disposing) {
-            if (disposing && (components != null)) {
-                components.Dispose();
-            }
+            if (disposing && (components != null)) components.Dispose();
             base.Dispose(disposing);
         }
 
@@ -13,258 +11,251 @@ namespace BingoHistoricoEditor {
 
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1250, 750);
-            this.BackColor = System.Drawing.Color.FromArgb(30, 30, 35);
-            this.Text = "Bingo Histórico - Editor de Partidas";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 
-            // 1. PANEL SUPERIOR (Cabecera)
-            this.pnlTop = new System.Windows.Forms.Panel {
-                Dock = System.Windows.Forms.DockStyle.Top,
-                Height = 75,
-                BackColor = System.Drawing.Color.FromArgb(45, 45, 50),
-                Padding = new System.Windows.Forms.Padding(20, 10, 20, 10)
-            };
+            var clrFondo = System.Drawing.Color.FromArgb(30,  30,  35);
+            var clrPanel = System.Drawing.Color.FromArgb(45,  45,  50);
+            var clrVerde = System.Drawing.Color.FromArgb(40, 167,  69);
+            var clrRojo  = System.Drawing.Color.FromArgb(220, 53,  69);
+            var clrAzul  = System.Drawing.Color.FromArgb(  0,122, 204);
+            var clrTexto = System.Drawing.Color.White;
 
-            this.lblTitulo = new System.Windows.Forms.Label {
-                Text = "HISTÓRICO DE PARTIDAS",
-                ForeColor = System.Drawing.Color.White,
-                Font = new System.Drawing.Font("Segoe UI", 16F, System.Drawing.FontStyle.Bold),
-                AutoSize = true,
-                Location = new System.Drawing.Point(20, 12)
-            };
+            // ── Instanciación ─────────────────────────────────────────────────
+            this.tlpMain       = new System.Windows.Forms.TableLayoutPanel();
+            this.pnlTop        = new System.Windows.Forms.Panel();
+            this.tlpContent    = new System.Windows.Forms.TableLayoutPanel();
+            this.pnlRight      = new System.Windows.Forms.Panel();
+            this.grpEdicion    = new System.Windows.Forms.GroupBox();
+            this.tlpEdicion    = new System.Windows.Forms.TableLayoutPanel();
+            this.flpBotones    = new System.Windows.Forms.FlowLayoutPanel();
+            this.pnlLog        = new System.Windows.Forms.Panel();
+            this.lblTitulo     = new System.Windows.Forms.Label();
+            this.lblSalaConc   = new System.Windows.Forms.Label();
+            this.lblEstado     = new System.Windows.Forms.Label();
+            this.dtpFecha      = new System.Windows.Forms.DateTimePicker();
+            this.btnBuscar     = new System.Windows.Forms.Button();
+            this.grid          = new System.Windows.Forms.DataGridView();
+            this.txtLog        = new System.Windows.Forms.TextBox();
+            this.nudPartida    = new System.Windows.Forms.NumericUpDown();
+            this.nudPrecio     = new System.Windows.Forms.NumericUpDown();
+            this.nudVendidos   = new System.Windows.Forms.NumericUpDown();
+            this.nudLinea      = new System.Windows.Forms.NumericUpDown();
+            this.nudBingo      = new System.Windows.Forms.NumericUpDown();
+            this.btnNuevaPartida = new System.Windows.Forms.Button();
+            this.btnGuardar    = new System.Windows.Forms.Button();
+            this.btnEliminar   = new System.Windows.Forms.Button();
 
-            this.lblSalaConc = new System.Windows.Forms.Label {
-                Text = "SALA: -- | CONCESIONARIO: --",
-                ForeColor = System.Drawing.Color.LightSkyBlue,
-                Font = new System.Drawing.Font("Segoe UI", 10F),
-                AutoSize = true,
-                Location = new System.Drawing.Point(22, 42)
-            };
+            // ── Layout principal: 3 filas (cabecera / contenido / log) ─────────
+            this.tlpMain.Dock        = System.Windows.Forms.DockStyle.Fill;
+            this.tlpMain.ColumnCount = 1;
+            this.tlpMain.RowCount    = 3;
+            this.tlpMain.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
+                System.Windows.Forms.SizeType.Percent, 100f));
+            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(
+                System.Windows.Forms.SizeType.Absolute, 80f));
+            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(
+                System.Windows.Forms.SizeType.Percent, 100f));
+            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(
+                System.Windows.Forms.SizeType.Absolute, 120f));
 
-            this.dtpFecha = new System.Windows.Forms.DateTimePicker {
-                Format = System.Windows.Forms.DateTimePickerFormat.Short,
-                Width = 120,
-                Location = new System.Drawing.Point(400, 25),
-                Font = new System.Drawing.Font("Segoe UI", 11F)
-            };
+            // ── Cabecera ──────────────────────────────────────────────────────
+            this.pnlTop.Dock      = System.Windows.Forms.DockStyle.Fill;
+            this.pnlTop.BackColor = clrPanel;
 
-            this.btnBuscar = new System.Windows.Forms.Button {
-                Text = "BUSCAR",
-                Width = 100,
-                Height = 32,
-                Location = new System.Drawing.Point(530, 24),
-                BackColor = System.Drawing.Color.FromArgb(100, 100, 110),
-                ForeColor = System.Drawing.Color.White,
-                FlatStyle = System.Windows.Forms.FlatStyle.Flat
-            };
-            this.btnBuscar.Click += new System.EventHandler(this.btnBuscar_Click);
+            this.lblTitulo.Text      = "HISTÓRICO DE PARTIDAS";
+            this.lblTitulo.Font      = new System.Drawing.Font("Segoe UI", 14f, System.Drawing.FontStyle.Bold);
+            this.lblTitulo.ForeColor = clrTexto;
+            this.lblTitulo.Location  = new System.Drawing.Point(20, 15);
+            this.lblTitulo.AutoSize  = true;
 
-            this.lblEstado = new System.Windows.Forms.Label {
-                Text = "Conectando...",
-                ForeColor = System.Drawing.Color.Gray,
-                Dock = System.Windows.Forms.DockStyle.Right,
-                TextAlign = System.Drawing.ContentAlignment.MiddleRight,
-                Width = 250,
-                Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Italic)
-            };
+            this.lblSalaConc.Text      = "SALA: 0 | CONCESIONARIO: 0";
+            this.lblSalaConc.ForeColor = System.Drawing.Color.DarkGray;
+            this.lblSalaConc.Location  = new System.Drawing.Point(22, 48);
+            this.lblSalaConc.AutoSize  = true;
+
+            // FIX 1: lblEstado sin Dock, posición fija antes del dtpFecha
+            // (DockStyle.Right tapaba el DateTimePicker y el botón Buscar)
+            this.lblEstado.Text      = "Conectando...";
+            this.lblEstado.ForeColor = System.Drawing.Color.Orange;
+            this.lblEstado.Font      = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Italic);
+            this.lblEstado.Location  = new System.Drawing.Point(700, 30);
+            this.lblEstado.Size      = new System.Drawing.Size(220, 20);
+            this.lblEstado.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+
+            this.dtpFecha.Format   = System.Windows.Forms.DateTimePickerFormat.Short;
+            this.dtpFecha.Size     = new System.Drawing.Size(130, 28);
+            this.dtpFecha.Location = new System.Drawing.Point(935, 24);
+            this.dtpFecha.Font     = new System.Drawing.Font("Segoe UI", 10f);
+
+            this.btnBuscar.Text      = "🔍 BUSCAR";
+            this.btnBuscar.Size      = new System.Drawing.Size(120, 33);
+            this.btnBuscar.Location  = new System.Drawing.Point(1075, 22);
+            this.btnBuscar.BackColor = clrVerde;
+            this.btnBuscar.ForeColor = clrTexto;
+            this.btnBuscar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnBuscar.Font      = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Bold);
+            this.btnBuscar.Click    += new System.EventHandler(this.btnBuscar_Click);
 
             this.pnlTop.Controls.AddRange(new System.Windows.Forms.Control[] {
-                this.lblTitulo, this.lblSalaConc, this.dtpFecha, this.btnBuscar, this.lblEstado
+                this.lblTitulo, this.lblSalaConc,
+                this.lblEstado, this.dtpFecha, this.btnBuscar
             });
 
-            // 2. CONTENEDOR PRINCIPAL
-            this.tlpContent = new System.Windows.Forms.TableLayoutPanel {
-                Dock = System.Windows.Forms.DockStyle.Fill,
-                ColumnCount = 2,
-                RowCount = 1,
-                BackColor = System.Drawing.Color.Transparent
-            };
-            this.tlpContent.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 72F));
-            this.tlpContent.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 28F));
+            // ── Cuerpo: grid (izq) + edición (der) ───────────────────────────
+            this.tlpContent.Dock        = System.Windows.Forms.DockStyle.Fill;
+            this.tlpContent.ColumnCount = 2;
+            this.tlpContent.RowCount    = 1;
+            this.tlpContent.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
+                System.Windows.Forms.SizeType.Percent, 75f));
+            this.tlpContent.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
+                System.Windows.Forms.SizeType.Absolute, 350f));
+            this.tlpContent.RowStyles.Add(new System.Windows.Forms.RowStyle(
+                System.Windows.Forms.SizeType.Percent, 100f));
 
-            // 3. LADO IZQUIERDO (Grid y Log)
-            System.Windows.Forms.Panel pnlLeft = new System.Windows.Forms.Panel { Dock = System.Windows.Forms.DockStyle.Fill };
+            this.grid.Dock           = System.Windows.Forms.DockStyle.Fill;
+            this.grid.BackgroundColor = clrFondo;
+            this.grid.BorderStyle    = System.Windows.Forms.BorderStyle.None;
+            this.grid.SelectionMode  = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.grid.SelectionChanged += new System.EventHandler(this.grid_SelectionChanged);
 
-            this.pnlGridContainer = new System.Windows.Forms.Panel {
-                Dock = System.Windows.Forms.DockStyle.Fill,
-                Padding = new System.Windows.Forms.Padding(20, 20, 10, 10)
-            };
-            this.grid = new System.Windows.Forms.DataGridView {
-                Dock = System.Windows.Forms.DockStyle.Fill,
-                BackgroundColor = System.Drawing.Color.FromArgb(40, 40, 45),
-                BorderStyle = System.Windows.Forms.BorderStyle.None,
-                ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize,
-                EnableHeadersVisualStyles = false,
-                SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect,
-                MultiSelect = false,
-                ReadOnly = true
-            };
-            this.pnlGridContainer.Controls.Add(this.grid);
+            // ── Panel derecho ────────────────────────────────────────────────
+            this.pnlRight.Dock = System.Windows.Forms.DockStyle.Fill;
 
-            this.pnlLog = new System.Windows.Forms.Panel {
-                Dock = System.Windows.Forms.DockStyle.Bottom,
-                Height = 180,
-                Padding = new System.Windows.Forms.Padding(20, 0, 10, 20)
-            };
-            this.txtLog = new System.Windows.Forms.TextBox {
-                Dock = System.Windows.Forms.DockStyle.Fill,
-                Multiline = true,
-                ReadOnly = true,
-                BackColor = System.Drawing.Color.Black,
-                ForeColor = System.Drawing.Color.Lime,
-                Font = new System.Drawing.Font("Consolas", 9.5F),
-                ScrollBars = System.Windows.Forms.ScrollBars.Vertical,
-                BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-            };
-            this.pnlLog.Controls.Add(this.txtLog);
+            this.grpEdicion.Text      = " DATOS PARTIDA ";
+            this.grpEdicion.Dock      = System.Windows.Forms.DockStyle.Fill;
+            this.grpEdicion.ForeColor = System.Drawing.Color.Gold;
+            this.grpEdicion.Font      = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Bold);
 
-            pnlLeft.Controls.Add(this.pnlGridContainer);
-            pnlLeft.Controls.Add(this.pnlLog);
+            // FIX 2: tlpEdicion con RowStyles explícitos 20%×5 y ColumnStyles
+            // (sin ellos las filas son AutoSize y Bingo queda fuera del área visible)
+            this.tlpEdicion.Dock        = System.Windows.Forms.DockStyle.Top;
+            this.tlpEdicion.Height      = 200;
+            this.tlpEdicion.ColumnCount = 2;
+            this.tlpEdicion.RowCount    = 5;
+            this.tlpEdicion.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
+                System.Windows.Forms.SizeType.Percent, 40f));
+            this.tlpEdicion.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(
+                System.Windows.Forms.SizeType.Percent, 60f));
+            
 
-            // 4. LADO DERECHO (Edición)
-            this.pnlRight = new System.Windows.Forms.Panel {
-                Dock = System.Windows.Forms.DockStyle.Fill,
-                Padding = new System.Windows.Forms.Padding(10, 20, 20, 20)
-            };
-            BuildRightPanel();
+            this.nudPrecio.DecimalPlaces   = 2;
+            this.nudLinea.DecimalPlaces    = 2;
+            this.nudBingo.DecimalPlaces    = 2;
 
-            // 5. ENSAMBLAJE FINAL
-            this.tlpContent.Controls.Add(pnlLeft, 0, 0);
+            this.AgregarControlEdicion("Partida:",  this.nudPartida,  0);
+            this.AgregarControlEdicion("Precio:",   this.nudPrecio,   1);
+            this.AgregarControlEdicion("Vendidos:", this.nudVendidos, 2);
+            this.AgregarControlEdicion("Línea:",    this.nudLinea,    3);
+            this.AgregarControlEdicion("Bingo:",    this.nudBingo,    4);
+
+            // ── Botones ───────────────────────────────────────────────────────
+            this.flpBotones.Dock          = System.Windows.Forms.DockStyle.Bottom;
+            this.flpBotones.Height        = 165;
+            this.flpBotones.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+            this.flpBotones.Padding       = new System.Windows.Forms.Padding(15, 10, 15, 10);
+            this.flpBotones.BackColor     = System.Drawing.Color.Transparent;
+
+            this.btnNuevaPartida.Text      = "✨  NUEVA PARTIDA";
+            this.btnNuevaPartida.Size      = new System.Drawing.Size(306, 38);
+            this.btnNuevaPartida.BackColor = clrAzul;
+            this.btnNuevaPartida.ForeColor = clrTexto;
+            this.btnNuevaPartida.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnNuevaPartida.Font      = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Bold);
+            this.btnNuevaPartida.Margin    = new System.Windows.Forms.Padding(0, 0, 0, 4);
+            this.btnNuevaPartida.Click    += new System.EventHandler(this.btnNuevaPartida_Click);
+
+            this.btnGuardar.Text      = "💾  GUARDAR";
+            this.btnGuardar.Size      = new System.Drawing.Size(306, 38);
+            this.btnGuardar.BackColor = clrVerde;
+            this.btnGuardar.ForeColor = clrTexto;
+            this.btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnGuardar.Font      = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Bold);
+            this.btnGuardar.Margin    = new System.Windows.Forms.Padding(0, 0, 0, 4);
+            this.btnGuardar.Click    += new System.EventHandler(this.btnGuardar_Click);
+
+            this.btnEliminar.Text      = "🗑  ELIMINAR";
+            this.btnEliminar.Size      = new System.Drawing.Size(306, 38);
+            this.btnEliminar.BackColor = clrRojo;
+            this.btnEliminar.ForeColor = clrTexto;
+            this.btnEliminar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnEliminar.Font      = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Bold);
+            this.btnEliminar.Click    += new System.EventHandler(this.btnEliminar_Click);
+
+            this.flpBotones.Controls.AddRange(new System.Windows.Forms.Control[] {
+                this.btnNuevaPartida, this.btnGuardar, this.btnEliminar
+            });
+
+            // Orden de añadir a grpEdicion: Bottom primero, luego Top
+            // (WinForms procesa Dock de atrás hacia adelante en Controls)
+            this.grpEdicion.Controls.Add(this.flpBotones);
+            this.grpEdicion.Controls.Add(this.tlpEdicion);
+            this.pnlRight.Controls.Add(this.grpEdicion);
+
+            this.tlpContent.Controls.Add(this.grid,     0, 0);
             this.tlpContent.Controls.Add(this.pnlRight, 1, 0);
 
-            this.Controls.Add(this.tlpContent);
-            this.Controls.Add(this.pnlTop);
-            
-            this.FormClosed += (s, e) => BingoHistoricoEditor.Services.LogService.Close();
-            this.ResumeLayout(false);
-            this.PerformLayout();
+            // ── Log inferior ──────────────────────────────────────────────────
+            this.pnlLog.Dock      = System.Windows.Forms.DockStyle.Fill;
+            this.pnlLog.BackColor = System.Drawing.Color.Black;
+
+            this.txtLog.Dock        = System.Windows.Forms.DockStyle.Fill;
+            this.txtLog.Multiline   = true;
+            this.txtLog.ReadOnly    = true;
+            this.txtLog.ScrollBars  = System.Windows.Forms.ScrollBars.Vertical;
+            this.txtLog.BackColor   = System.Drawing.Color.Black;
+            this.txtLog.ForeColor   = System.Drawing.Color.LimeGreen;
+            this.txtLog.Font        = new System.Drawing.Font("Consolas", 9f);
+            this.txtLog.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.pnlLog.Controls.Add(this.txtLog);
+
+            // ── Ensamblaje final ──────────────────────────────────────────────
+            this.tlpMain.Controls.Add(this.pnlTop,     0, 0);
+            this.tlpMain.Controls.Add(this.tlpContent, 0, 1);
+            this.tlpMain.Controls.Add(this.pnlLog,     0, 2);
+            this.Controls.Add(this.tlpMain);
+
+            this.ClientSize     = new System.Drawing.Size(1250, 750);
+            this.Text           = "Bingo Histórico - Editor";
+            this.BackColor      = clrFondo;
+            this.StartPosition  = System.Windows.Forms.FormStartPosition.CenterScreen;
         }
 
-        private void BuildRightPanel() {
-            this.grpEdicion = new System.Windows.Forms.GroupBox {
-                Text = " EDICIÓN DE PARTIDA ",
-                ForeColor = System.Drawing.Color.White,
-                Dock = System.Windows.Forms.DockStyle.Top,
-                Height = 350,
-                Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold)
-            };
-
-            this.tlpEdicion = new System.Windows.Forms.TableLayoutPanel {
-                Dock = System.Windows.Forms.DockStyle.Fill,
-                ColumnCount = 2,
-                RowCount = 5,
-                Padding = new System.Windows.Forms.Padding(10, 10, 10, 10)
-            };
-
-            this.tlpEdicion.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 45F));
-            this.tlpEdicion.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 55F));
-
-            for (int i = 0; i < 5; i++) {
-                this.tlpEdicion.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            }
-
-            // CORRECCIÓN: Usamos Anchor en lugar de Dock para centrar verticalmente
-            var anchorStyle = System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
-
-            this.nudPartida = new System.Windows.Forms.NumericUpDown { Anchor = anchorStyle };
-            this.nudPrecio = new System.Windows.Forms.NumericUpDown { Anchor = anchorStyle, DecimalPlaces = 2 };
-            this.nudVendidos = new System.Windows.Forms.NumericUpDown { Anchor = anchorStyle };
-            this.nudLinea = new System.Windows.Forms.NumericUpDown { Anchor = anchorStyle, DecimalPlaces = 2 };
-            this.nudBingo = new System.Windows.Forms.NumericUpDown { Anchor = anchorStyle, DecimalPlaces = 2 };
-
-            this.AddEditRow("Nº Partida:", this.nudPartida, 0);
-            this.AddEditRow("Precio Cartón:", this.nudPrecio, 1);
-            this.AddEditRow("Cartones Vend.:", this.nudVendidos, 2);
-            this.AddEditRow("Importe Línea:", this.nudLinea, 3);
-            this.AddEditRow("Importe Bingo:", this.nudBingo, 4);
-
-            this.pnlBotones = new System.Windows.Forms.Panel {
-                Dock = System.Windows.Forms.DockStyle.Fill,
-                Padding = new System.Windows.Forms.Padding(0, 15, 0, 0)
-            };
-
-            this.btnGuardar = new System.Windows.Forms.Button {
-                Text = "GUARDAR CAMBIOS",
-                Dock = System.Windows.Forms.DockStyle.Top,
-                Height = 55,
-                BackColor = System.Drawing.Color.FromArgb(40, 167, 69),
-                ForeColor = System.Drawing.Color.White,
-                FlatStyle = System.Windows.Forms.FlatStyle.Flat,
-                Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold)
-            };
-
-            this.btnNueva = new System.Windows.Forms.Button {
-                Text = "NUEVA PARTIDA",
-                Dock = System.Windows.Forms.DockStyle.Top,
-                Height = 45,
-                BackColor = System.Drawing.Color.FromArgb(50, 50, 55),
-                ForeColor = System.Drawing.Color.White,
-                FlatStyle = System.Windows.Forms.FlatStyle.Flat,
-                Margin = new System.Windows.Forms.Padding(0, 0, 0, 10)
-            };
-
-            this.btnEliminar = new System.Windows.Forms.Button {
-                Text = "ELIMINAR SELECCIONADA",
-                Dock = System.Windows.Forms.DockStyle.Bottom,
-                Height = 40,
-                BackColor = System.Drawing.Color.FromArgb(220, 53, 69),
-                ForeColor = System.Drawing.Color.White,
-                FlatStyle = System.Windows.Forms.FlatStyle.Flat
-            };
-
-            this.btnGuardar.Click += new System.EventHandler(this.btnGuardar_Click);
-            this.btnNueva.Click += new System.EventHandler(this.btnNueva_Click);
-            this.btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
-
-            this.pnlBotones.Controls.Add(this.btnGuardar);
-            this.pnlBotones.Controls.Add(this.btnNueva);
-            this.pnlBotones.Controls.Add(this.btnEliminar);
-
-            this.grpEdicion.Controls.Add(this.tlpEdicion);
-            this.pnlRight.Controls.Add(this.pnlBotones);
-            this.pnlRight.Controls.Add(this.grpEdicion);
-        }
-
-        private void AddEditRow(string text, System.Windows.Forms.Control ctrl, int row) {
-            // El Label se mantiene en Dock = Fill pero con TextAlign centrado y a la derecha
+        private void AgregarControlEdicion(string texto, System.Windows.Forms.Control ctrl, int row) {
             var lbl = new System.Windows.Forms.Label {
-                Text = text,
-                ForeColor = System.Drawing.Color.White,
-                Dock = System.Windows.Forms.DockStyle.Fill,
-                TextAlign = System.Drawing.ContentAlignment.MiddleRight, // Alineado derecha
-                Padding = new System.Windows.Forms.Padding(0, 0, 10, 0), // Separación del input
-                Font = new System.Drawing.Font("Segoe UI", 9F)
+                Text      = texto,
+                ForeColor = System.Drawing.Color.LightGray,
+                TextAlign = System.Drawing.ContentAlignment.MiddleRight,
+                Dock      = System.Windows.Forms.DockStyle.Fill,
+                Padding   = new System.Windows.Forms.Padding(0, 0, 8, 0),
             };
-            this.tlpEdicion.Controls.Add(lbl, 0, row);
+            ctrl.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tlpEdicion.Controls.Add(lbl,  0, row);
             this.tlpEdicion.Controls.Add(ctrl, 1, row);
         }
 
         #endregion
 
-        private System.Windows.Forms.Panel pnlTop;
-        private System.Windows.Forms.TableLayoutPanel tlpContent;
-        private System.Windows.Forms.Panel pnlRight;
-        private System.Windows.Forms.Label lblTitulo;
-        private System.Windows.Forms.Label lblSalaConc;
-        private System.Windows.Forms.Label lblEstado;
-        private System.Windows.Forms.DateTimePicker dtpFecha;
-        private System.Windows.Forms.Button btnBuscar;
-        private System.Windows.Forms.DataGridView grid;
-        private System.Windows.Forms.Panel pnlGridContainer;
-        private System.Windows.Forms.Panel pnlLog;
-        private System.Windows.Forms.TextBox txtLog;
-        private System.Windows.Forms.GroupBox grpEdicion;
-        private System.Windows.Forms.TableLayoutPanel tlpEdicion;
-        private System.Windows.Forms.NumericUpDown nudPartida;
-        private System.Windows.Forms.NumericUpDown nudPrecio;
-        private System.Windows.Forms.NumericUpDown nudVendidos;
-        private System.Windows.Forms.NumericUpDown nudLinea;
-        private System.Windows.Forms.NumericUpDown nudBingo;
-        private System.Windows.Forms.Panel pnlBotones;
-        private System.Windows.Forms.Button btnGuardar;
-        private System.Windows.Forms.Button btnNueva;
-        private System.Windows.Forms.Button btnEliminar;
+        private System.Windows.Forms.TableLayoutPanel  tlpMain;
+        private System.Windows.Forms.Panel             pnlTop;
+        private System.Windows.Forms.TableLayoutPanel  tlpContent;
+        private System.Windows.Forms.Panel             pnlRight;
+        private System.Windows.Forms.GroupBox          grpEdicion;
+        private System.Windows.Forms.TableLayoutPanel  tlpEdicion;
+        private System.Windows.Forms.FlowLayoutPanel   flpBotones;
+        private System.Windows.Forms.Panel             pnlLog;
+        private System.Windows.Forms.Label             lblTitulo;
+        private System.Windows.Forms.Label             lblSalaConc;
+        private System.Windows.Forms.Label             lblEstado;
+        private System.Windows.Forms.DateTimePicker    dtpFecha;
+        private System.Windows.Forms.Button            btnBuscar;
+        private System.Windows.Forms.DataGridView      grid;
+        private System.Windows.Forms.TextBox           txtLog;
+        private System.Windows.Forms.NumericUpDown     nudPartida;
+        private System.Windows.Forms.NumericUpDown     nudPrecio;
+        private System.Windows.Forms.NumericUpDown     nudVendidos;
+        private System.Windows.Forms.NumericUpDown     nudLinea;
+        private System.Windows.Forms.NumericUpDown     nudBingo;
+        private System.Windows.Forms.Button            btnNuevaPartida;
+        private System.Windows.Forms.Button            btnGuardar;
+        private System.Windows.Forms.Button            btnEliminar;
     }
 }
