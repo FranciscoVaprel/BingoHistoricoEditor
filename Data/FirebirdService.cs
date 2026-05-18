@@ -2,6 +2,7 @@ using BingoHistoricoEditor.Models;
 using FirebirdSql.Data.FirebirdClient;
 using Microsoft.Extensions.Configuration;
 using System.Globalization;
+using FirebirdSql.Data.FirebirdClient;
 
 namespace BingoHistoricoEditor.Data {
     public class FirebirdService {
@@ -145,6 +146,46 @@ namespace BingoHistoricoEditor.Data {
             catch (Exception ex) {
                 throw new Exception($"Error al eliminar partida {e.PartidaDia}: {ex.Message}", ex);
             }
+        }
+
+        public async Task<HashSet<int>> ObtenerPartidasExistentesEnRangoAsync(DateTime fecha, int codSala, int codConc, int inicio, int fin) {
+            var existentes = new HashSet<int>();
+
+            // CORREGIDO: Nombres exactos de columnas con guiones bajos tal como están en tu BD
+            string query = @"
+        SELECT PARTIDA_DIA 
+        FROM HISTORICO 
+        WHERE FECHA_SESION = @Fecha 
+          AND COD_SALA = @Sala 
+          AND COD_CONC = @Conc 
+          AND PARTIDA_DIA BETWEEN @Inicio AND @Fin
+        ORDER BY PARTIDA_DIA ASC";
+
+            try {
+                // CORREGIDO: Usamos '_cs' que es tu variable de conexión real
+                using (var conn = new FbConnection(_cs)) {
+                    using (var cmd = new FbCommand(query, conn)) {
+                        // Pasamos los parámetros tipados para evitar fallos de conversión
+                        cmd.Parameters.Add("@Fecha", FbDbType.Date).Value = fecha.Date;
+                        cmd.Parameters.Add("@Sala", FbDbType.Integer).Value = codSala;
+                        cmd.Parameters.Add("@Conc", FbDbType.Integer).Value = codConc;
+                        cmd.Parameters.Add("@Inicio", FbDbType.Integer).Value = inicio;
+                        cmd.Parameters.Add("@Fin", FbDbType.Integer).Value = fin;
+
+                        await conn.OpenAsync();
+                        using (var reader = await cmd.ExecuteReaderAsync()) {
+                            while (await reader.ReadAsync()) {
+                                existentes.Add(reader.GetInt32(0)); // Añade el PARTIDA_DIA al HashSet
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex) {
+                throw new Exception($"Error al buscar partidas existentes en el rango: {ex.Message}", ex);
+            }
+
+            return existentes;
         }
     }
 }

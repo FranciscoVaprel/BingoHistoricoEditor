@@ -22,13 +22,27 @@ namespace BingoHistoricoEditor {
             _db = db;
             _codSala = GetConfigInt(config, "BingoSettings:CodSala", 1);
             _codConc = GetConfigInt(config, "BingoSettings:CodConc", 1);
-            _usuarioActual = usuario; // Guardamos quién entró
-            LogService.SetCurrentUser(usuario); // Establecer usuario en logs
+            _usuarioActual = usuario;
+            LogService.SetCurrentUser(usuario);
             ConfigurarGrid();
             ConfigurarLimitesNumericos();
-            for (int i = 0; i < 5; i++)
-                this.tlpEdicion.RowStyles.Add(new System.Windows.Forms.RowStyle(
-                    System.Windows.Forms.SizeType.Percent, 20f));
+
+            // ── NUEVAS LLAMADAS DE ESTILO PARA SOLUCIONAR EL MODO OSCURO ──
+            ConfigurarEstilosLote();
+            ConfigurarEstilosIndividual(); // <- Añade esta línea aquí
+
+            this.dtpFecha.ValueChanged += dtpFecha_ValueChanged;
+            // En el constructor de MainForm, justo debajo de ConfigurarEstilosIndividual();
+            this.tlpEdicion.RowStyles.Clear(); // <- Borra cualquier residuo del diseñador
+            this.tlpEdicion.RowCount = 5;      // <- Fuerza exactamente 5 filas
+
+            for (int i = 0; i < 5; i++) {
+                this.tlpEdicion.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20f));
+            }
+
+            // ── AGREGAR LOS CONTROLES DE EDICIÓN A tlpEdicion ──
+            AgregarControlesAlTableLayout();
+
             this.FormClosed += (s, e) => BingoHistoricoEditor.Services.LogService.Close();
         }
 
@@ -60,12 +74,27 @@ namespace BingoHistoricoEditor {
         }
 
         private void ConfigurarLimitesNumericos() {
-            decimal max = decimal.MaxValue;
-            nudPartida.Maximum = max;
-            nudPrecio.Maximum = max;
-            nudVendidos.Maximum = max;
-            nudLinea.Maximum = max;
-            nudBingo.Maximum = max;
+            nudPartida.Maximum = 99999;
+            nudPrecio.Maximum = 9999;
+            nudVendidos.Maximum = 9999;
+            nudLinea.Maximum = 99999;
+            nudBingo.Maximum = 99999;
+
+            // Límites para los rangos de lote
+            nudPartidaInicial.Maximum = 99999;
+            nudPartidaFinal.Maximum = 99999;
+        }
+
+        private void AgregarControlesAlTableLayout() {
+            // Limpiar controles previos si existen
+            tlpEdicion.Controls.Clear();
+
+            // Agregar los 5 filas de controles: Partida, Precio, Vendidos, Línea, Bingo
+            AgregarControlEdicion("Partida:", nudPartida, 0);
+            AgregarControlEdicion("Precio:", nudPrecio, 1);
+            AgregarControlEdicion("Vendidos:", nudVendidos, 2);
+            AgregarControlEdicion("Línea:", nudLinea, 3);
+            AgregarControlEdicion("Bingo:", nudBingo, 4);
         }
 
         // Método de Log actualizado con el usuario
@@ -183,11 +212,20 @@ namespace BingoHistoricoEditor {
             }
         }
 
+        /// <summary>
+        /// Asigna el estado enabled de los botones
+        /// </summary>
+        /// <param name="busy"></param>
         private void SetBusy(bool busy) {
             this.Cursor = busy ? Cursors.WaitCursor : Cursors.Default;
             btnBuscar.Enabled = !busy;
             btnGuardar.Enabled = !busy;
             btnEliminar.Enabled = !busy;
+
+            // Deshabilitar también los botones de lote en procesos asíncronos
+            btnBuscarFaltante.Enabled = !busy;
+            btnGuardarLote.Enabled = !busy;
+            btnEliminarLote.Enabled = !busy;
         }
 
         private static int GetConfigInt(IConfiguration config, string key, int def) {
@@ -207,6 +245,194 @@ namespace BingoHistoricoEditor {
             nudBingo.Value = 0;
 
             EscribirLog("SISTEMA", "Listo para crear nueva partida.");
+        }
+
+        private async void btnBuscarFaltante_Click(object sender, EventArgs e) {
+            int inicio = (int)nudPartidaInicial.Value;
+            int fin = (int)nudPartidaFinal.Value;
+
+            if (inicio > fin) {
+                EscribirLog("ADVERTENCIA", "El rango de búsqueda no es válido (inicio mayor que fin).", registrarEnArchivo: false);
+                return;
+            }
+
+            try {
+                SetBusy(true);
+                EscribirLog("INFO", $"Consultando huecos libres en BD entre {inicio} y {fin}...", registrarEnArchivo: false);
+
+                // 1. Buscamos en la Base de Datos los números ocupados
+                HashSet<int> ocupados = await _db.ObtenerPartidasExistentesEnRangoAsync(dtpFecha.Value, _codSala, _codConc, inicio, fin);
+
+                // 2. Buscamos secuencialmente el primer número que NO esté en el conjunto
+                int primerFaltante = -1;
+                for (int i = inicio; i <= fin; i++) {
+                    if (!ocupados.Contains(i)) {
+                        primerFaltante = i;
+                        break;
+                    }
+                }
+
+                // 3. Procesamos el resultado
+                if (primerFaltante != -1) {
+                    // Encontrado: Se lo asignamos al control numérico directamente
+                    nudPartidaInicial.Value = primerFaltante;
+
+                    EscribirLog("EXITO", $"Primer número disponible encontrado: {primerFaltante}", registrarEnArchivo: false);
+                    MessageBox.Show($"La primera partida faltante en el rango es la número: {primerFaltante}.\n\nSe ha colocado automáticamente como Partida Inicial.",
+                                    "Hueco Encontrado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else {
+                    // No hay huecos libres en todo el rango
+                    EscribirLog("ADVERTENCIA", $"No hay huecos libres en el rango [{inicio} - {fin}]. Todas las partidas existen.", registrarEnArchivo: false);
+                    MessageBox.Show("Todas las partidas en el rango seleccionado ya existen en la base de datos para esta fecha.",
+                                    "Rango Completo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch (Exception ex) {
+                EscribirLog("ERROR", $"Error al buscar faltante en BD: {ex.Message}", registrarEnArchivo: true);
+                MessageBox.Show($"Ocurrió un error al consultar la base de datos:\n{ex.Message}", "Error de Consulta", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally {
+                SetBusy(false);
+            }
+        }
+
+        private async void btnGuardarLote_Click(object sender, EventArgs e) {
+            int inicio = (int)nudPartidaInicial.Value;
+            int fin = (int)nudPartidaFinal.Value;
+
+            if (inicio > fin) {
+                EscribirLog("ADVERTENCIA", "La partida inicial no puede ser mayor que la final.", registrarEnArchivo: false);
+                return;
+            }
+
+            try {
+                SetBusy(true);
+                EscribirLog("INFO", $"Iniciando guardado en lote desde {inicio} hasta {fin}...", registrarEnArchivo: true);
+                // Aquí irá la lógica para insertar/actualizar masivamente usando el rango
+            }
+            catch (Exception ex) {
+                EscribirLog("ERROR_CRITICO", $"Fallo en guardado masivo: {ex.Message}", registrarEnArchivo: true);
+            }
+            finally {
+                SetBusy(false);
+            }
+        }
+
+        private async void btnEliminarLote_Click(object sender, EventArgs e) {
+            int inicio = (int)nudPartidaInicial.Value;
+            int fin = (int)nudPartidaFinal.Value;
+
+            var confirm = MessageBox.Show(
+                $"¿Estás seguro de que deseas eliminar TODAS las partidas entre la {inicio} y la {fin}?",
+                "Confirmación de eliminación masiva",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Warning
+            );
+
+            if (confirm != DialogResult.Yes) return;
+
+            try {
+                SetBusy(true);
+                EscribirLog("INFO", $"Eliminando lote de partidas ({inicio} - {fin})...", registrarEnArchivo: true);
+                // Aquí irá el Delete masivo en base de datos
+            }
+            catch (Exception ex) {
+                EscribirLog("ERROR_CRITICO", $"Fallo al eliminar lote: {ex.Message}", registrarEnArchivo: true);
+            }
+            finally {
+                SetBusy(false);
+            }
+        }
+
+        private void dtpFecha_ValueChanged(object sender, EventArgs e) {                        
+            AsignarLimitesPartidasLote();
+        }
+
+        private void AsignarLimitesPartidasLote() {
+            // Aseguramos que los labels tengan color claro para que no se vuelvan invisibles con el fondo oscuro
+            if (lblIni != null) lblIni.ForeColor = System.Drawing.Color.LightGray;
+            if (lblFin != null) lblFin.ForeColor = System.Drawing.Color.LightGray;
+
+            // CORRECCIÓN CRÍTICA: Comprobar que la lista NO esté vacía (_partidas.Count > 0)
+            if (_partidas != null && _partidas.Count > 0) {
+                int min = int.MaxValue;
+                int max = int.MinValue;
+
+                // Buscamos los extremos reales en la lista de la fecha seleccionada
+                foreach (var partida in _partidas) {
+                    if (partida.PartidaDia < min) min = partida.PartidaDia;
+                    if (partida.PartidaDia > max) max = partida.PartidaDia;
+                }
+
+                // Controlamos que los valores estén dentro del rango permitido por tus NumericUpDown
+                nudPartidaInicial.Value = Math.Max(nudPartidaInicial.Minimum, Math.Min(nudPartidaInicial.Maximum, min));
+                nudPartidaFinal.Value = Math.Max(nudPartidaFinal.Minimum, Math.Min(nudPartidaFinal.Maximum, max));
+
+                EscribirLog("INFO", $"Lote preestablecido automáticamente: Rango [{min} - {max}] para la fecha actual.", registrarEnArchivo: false);
+            }
+            else {
+                // Si no hay datos cargados en el Grid, asignamos el valor mínimo configurado (evita el 99999 y 0)
+                nudPartidaInicial.Value = nudPartidaInicial.Minimum;
+                nudPartidaFinal.Value = nudPartidaFinal.Minimum;
+
+                EscribirLog("ADVERTENCIA", "No hay partidas cargadas en esta fecha. Selecciona una fecha con datos y pulsa Buscar.", registrarEnArchivo: false);
+            }
+        }
+        private void ConfigurarEstilosLote() {
+            // Aseguramos que tengan texto asignado por si acaso
+            lblIni.Text = "Partida Inicial:";
+            lblFin.Text = "Partida Final:";
+
+            // Forzamos el color claro para el modo oscuro
+            lblIni.ForeColor = Color.LightGray;
+            lblFin.ForeColor = Color.LightGray;
+            grpLote.ForeColor = Color.White; // Esto aclara también el título del recuadro del Lote
+
+            // Alineación fluida dentro de la tabla del lote
+            lblIni.TextAlign = ContentAlignment.MiddleLeft;
+            lblFin.TextAlign = ContentAlignment.MiddleLeft;
+            lblIni.Dock = DockStyle.Fill;
+            lblFin.Dock = DockStyle.Fill;
+        }
+
+        private void ConfigurarEstilosIndividual() {
+            // 1. CRUCIAL para Modo Oscuro en TabPages: Desactivar el estilo visual nativo
+            if (tabIndividual != null) {
+                tabIndividual.UseVisualStyleBackColor = false; // Permite aplicar el BackColor personalizado
+                tabIndividual.BackColor = Color.FromArgb(30, 30, 35);
+            }
+            if (tabLote != null) {
+                tabLote.UseVisualStyleBackColor = false;
+                tabLote.BackColor = Color.FromArgb(30, 30, 35);
+            }
+
+            // 2. Estilo del contenedor GroupBox de edición
+            if (grpEdicion != null) {
+                grpEdicion.BackColor = Color.FromArgb(45, 45, 50);
+                grpEdicion.ForeColor = Color.White; // Color del título del GroupBox
+            }
+
+            // 3. Estilo explícito para el TableLayoutPanel interno
+            if (tlpEdicion != null) {
+                tlpEdicion.BackColor = Color.FromArgb(45, 45, 50);
+
+                // 4. Forzar par Background/Foreground en todos los inputs
+                foreach (Control ctrl in tlpEdicion.Controls) {
+                    if (ctrl is Label lbl) {
+                        lbl.ForeColor = Color.LightGray;
+                        lbl.BackColor = Color.Transparent; // Evita bloques grises alrededor del texto
+                    }
+                    else if (ctrl is NumericUpDown nud) {
+                        nud.BackColor = Color.FromArgb(35, 35, 40);
+                        nud.ForeColor = Color.White;
+                    }
+                    else if (ctrl is TextBox txt) {
+                        txt.BackColor = Color.FromArgb(35, 35, 40);
+                        txt.ForeColor = Color.White;
+                    }
+                }
+            }
         }
     }
 }
