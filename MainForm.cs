@@ -208,6 +208,5 @@ namespace BingoHistoricoEditor {
 
             EscribirLog("SISTEMA", "Listo para crear nueva partida.");
         }
-
     }
 }

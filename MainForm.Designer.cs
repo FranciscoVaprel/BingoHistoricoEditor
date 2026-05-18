@@ -9,205 +9,6 @@ namespace BingoHistoricoEditor {
 
         #region Windows Form Designer generated code
 
-        private void InitializeComponent() {
-            this.components = new System.ComponentModel.Container();
-
-            var clrFondo = System.Drawing.Color.FromArgb(30, 30, 35);
-            var clrPanel = System.Drawing.Color.FromArgb(45, 45, 50);
-            var clrVerde = System.Drawing.Color.FromArgb(40, 167, 69);
-            var clrRojo = System.Drawing.Color.FromArgb(220, 53, 69);
-            var clrAzul = System.Drawing.Color.FromArgb(0, 122, 204);
-            var clrTexto = System.Drawing.Color.White;
-
-            // 1. INSTANCIACIÓN
-            this.tlpMain = new System.Windows.Forms.TableLayoutPanel();
-            this.pnlTop = new System.Windows.Forms.Panel();
-            this.tlpHeader = new System.Windows.Forms.TableLayoutPanel(); // NUEVO: Para organizar la cabecera
-            this.tlpContent = new System.Windows.Forms.TableLayoutPanel();
-            this.tlpIzquierda = new System.Windows.Forms.TableLayoutPanel();
-            this.pnlRight = new System.Windows.Forms.Panel();
-            this.grpEdicion = new System.Windows.Forms.GroupBox();
-            this.tlpEdicion = new System.Windows.Forms.TableLayoutPanel();
-            this.flpBotones = new System.Windows.Forms.FlowLayoutPanel();
-            this.pnlLog = new System.Windows.Forms.Panel();
-
-            this.lblTitulo = new System.Windows.Forms.Label();
-            this.lblSalaConc = new System.Windows.Forms.Label();
-            this.lblEstado = new System.Windows.Forms.Label();
-            this.dtpFecha = new System.Windows.Forms.DateTimePicker();
-            this.btnBuscar = new System.Windows.Forms.Button();
-            this.grid = new System.Windows.Forms.DataGridView();
-            this.txtLog = new System.Windows.Forms.TextBox();
-
-            this.nudPartida = new System.Windows.Forms.NumericUpDown();
-            this.nudPrecio = new System.Windows.Forms.NumericUpDown();
-            this.nudVendidos = new System.Windows.Forms.NumericUpDown();
-            this.nudLinea = new System.Windows.Forms.NumericUpDown();
-            this.nudBingo = new System.Windows.Forms.NumericUpDown();
-
-            this.btnNuevaPartida = new System.Windows.Forms.Button();
-            this.btnGuardar = new System.Windows.Forms.Button();
-            this.btnEliminar = new System.Windows.Forms.Button();
-
-            // --- LAYOUT RAÍZ ---
-            this.tlpMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlpMain.ColumnCount = 1;
-            this.tlpMain.RowCount = 2;
-            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 80f));
-            this.tlpMain.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100f));
-
-            // --- CABECERA MEJORADA (tlpHeader) ---
-            this.pnlTop.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlTop.BackColor = clrPanel;
-
-            this.tlpHeader.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlpHeader.ColumnCount = 3;
-            this.tlpHeader.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100f)); // Títulos
-            this.tlpHeader.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150f)); // Fecha
-            this.tlpHeader.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 150f)); // Botón Buscar
-            this.tlpHeader.Padding = new System.Windows.Forms.Padding(20, 10, 20, 10);
-
-            // Contenedor para textos (Izquierda)
-            var pnlTextos = new System.Windows.Forms.Panel { Dock = System.Windows.Forms.DockStyle.Fill };
-            this.lblTitulo.Text = "HISTÓRICO DE PARTIDAS";
-            this.lblTitulo.Font = new System.Drawing.Font("Segoe UI", 14f, System.Drawing.FontStyle.Bold);
-            this.lblTitulo.ForeColor = clrTexto;
-            this.lblTitulo.Location = new System.Drawing.Point(0, 5);
-            this.lblTitulo.AutoSize = true;
-
-            this.lblSalaConc.Text = "SALA: 0 | CONCESIONARIO: 0";
-            this.lblSalaConc.ForeColor = System.Drawing.Color.DarkGray;
-            this.lblSalaConc.Location = new System.Drawing.Point(2, 35);
-            this.lblSalaConc.AutoSize = true;
-
-            this.lblEstado.Text = "Estado: Desconectado";
-            this.lblEstado.ForeColor = System.Drawing.Color.Orange;
-            this.lblEstado.Location = new System.Drawing.Point(220, 35);
-            this.lblEstado.AutoSize = true;
-            pnlTextos.Controls.AddRange(new System.Windows.Forms.Control[] { this.lblTitulo, this.lblSalaConc, this.lblEstado });
-
-            // Selector de Fecha (Centro-Derecha)
-            this.dtpFecha.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-            this.dtpFecha.Anchor = System.Windows.Forms.AnchorStyles.Right;
-            this.dtpFecha.Width = 120;
-
-            // Botón Buscar (Derecha)
-            this.btnBuscar.Text = "🔍 BUSCAR";
-            this.btnBuscar.BackColor = clrVerde;
-            this.btnBuscar.ForeColor = clrTexto;
-            this.btnBuscar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnBuscar.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.btnBuscar.Click += new System.EventHandler(this.btnBuscar_Click);
-
-            this.tlpHeader.Controls.Add(pnlTextos, 0, 0);
-            this.tlpHeader.Controls.Add(this.dtpFecha, 1, 0);
-            this.tlpHeader.Controls.Add(this.btnBuscar, 2, 0);
-            this.pnlTop.Controls.Add(this.tlpHeader);
-
-            // --- CUERPO (Grid + Log izquierda, Edición derecha total) ---
-            this.tlpContent.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlpContent.ColumnCount = 2;
-            this.tlpContent.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100f));
-            this.tlpContent.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 350f));
-
-            // Sub-layout Izquierdo
-            this.tlpIzquierda.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlpIzquierda.RowCount = 2;
-            this.tlpIzquierda.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100f));
-            this.tlpIzquierda.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 130f));
-
-            this.grid.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.grid.BackgroundColor = clrFondo;
-            this.grid.BorderStyle = System.Windows.Forms.BorderStyle.None;
-
-            this.pnlLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.txtLog.Multiline = true;
-            this.txtLog.BackColor = System.Drawing.Color.Black;
-            this.txtLog.ForeColor = System.Drawing.Color.LimeGreen;
-            this.txtLog.ReadOnly = true;
-            this.pnlLog.Controls.Add(this.txtLog);
-
-            this.tlpIzquierda.Controls.Add(this.grid, 0, 0);
-            this.tlpIzquierda.Controls.Add(this.pnlLog, 0, 1);
-
-            // Panel Derecho (Llega hasta el final)
-            this.pnlRight.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.grpEdicion.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.grpEdicion.Text = " DATOS PARTIDA ";
-            this.grpEdicion.ForeColor = System.Drawing.Color.Gold;
-
-            this.tlpEdicion.Dock = System.Windows.Forms.DockStyle.Top;
-            this.tlpEdicion.Height = 250;
-            this.tlpEdicion.RowCount = 5;
-            for (int i = 0; i < 5; i++)
-                this.tlpEdicion.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20f));
-
-            this.AgregarControlEdicion("Partida:", this.nudPartida, 0);
-            this.AgregarControlEdicion("Precio:", this.nudPrecio, 1);
-            this.AgregarControlEdicion("Vendidos:", this.nudVendidos, 2);
-            this.AgregarControlEdicion("Línea:", this.nudLinea, 3);
-            this.AgregarControlEdicion("Bingo:", this.nudBingo, 4);
-
-            this.flpBotones.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.flpBotones.Height = 160;
-            this.flpBotones.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-            this.flpBotones.Padding = new System.Windows.Forms.Padding(15);
-
-            this.btnNuevaPartida.Text = "✨ NUEVA PARTIDA";
-            this.btnNuevaPartida.Size = new System.Drawing.Size(300, 35);
-            this.btnNuevaPartida.BackColor = clrAzul;
-            this.btnNuevaPartida.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnNuevaPartida.ForeColor = clrTexto;
-            this.btnNuevaPartida.Click += new System.EventHandler(this.btnNuevaPartida_Click);
-
-            this.btnGuardar.Text = "💾 GUARDAR";
-            this.btnGuardar.Size = new System.Drawing.Size(300, 35);
-            this.btnGuardar.BackColor = clrVerde;
-            this.btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnGuardar.ForeColor = clrTexto;
-            this.btnGuardar.Click += new System.EventHandler(this.btnGuardar_Click);
-
-            this.btnEliminar.Text = "🗑 ELIMINAR";
-            this.btnEliminar.Size = new System.Drawing.Size(300, 35);
-            this.btnEliminar.BackColor = clrRojo;
-            this.btnEliminar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnEliminar.ForeColor = clrTexto;
-            this.btnEliminar.Click += new System.EventHandler(this.btnEliminar_Click);
-
-            this.flpBotones.Controls.AddRange(new System.Windows.Forms.Control[] {
-                this.btnNuevaPartida, this.btnGuardar, this.btnEliminar
-            });
-
-            this.grpEdicion.Controls.Add(this.flpBotones);
-            this.grpEdicion.Controls.Add(this.tlpEdicion);
-            this.pnlRight.Controls.Add(this.grpEdicion);
-
-            // ENSAMBLAJE
-            this.tlpContent.Controls.Add(this.tlpIzquierda, 0, 0);
-            this.tlpContent.Controls.Add(this.pnlRight, 1, 0);
-
-            this.tlpMain.Controls.Add(this.pnlTop, 0, 0);
-            this.tlpMain.Controls.Add(this.tlpContent, 0, 1);
-
-            this.Controls.Add(this.tlpMain);
-            this.ClientSize = new System.Drawing.Size(1250, 750);
-            this.Text = "Bingo Histórico - Editor";
-            this.BackColor = clrFondo;
-        }
-
-        private void AgregarControlEdicion(string texto, System.Windows.Forms.Control ctrl, int row) {
-            var lbl = new System.Windows.Forms.Label {
-                Text = texto,
-                ForeColor = System.Drawing.Color.LightGray,
-                TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
-                Dock = System.Windows.Forms.DockStyle.Fill
-            };
-            this.tlpEdicion.Controls.Add(lbl, 0, row);
-            this.tlpEdicion.Controls.Add(ctrl, 1, row);
-        }
-        #endregion
-
         private System.Windows.Forms.TableLayoutPanel tlpMain;
         private System.Windows.Forms.Panel pnlTop;
         private System.Windows.Forms.TableLayoutPanel tlpHeader;
@@ -233,5 +34,382 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.Button btnNuevaPartida;
         private System.Windows.Forms.Button btnGuardar;
         private System.Windows.Forms.Button btnEliminar;
+
+        private void InitializeComponent() {
+            tlpMain = new TableLayoutPanel();
+            pnlTop = new Panel();
+            tlpHeader = new TableLayoutPanel();
+            pnlTextos = new Panel();
+            lblTitulo = new Label();
+            lblSalaConc = new Label();
+            lblEstado = new Label();
+            dtpFecha = new DateTimePicker();
+            btnBuscar = new Button();
+            tlpContent = new TableLayoutPanel();
+            tlpIzquierda = new TableLayoutPanel();
+            grid = new DataGridView();
+            pnlLog = new Panel();
+            txtLog = new TextBox();
+            pnlRight = new Panel();
+            grpEdicion = new GroupBox();
+            flpBotones = new FlowLayoutPanel();
+            btnNuevaPartida = new Button();
+            btnGuardar = new Button();
+            btnEliminar = new Button();
+            tlpEdicion = new TableLayoutPanel();
+            nudPartida = new NumericUpDown();
+            nudPrecio = new NumericUpDown();
+            nudVendidos = new NumericUpDown();
+            nudLinea = new NumericUpDown();
+            nudBingo = new NumericUpDown();
+            tlpMain.SuspendLayout();
+            pnlTop.SuspendLayout();
+            tlpHeader.SuspendLayout();
+            pnlTextos.SuspendLayout();
+            tlpContent.SuspendLayout();
+            tlpIzquierda.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)grid).BeginInit();
+            pnlLog.SuspendLayout();
+            pnlRight.SuspendLayout();
+            grpEdicion.SuspendLayout();
+            flpBotones.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)nudPartida).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudPrecio).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudVendidos).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudLinea).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudBingo).BeginInit();
+            SuspendLayout();
+            // 
+            // tlpMain
+            // 
+            tlpMain.ColumnCount = 1;
+            tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+            tlpMain.Controls.Add(pnlTop, 0, 0);
+            tlpMain.Controls.Add(tlpContent, 0, 1);
+            tlpMain.Dock = DockStyle.Fill;
+            tlpMain.Location = new Point(0, 0);
+            tlpMain.Name = "tlpMain";
+            tlpMain.RowCount = 2;
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.Absolute, 80F));
+            tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tlpMain.Size = new Size(1250, 750);
+            tlpMain.TabIndex = 0;
+            // 
+            // pnlTop
+            // 
+            pnlTop.BackColor = Color.FromArgb(45, 45, 50);
+            pnlTop.Controls.Add(tlpHeader);
+            pnlTop.Dock = DockStyle.Fill;
+            pnlTop.Location = new Point(3, 3);
+            pnlTop.Name = "pnlTop";
+            pnlTop.Size = new Size(1244, 74);
+            pnlTop.TabIndex = 0;
+            // 
+            // tlpHeader
+            // 
+            tlpHeader.ColumnCount = 3;
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+            tlpHeader.Controls.Add(pnlTextos, 0, 0);
+            tlpHeader.Controls.Add(dtpFecha, 1, 0);
+            tlpHeader.Controls.Add(btnBuscar, 2, 0);
+            tlpHeader.Dock = DockStyle.Fill;
+            tlpHeader.Location = new Point(0, 0);
+            tlpHeader.Name = "tlpHeader";
+            tlpHeader.Padding = new Padding(20, 10, 20, 10);
+            tlpHeader.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tlpHeader.Size = new Size(1244, 74);
+            tlpHeader.TabIndex = 0;
+            // 
+            // pnlTextos
+            // 
+            pnlTextos.Controls.Add(lblTitulo);
+            pnlTextos.Controls.Add(lblSalaConc);
+            pnlTextos.Controls.Add(lblEstado);
+            pnlTextos.Location = new Point(23, 13);
+            pnlTextos.Name = "pnlTextos";
+            pnlTextos.Size = new Size(200, 48);
+            pnlTextos.TabIndex = 0;
+            // 
+            // lblTitulo
+            // 
+            lblTitulo.AutoSize = true;
+            lblTitulo.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
+            lblTitulo.ForeColor = Color.White;
+            lblTitulo.Location = new Point(0, 5);
+            lblTitulo.Name = "lblTitulo";
+            lblTitulo.Size = new Size(237, 25);
+            lblTitulo.TabIndex = 0;
+            lblTitulo.Text = "HISTÓRICO DE PARTIDAS";
+            // 
+            // lblSalaConc
+            // 
+            lblSalaConc.AutoSize = true;
+            lblSalaConc.ForeColor = Color.DarkGray;
+            lblSalaConc.Location = new Point(2, 35);
+            lblSalaConc.Name = "lblSalaConc";
+            lblSalaConc.Size = new Size(192, 19);
+            lblSalaConc.TabIndex = 1;
+            lblSalaConc.Text = "SALA: 0 | CONCESIONARIO: 0";
+            // 
+            // lblEstado
+            // 
+            lblEstado.AutoSize = true;
+            lblEstado.ForeColor = Color.Orange;
+            lblEstado.Location = new Point(220, 35);
+            lblEstado.Name = "lblEstado";
+            lblEstado.Size = new Size(143, 19);
+            lblEstado.TabIndex = 2;
+            lblEstado.Text = "Estado: Desconectado";
+            // 
+            // dtpFecha
+            // 
+            dtpFecha.Anchor = AnchorStyles.Right;
+            dtpFecha.Format = DateTimePickerFormat.Short;
+            dtpFecha.Location = new Point(951, 24);
+            dtpFecha.Name = "dtpFecha";
+            dtpFecha.Size = new Size(120, 26);
+            dtpFecha.TabIndex = 1;
+            // 
+            // btnBuscar
+            // 
+            btnBuscar.BackColor = Color.FromArgb(40, 167, 69);
+            btnBuscar.Dock = DockStyle.Fill;
+            btnBuscar.FlatStyle = FlatStyle.Flat;
+            btnBuscar.ForeColor = Color.White;
+            btnBuscar.Location = new Point(1079, 20);
+            btnBuscar.Margin = new Padding(5, 10, 5, 10);
+            btnBuscar.Name = "btnBuscar";
+            btnBuscar.Size = new Size(140, 34);
+            btnBuscar.TabIndex = 2;
+            btnBuscar.Text = "🔍 BUSCAR";
+            btnBuscar.UseVisualStyleBackColor = false;
+            btnBuscar.Click += btnBuscar_Click;
+            // 
+            // tlpContent
+            // 
+            tlpContent.ColumnCount = 2;
+            tlpContent.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tlpContent.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 350F));
+            tlpContent.Controls.Add(tlpIzquierda, 0, 0);
+            tlpContent.Controls.Add(pnlRight, 1, 0);
+            tlpContent.Dock = DockStyle.Fill;
+            tlpContent.Location = new Point(3, 83);
+            tlpContent.Name = "tlpContent";
+            tlpContent.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tlpContent.Size = new Size(1244, 664);
+            tlpContent.TabIndex = 1;
+            // 
+            // tlpIzquierda
+            // 
+            tlpIzquierda.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+            tlpIzquierda.Controls.Add(grid, 0, 0);
+            tlpIzquierda.Controls.Add(pnlLog, 0, 1);
+            tlpIzquierda.Dock = DockStyle.Fill;
+            tlpIzquierda.Location = new Point(3, 3);
+            tlpIzquierda.Name = "tlpIzquierda";
+            tlpIzquierda.RowCount = 2;
+            tlpIzquierda.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            tlpIzquierda.RowStyles.Add(new RowStyle(SizeType.Absolute, 130F));
+            tlpIzquierda.Size = new Size(888, 658);
+            tlpIzquierda.TabIndex = 0;
+            // 
+            // grid
+            // 
+            grid.BackgroundColor = Color.FromArgb(30, 30, 35);
+            grid.BorderStyle = BorderStyle.None;
+            grid.Dock = DockStyle.Fill;
+            grid.Location = new Point(3, 3);
+            grid.Name = "grid";
+            grid.Size = new Size(882, 522);
+            grid.TabIndex = 0;
+            // 
+            // pnlLog
+            // 
+            pnlLog.Controls.Add(txtLog);
+            pnlLog.Dock = DockStyle.Fill;
+            pnlLog.Location = new Point(3, 531);
+            pnlLog.Name = "pnlLog";
+            pnlLog.Size = new Size(882, 124);
+            pnlLog.TabIndex = 1;
+            // 
+            // txtLog
+            // 
+            txtLog.BackColor = Color.Black;
+            txtLog.Dock = DockStyle.Fill;
+            txtLog.ForeColor = Color.LimeGreen;
+            txtLog.Location = new Point(0, 0);
+            txtLog.Multiline = true;
+            txtLog.Name = "txtLog";
+            txtLog.ReadOnly = true;
+            txtLog.Size = new Size(882, 124);
+            txtLog.TabIndex = 0;
+            // 
+            // pnlRight
+            // 
+            pnlRight.Controls.Add(grpEdicion);
+            pnlRight.Dock = DockStyle.Fill;
+            pnlRight.Location = new Point(897, 3);
+            pnlRight.Name = "pnlRight";
+            pnlRight.Size = new Size(344, 658);
+            pnlRight.TabIndex = 1;
+            // 
+            // grpEdicion
+            // 
+            grpEdicion.Controls.Add(flpBotones);
+            grpEdicion.Controls.Add(tlpEdicion);
+            grpEdicion.Dock = DockStyle.Fill;
+            grpEdicion.ForeColor = Color.Gold;
+            grpEdicion.Location = new Point(0, 0);
+            grpEdicion.Name = "grpEdicion";
+            grpEdicion.Size = new Size(344, 658);
+            grpEdicion.TabIndex = 0;
+            grpEdicion.TabStop = false;
+            grpEdicion.Text = " DATOS PARTIDA ";
+            // 
+            // flpBotones
+            // 
+            flpBotones.Controls.Add(btnNuevaPartida);
+            flpBotones.Controls.Add(btnGuardar);
+            flpBotones.Controls.Add(btnEliminar);
+            flpBotones.Dock = DockStyle.Bottom;
+            flpBotones.FlowDirection = FlowDirection.TopDown;
+            flpBotones.Location = new Point(3, 495);
+            flpBotones.Name = "flpBotones";
+            flpBotones.Padding = new Padding(15);
+            flpBotones.Size = new Size(338, 160);
+            flpBotones.TabIndex = 0;
+            // 
+            // btnNuevaPartida
+            // 
+            btnNuevaPartida.BackColor = Color.FromArgb(0, 122, 204);
+            btnNuevaPartida.FlatStyle = FlatStyle.Flat;
+            btnNuevaPartida.ForeColor = Color.White;
+            btnNuevaPartida.Location = new Point(18, 18);
+            btnNuevaPartida.Name = "btnNuevaPartida";
+            btnNuevaPartida.Size = new Size(300, 35);
+            btnNuevaPartida.TabIndex = 0;
+            btnNuevaPartida.Text = "✨ NUEVA PARTIDA";
+            btnNuevaPartida.UseVisualStyleBackColor = false;
+            btnNuevaPartida.Click += btnNuevaPartida_Click;
+            // 
+            // btnGuardar
+            // 
+            btnGuardar.BackColor = Color.FromArgb(40, 167, 69);
+            btnGuardar.FlatStyle = FlatStyle.Flat;
+            btnGuardar.ForeColor = Color.White;
+            btnGuardar.Location = new Point(18, 59);
+            btnGuardar.Name = "btnGuardar";
+            btnGuardar.Size = new Size(300, 35);
+            btnGuardar.TabIndex = 1;
+            btnGuardar.Text = "💾 GUARDAR";
+            btnGuardar.UseVisualStyleBackColor = false;
+            btnGuardar.Click += btnGuardar_Click;
+            // 
+            // btnEliminar
+            // 
+            btnEliminar.BackColor = Color.FromArgb(220, 53, 69);
+            btnEliminar.FlatStyle = FlatStyle.Flat;
+            btnEliminar.ForeColor = Color.White;
+            btnEliminar.Location = new Point(18, 100);
+            btnEliminar.Name = "btnEliminar";
+            btnEliminar.Size = new Size(300, 35);
+            btnEliminar.TabIndex = 2;
+            btnEliminar.Text = "🗑 ELIMINAR";
+            btnEliminar.UseVisualStyleBackColor = false;
+            btnEliminar.Click += btnEliminar_Click;
+            // 
+            // tlpEdicion
+            // 
+            tlpEdicion.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
+            tlpEdicion.Dock = DockStyle.Top;
+            tlpEdicion.Location = new Point(3, 22);
+            tlpEdicion.Name = "tlpEdicion";
+            tlpEdicion.RowCount = 5;
+            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tlpEdicion.Size = new Size(338, 250);
+            tlpEdicion.TabIndex = 1;
+            // 
+            // nudPartida
+            // 
+            nudPartida.Location = new Point(0, 0);
+            nudPartida.Name = "nudPartida";
+            nudPartida.Size = new Size(120, 26);
+            nudPartida.TabIndex = 0;
+            // 
+            // nudPrecio
+            // 
+            nudPrecio.Location = new Point(0, 0);
+            nudPrecio.Name = "nudPrecio";
+            nudPrecio.Size = new Size(120, 26);
+            nudPrecio.TabIndex = 0;
+            // 
+            // nudVendidos
+            // 
+            nudVendidos.Location = new Point(0, 0);
+            nudVendidos.Name = "nudVendidos";
+            nudVendidos.Size = new Size(120, 26);
+            nudVendidos.TabIndex = 0;
+            // 
+            // nudLinea
+            // 
+            nudLinea.Location = new Point(0, 0);
+            nudLinea.Name = "nudLinea";
+            nudLinea.Size = new Size(120, 26);
+            nudLinea.TabIndex = 0;
+            // 
+            // nudBingo
+            // 
+            nudBingo.Location = new Point(0, 0);
+            nudBingo.Name = "nudBingo";
+            nudBingo.Size = new Size(120, 26);
+            nudBingo.TabIndex = 0;
+            // 
+            // MainForm
+            // 
+            BackColor = Color.FromArgb(30, 30, 35);
+            ClientSize = new Size(1250, 750);
+            Controls.Add(tlpMain);
+            Name = "MainForm";
+            Text = "Bingo Histórico - Editor";
+            tlpMain.ResumeLayout(false);
+            pnlTop.ResumeLayout(false);
+            tlpHeader.ResumeLayout(false);
+            pnlTextos.ResumeLayout(false);
+            pnlTextos.PerformLayout();
+            tlpContent.ResumeLayout(false);
+            tlpIzquierda.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)grid).EndInit();
+            pnlLog.ResumeLayout(false);
+            pnlLog.PerformLayout();
+            pnlRight.ResumeLayout(false);
+            grpEdicion.ResumeLayout(false);
+            flpBotones.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)nudPartida).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudPrecio).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudVendidos).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudLinea).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudBingo).EndInit();
+            ResumeLayout(false);
+        }
+
+        private void AgregarControlEdicion(string texto, System.Windows.Forms.Control ctrl, int row) {
+            var lbl = new System.Windows.Forms.Label {
+                Text = texto,
+                ForeColor = System.Drawing.Color.LightGray,
+                TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
+                Dock = System.Windows.Forms.DockStyle.Fill
+            };
+            this.tlpEdicion.Controls.Add(lbl, 0, row);
+            this.tlpEdicion.Controls.Add(ctrl, 1, row);
+        }
+        #endregion
+
+        private Panel pnlTextos;
     }
 }
