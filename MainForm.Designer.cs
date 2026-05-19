@@ -42,6 +42,11 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.Button btnGuardarLote;
         private System.Windows.Forms.Button btnEliminarLote;
 
+        private System.Windows.Forms.NumericUpDown nudLoteVendidos;
+        private System.Windows.Forms.NumericUpDown nudLotePrecio;
+        private System.Windows.Forms.Label lblLoteVendidos;
+        private System.Windows.Forms.Label lblLotePrecio;
+
         protected override void Dispose(bool disposing) {
             if (disposing && (components != null)) {
                 components.Dispose();
@@ -497,10 +502,12 @@ namespace BingoHistoricoEditor {
             // 
             // lblIni
             // 
+            lblIni.ForeColor = Color.White;
             lblIni.Location = new Point(3, 0);
             lblIni.Name = "lblIni";
             lblIni.Size = new Size(100, 23);
             lblIni.TabIndex = 0;
+            lblIni.Text = "Partida Inicial";
             // 
             // nudPartidaInicial
             // 
@@ -513,10 +520,12 @@ namespace BingoHistoricoEditor {
             // 
             // lblFin
             // 
+            lblFin.ForeColor = Color.White;
             lblFin.Location = new Point(3, 45);
             lblFin.Name = "lblFin";
             lblFin.Size = new Size(100, 23);
             lblFin.TabIndex = 2;
+            lblFin.Text = "Partida Final";
             // 
             // nudPartidaFinal
             // 
@@ -525,6 +534,7 @@ namespace BingoHistoricoEditor {
             nudPartidaFinal.Name = "nudPartidaFinal";
             nudPartidaFinal.Size = new Size(192, 26);
             nudPartidaFinal.TabIndex = 3;
+            nudPartidaFinal.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
             // nudPartida
             // 

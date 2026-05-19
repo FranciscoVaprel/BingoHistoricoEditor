@@ -15,7 +15,7 @@ namespace BingoHistoricoEditor {
         private readonly int _codConc;
         private List<HistoricoEntry> _partidas = new();
         private HistoricoEntry? _seleccionada;
-        private string _usuarioActual;
+        private string _usuarioActual;        
 
         public MainForm(FirebirdService db, IConfiguration config, string usuario) {
             InitializeComponent();
@@ -30,6 +30,9 @@ namespace BingoHistoricoEditor {
             // ── NUEVAS LLAMADAS DE ESTILO PARA SOLUCIONAR EL MODO OSCURO ──
             ConfigurarEstilosLote();
             ConfigurarEstilosIndividual(); // <- Añade esta línea aquí
+                                           // Modifica estas líneas dentro de su bloque de inicialización en MainForm.Designer.cs
+            this.tlpLoteCampos.RowCount = 4;
+            this.tlpLoteCampos.Size = new System.Drawing.Size(248, 160); 
 
             this.dtpFecha.ValueChanged += dtpFecha_ValueChanged;
             // En el constructor de MainForm, justo debajo de ConfigurarEstilosIndividual();
@@ -42,6 +45,20 @@ namespace BingoHistoricoEditor {
 
             // ── AGREGAR LOS CONTROLES DE EDICIÓN A tlpEdicion ──
             AgregarControlesAlTableLayout();
+            // Definir controles
+            nudLoteVendidos = new NumericUpDown { Dock = DockStyle.Fill, BackColor = Color.FromArgb(35, 35, 40), ForeColor = Color.White };
+            nudLotePrecio = new NumericUpDown { Dock = DockStyle.Fill, BackColor = Color.FromArgb(35, 35, 40), ForeColor = Color.White };
+
+            lblLoteVendidos = new Label { Text = "Cartones Vendidos:", ForeColor = Color.LightGray, TextAlign = ContentAlignment.MiddleLeft };
+            lblLotePrecio = new Label { Text = "Precio Partida:", ForeColor = Color.LightGray, TextAlign = ContentAlignment.MiddleLeft };
+
+            // Añadir a la tabla de lote (tlpLoteCampos)
+            // Suponiendo que ya tenías filas para partida inicial/final, añadimos estas al final
+            tlpLoteCampos.Controls.Add(lblLoteVendidos, 0, 2);
+            tlpLoteCampos.Controls.Add(nudLoteVendidos, 1, 2);
+
+            tlpLoteCampos.Controls.Add(lblLotePrecio, 0, 3);
+            tlpLoteCampos.Controls.Add(nudLotePrecio, 1, 3);
 
             this.FormClosed += (s, e) => BingoHistoricoEditor.Services.LogService.Close();
         }
@@ -380,20 +397,86 @@ namespace BingoHistoricoEditor {
             }
         }
         private void ConfigurarEstilosLote() {
-            // Aseguramos que tengan texto asignado por si acaso
+            // 1. Textos y estilos base de lo que ya existe
             lblIni.Text = "Partida Inicial:";
             lblFin.Text = "Partida Final:";
-
-            // Forzamos el color claro para el modo oscuro
             lblIni.ForeColor = Color.LightGray;
             lblFin.ForeColor = Color.LightGray;
-            grpLote.ForeColor = Color.White; // Esto aclara también el título del recuadro del Lote
-
-            // Alineación fluida dentro de la tabla del lote
             lblIni.TextAlign = ContentAlignment.MiddleLeft;
             lblFin.TextAlign = ContentAlignment.MiddleLeft;
             lblIni.Dock = DockStyle.Fill;
             lblFin.Dock = DockStyle.Fill;
+            grpLote.ForeColor = Color.White;
+
+            // 2. Saneamiento total de tlpLoteCampos para evitar duplicados
+            tlpLoteCampos.Controls.Clear();
+            tlpLoteCampos.ColumnCount = 2;
+            tlpLoteCampos.RowCount = 4;
+
+            // 3. Forzar reparto equitativo del espacio (25% por fila)
+            tlpLoteCampos.RowStyles.Clear();
+            for (int i = 0; i < 4; i++) {
+                tlpLoteCampos.RowStyles.Add(new RowStyle(SizeType.Percent, 25f));
+            }
+
+            // 4. Instanciación única de los controles de "Cartones Vendidos"
+            lblLoteVendidos = new Label {
+                Text = "Cartones Vendidos:",
+                ForeColor = Color.LightGray,
+                BackColor = Color.Transparent,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Dock = DockStyle.Fill
+            };
+
+            nudLoteVendidos = new NumericUpDown {
+                Minimum = 0,
+                Maximum = 999999,
+                BackColor = Color.FromArgb(35, 35, 40),
+                ForeColor = Color.White,
+                Dock = DockStyle.Fill
+            };
+
+            // 5. Instanciación única de los controles de "Precio Partida"
+            lblLotePrecio = new Label {
+                Text = "Precio Partida:",
+                ForeColor = Color.LightGray,
+                BackColor = Color.Transparent,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Dock = DockStyle.Fill
+            };
+
+            nudLotePrecio = new NumericUpDown {
+                Minimum = 0,
+                Maximum = 9999,
+                DecimalPlaces = 2,
+                Increment = 0.10m,
+                BackColor = Color.FromArgb(35, 35, 40),
+                ForeColor = Color.White,
+                Dock = DockStyle.Fill
+            };
+
+            // Estilos de los numéricos antiguos
+            nudPartidaInicial.BackColor = Color.FromArgb(35, 35, 40);
+            nudPartidaInicial.ForeColor = Color.White;
+            nudPartidaInicial.Dock = DockStyle.Fill;
+
+            nudPartidaFinal.BackColor = Color.FromArgb(35, 35, 40);
+            nudPartidaFinal.ForeColor = Color.White;
+            nudPartidaFinal.Dock = DockStyle.Fill;
+
+            // 6. Registro e Inserción estricta en la rejilla
+            // Fila 0
+            tlpLoteCampos.Controls.Add(lblIni, 0, 0);
+            tlpLoteCampos.Controls.Add(nudPartidaInicial, 1, 0);
+            // Fila 1
+            tlpLoteCampos.Controls.Add(lblFin, 0, 1);
+            tlpLoteCampos.Controls.Add(nudPartidaFinal, 1, 1);
+            // Fila 2
+            tlpLoteCampos.Controls.Add(lblLoteVendidos, 0, 2);
+            tlpLoteCampos.Controls.Add(nudLoteVendidos, 1, 2);
+            // Fila 3
+            tlpLoteCampos.Controls.Add(lblLotePrecio, 0, 3);
+            tlpLoteCampos.Controls.Add(nudLotePrecio, 1, 3);
         }
 
         private void ConfigurarEstilosIndividual() {
