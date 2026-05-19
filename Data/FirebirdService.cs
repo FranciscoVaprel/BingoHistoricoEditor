@@ -187,5 +187,39 @@ namespace BingoHistoricoEditor.Data {
 
             return existentes;
         }
+
+        // === AÑADIR AL FINAL DE LA CLASE FirebirdService ===
+
+        /// <summary>
+        /// Elimina en bloque todas las partidas de un rango (mucho más rápido)
+        /// </summary>
+        public async Task EliminarRangoAsync(DateTime fechaSesion, int codSala, int codConc, int inicio, int fin) {
+            const string sql = @"
+        DELETE FROM HISTORICO 
+         WHERE COD_SALA = @sala 
+           AND COD_CONC = @conc 
+           AND FECHA_SESION = @fecha 
+           AND PARTIDA_DIA BETWEEN @inicio AND @fin";
+
+            try {
+                using var conn = new FbConnection(_cs);
+                using var cmd = new FbCommand(sql, conn);
+
+                cmd.Parameters.Add("@sala", FbDbType.Integer).Value = codSala;
+                cmd.Parameters.Add("@conc", FbDbType.Integer).Value = codConc;
+                cmd.Parameters.Add("@fecha", FbDbType.Date).Value = fechaSesion.Date;
+                cmd.Parameters.Add("@inicio", FbDbType.Integer).Value = inicio;
+                cmd.Parameters.Add("@fin", FbDbType.Integer).Value = fin;
+
+                await conn.OpenAsync();
+                int eliminados = await cmd.ExecuteNonQueryAsync();
+
+                // Opcional: loggear cantidad eliminada
+                System.Diagnostics.Debug.WriteLine($"Eliminadas {eliminados} partidas en rango.");
+            }
+            catch (Exception ex) {
+                throw new Exception($"Error al eliminar rango {inicio}-{fin}: {ex.Message}", ex);
+            }
+        }
     }
 }

@@ -80,6 +80,16 @@ namespace BingoHistoricoEditor {
             btnGuardar = new Button();
             btnEliminar = new Button();
             tlpEdicion = new TableLayoutPanel();
+            lblPartida = new Label();
+            nudPartida = new NumericUpDown();
+            lblPrecio = new Label();
+            nudPrecio = new NumericUpDown();
+            lblVendidos = new Label();
+            nudVendidos = new NumericUpDown();
+            lblLinea = new Label();
+            nudLinea = new NumericUpDown();
+            lblBingo = new Label();
+            nudBingo = new NumericUpDown();
             tabLote = new TabPage();
             grpLote = new GroupBox();
             flpBotonesLote = new FlowLayoutPanel();
@@ -91,11 +101,10 @@ namespace BingoHistoricoEditor {
             nudPartidaInicial = new NumericUpDown();
             lblFin = new Label();
             nudPartidaFinal = new NumericUpDown();
-            nudPartida = new NumericUpDown();
-            nudPrecio = new NumericUpDown();
-            nudVendidos = new NumericUpDown();
-            nudLinea = new NumericUpDown();
-            nudBingo = new NumericUpDown();
+            lblLoteVendidos = new Label();
+            nudLoteVendidos = new NumericUpDown();
+            lblLotePrecio = new Label();
+            nudLotePrecio = new NumericUpDown();
             tlpMain.SuspendLayout();
             pnlTop.SuspendLayout();
             tlpHeader.SuspendLayout();
@@ -109,17 +118,20 @@ namespace BingoHistoricoEditor {
             tabIndividual.SuspendLayout();
             grpEdicion.SuspendLayout();
             flpBotones.SuspendLayout();
+            tlpEdicion.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)nudPartida).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudPrecio).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudVendidos).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudLinea).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudBingo).BeginInit();
             tabLote.SuspendLayout();
             grpLote.SuspendLayout();
             flpBotonesLote.SuspendLayout();
             tlpLoteCampos.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)nudPartidaInicial).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudPartidaFinal).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)nudPartida).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)nudPrecio).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)nudVendidos).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)nudLinea).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)nudBingo).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudLoteVendidos).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)nudLotePrecio).BeginInit();
             SuspendLayout();
             // 
             // tlpMain
@@ -171,7 +183,7 @@ namespace BingoHistoricoEditor {
             pnlTextos.Controls.Add(lblEstado);
             pnlTextos.Location = new Point(23, 3);
             pnlTextos.Name = "pnlTextos";
-            pnlTextos.Size = new Size(200, 68);
+            pnlTextos.Size = new Size(539, 68);
             pnlTextos.TabIndex = 0;
             // 
             // lblTitulo
@@ -394,17 +406,122 @@ namespace BingoHistoricoEditor {
             tlpEdicion.ColumnCount = 2;
             tlpEdicion.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
             tlpEdicion.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60F));
+            tlpEdicion.Controls.Add(lblPartida, 0, 0);
+            tlpEdicion.Controls.Add(nudPartida, 1, 0);
+            tlpEdicion.Controls.Add(lblPrecio, 0, 1);
+            tlpEdicion.Controls.Add(nudPrecio, 1, 1);
+            tlpEdicion.Controls.Add(lblVendidos, 0, 2);
+            tlpEdicion.Controls.Add(nudVendidos, 1, 2);
+            tlpEdicion.Controls.Add(lblLinea, 0, 3);
+            tlpEdicion.Controls.Add(nudLinea, 1, 3);
+            tlpEdicion.Controls.Add(lblBingo, 0, 4);
+            tlpEdicion.Controls.Add(nudBingo, 1, 4);
             tlpEdicion.Dock = DockStyle.Top;
             tlpEdicion.Location = new Point(3, 22);
             tlpEdicion.Name = "tlpEdicion";
             tlpEdicion.RowCount = 5;
-            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Absolute, 52F));
-            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Absolute, 41F));
-            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Absolute, 47F));
-            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Absolute, 31F));
+            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
+            tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
             tlpEdicion.Size = new Size(330, 250);
             tlpEdicion.TabIndex = 1;
+            // 
+            // lblPartida
+            // 
+            lblPartida.Dock = DockStyle.Fill;
+            lblPartida.ForeColor = Color.LightGray;
+            lblPartida.Location = new Point(3, 0);
+            lblPartida.Name = "lblPartida";
+            lblPartida.Size = new Size(126, 50);
+            lblPartida.TabIndex = 0;
+            lblPartida.Text = "Partida:";
+            lblPartida.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // nudPartida
+            // 
+            nudPartida.Dock = DockStyle.Fill;
+            nudPartida.Location = new Point(135, 3);
+            nudPartida.Name = "nudPartida";
+            nudPartida.Size = new Size(192, 26);
+            nudPartida.TabIndex = 1;
+            // 
+            // lblPrecio
+            // 
+            lblPrecio.Dock = DockStyle.Fill;
+            lblPrecio.ForeColor = Color.LightGray;
+            lblPrecio.Location = new Point(3, 50);
+            lblPrecio.Name = "lblPrecio";
+            lblPrecio.Size = new Size(126, 50);
+            lblPrecio.TabIndex = 2;
+            lblPrecio.Text = "Precio:";
+            lblPrecio.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // nudPrecio
+            // 
+            nudPrecio.Dock = DockStyle.Fill;
+            nudPrecio.Location = new Point(135, 53);
+            nudPrecio.Name = "nudPrecio";
+            nudPrecio.Size = new Size(192, 26);
+            nudPrecio.TabIndex = 3;
+            // 
+            // lblVendidos
+            // 
+            lblVendidos.Dock = DockStyle.Fill;
+            lblVendidos.ForeColor = Color.LightGray;
+            lblVendidos.Location = new Point(3, 100);
+            lblVendidos.Name = "lblVendidos";
+            lblVendidos.Size = new Size(126, 50);
+            lblVendidos.TabIndex = 4;
+            lblVendidos.Text = "Vendidos:";
+            lblVendidos.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // nudVendidos
+            // 
+            nudVendidos.Dock = DockStyle.Fill;
+            nudVendidos.Location = new Point(135, 103);
+            nudVendidos.Name = "nudVendidos";
+            nudVendidos.Size = new Size(192, 26);
+            nudVendidos.TabIndex = 5;
+            // 
+            // lblLinea
+            // 
+            lblLinea.Dock = DockStyle.Fill;
+            lblLinea.ForeColor = Color.LightGray;
+            lblLinea.Location = new Point(3, 150);
+            lblLinea.Name = "lblLinea";
+            lblLinea.Size = new Size(126, 50);
+            lblLinea.TabIndex = 6;
+            lblLinea.Text = "Línea:";
+            lblLinea.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // nudLinea
+            // 
+            nudLinea.Dock = DockStyle.Fill;
+            nudLinea.Location = new Point(135, 153);
+            nudLinea.Name = "nudLinea";
+            nudLinea.Size = new Size(192, 26);
+            nudLinea.TabIndex = 7;
+            // 
+            // lblBingo
+            // 
+            lblBingo.Dock = DockStyle.Fill;
+            lblBingo.ForeColor = Color.LightGray;
+            lblBingo.Location = new Point(3, 200);
+            lblBingo.Name = "lblBingo";
+            lblBingo.Size = new Size(126, 50);
+            lblBingo.TabIndex = 8;
+            lblBingo.Text = "Bingo:";
+            lblBingo.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // nudBingo
+            // 
+            nudBingo.Dock = DockStyle.Fill;
+            nudBingo.Location = new Point(135, 203);
+            nudBingo.Name = "nudBingo";
+            nudBingo.Size = new Size(192, 26);
+            nudBingo.TabIndex = 9;
             // 
             // tabLote
             // 
@@ -491,13 +608,19 @@ namespace BingoHistoricoEditor {
             tlpLoteCampos.Controls.Add(nudPartidaInicial, 1, 0);
             tlpLoteCampos.Controls.Add(lblFin, 0, 1);
             tlpLoteCampos.Controls.Add(nudPartidaFinal, 1, 1);
+            tlpLoteCampos.Controls.Add(lblLoteVendidos, 0, 2);
+            tlpLoteCampos.Controls.Add(nudLoteVendidos, 1, 2);
+            tlpLoteCampos.Controls.Add(lblLotePrecio, 0, 3);
+            tlpLoteCampos.Controls.Add(nudLotePrecio, 1, 3);
             tlpLoteCampos.Dock = DockStyle.Top;
             tlpLoteCampos.Location = new Point(3, 22);
             tlpLoteCampos.Name = "tlpLoteCampos";
-            tlpLoteCampos.RowCount = 2;
-            tlpLoteCampos.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tlpLoteCampos.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tlpLoteCampos.Size = new Size(330, 90);
+            tlpLoteCampos.RowCount = 4;
+            tlpLoteCampos.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            tlpLoteCampos.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            tlpLoteCampos.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            tlpLoteCampos.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
+            tlpLoteCampos.Size = new Size(330, 180);
             tlpLoteCampos.TabIndex = 1;
             // 
             // lblIni
@@ -536,40 +659,45 @@ namespace BingoHistoricoEditor {
             nudPartidaFinal.TabIndex = 3;
             nudPartidaFinal.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
-            // nudPartida
+            // lblLoteVendidos
             // 
-            nudPartida.Location = new Point(0, 0);
-            nudPartida.Name = "nudPartida";
-            nudPartida.Size = new Size(120, 26);
-            nudPartida.TabIndex = 0;
+            lblLoteVendidos.Dock = DockStyle.Fill;
+            lblLoteVendidos.ForeColor = Color.LightGray;
+            lblLoteVendidos.Location = new Point(3, 90);
+            lblLoteVendidos.Name = "lblLoteVendidos";
+            lblLoteVendidos.Size = new Size(126, 45);
+            lblLoteVendidos.TabIndex = 4;
+            lblLoteVendidos.Text = "Cartones Vendidos:";
             // 
-            // nudPrecio
+            // nudLoteVendidos
             // 
-            nudPrecio.Location = new Point(0, 0);
-            nudPrecio.Name = "nudPrecio";
-            nudPrecio.Size = new Size(120, 26);
-            nudPrecio.TabIndex = 0;
+            nudLoteVendidos.Dock = DockStyle.Fill;
+            nudLoteVendidos.Location = new Point(135, 93);
+            nudLoteVendidos.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
+            nudLoteVendidos.Name = "nudLoteVendidos";
+            nudLoteVendidos.Size = new Size(192, 26);
+            nudLoteVendidos.TabIndex = 5;
             // 
-            // nudVendidos
+            // lblLotePrecio
             // 
-            nudVendidos.Location = new Point(0, 0);
-            nudVendidos.Name = "nudVendidos";
-            nudVendidos.Size = new Size(120, 26);
-            nudVendidos.TabIndex = 0;
+            lblLotePrecio.Dock = DockStyle.Fill;
+            lblLotePrecio.ForeColor = Color.LightGray;
+            lblLotePrecio.Location = new Point(3, 135);
+            lblLotePrecio.Name = "lblLotePrecio";
+            lblLotePrecio.Size = new Size(126, 45);
+            lblLotePrecio.TabIndex = 6;
+            lblLotePrecio.Text = "Precio Partida:";
             // 
-            // nudLinea
+            // nudLotePrecio
             // 
-            nudLinea.Location = new Point(0, 0);
-            nudLinea.Name = "nudLinea";
-            nudLinea.Size = new Size(120, 26);
-            nudLinea.TabIndex = 0;
-            // 
-            // nudBingo
-            // 
-            nudBingo.Location = new Point(0, 0);
-            nudBingo.Name = "nudBingo";
-            nudBingo.Size = new Size(120, 26);
-            nudBingo.TabIndex = 0;
+            nudLotePrecio.DecimalPlaces = 2;
+            nudLotePrecio.Dock = DockStyle.Fill;
+            nudLotePrecio.Increment = new decimal(new int[] { 1, 0, 0, 131072 });
+            nudLotePrecio.Location = new Point(135, 138);
+            nudLotePrecio.Maximum = new decimal(new int[] { 9999, 0, 0, 0 });
+            nudLotePrecio.Name = "nudLotePrecio";
+            nudLotePrecio.Size = new Size(192, 26);
+            nudLotePrecio.TabIndex = 7;
             // 
             // MainForm
             // 
@@ -593,17 +721,20 @@ namespace BingoHistoricoEditor {
             tabIndividual.ResumeLayout(false);
             grpEdicion.ResumeLayout(false);
             flpBotones.ResumeLayout(false);
+            tlpEdicion.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)nudPartida).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudPrecio).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudVendidos).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudLinea).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudBingo).EndInit();
             tabLote.ResumeLayout(false);
             grpLote.ResumeLayout(false);
             flpBotonesLote.ResumeLayout(false);
             tlpLoteCampos.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)nudPartidaInicial).EndInit();
             ((System.ComponentModel.ISupportInitialize)nudPartidaFinal).EndInit();
-            ((System.ComponentModel.ISupportInitialize)nudPartida).EndInit();
-            ((System.ComponentModel.ISupportInitialize)nudPrecio).EndInit();
-            ((System.ComponentModel.ISupportInitialize)nudVendidos).EndInit();
-            ((System.ComponentModel.ISupportInitialize)nudLinea).EndInit();
-            ((System.ComponentModel.ISupportInitialize)nudBingo).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudLoteVendidos).EndInit();
+            ((System.ComponentModel.ISupportInitialize)nudLotePrecio).EndInit();
             ResumeLayout(false);
         }
 
@@ -624,5 +755,10 @@ namespace BingoHistoricoEditor {
         private Panel pnlTextos;
         private Label lblIni;
         private Label lblFin;
+        private Label lblPartida;
+        private Label lblPrecio;
+        private Label lblVendidos;
+        private Label lblLinea;
+        private Label lblBingo;
     }
 }

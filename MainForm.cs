@@ -24,42 +24,13 @@ namespace BingoHistoricoEditor {
             _codConc = GetConfigInt(config, "BingoSettings:CodConc", 1);
             _usuarioActual = usuario;
             LogService.SetCurrentUser(usuario);
+
             ConfigurarGrid();
             ConfigurarLimitesNumericos();
-
-            // ── NUEVAS LLAMADAS DE ESTILO PARA SOLUCIONAR EL MODO OSCURO ──
+            ConfigurarEstilosIndividual();
             ConfigurarEstilosLote();
-            ConfigurarEstilosIndividual(); // <- Añade esta línea aquí
-                                           // Modifica estas líneas dentro de su bloque de inicialización en MainForm.Designer.cs
-            this.tlpLoteCampos.RowCount = 4;
-            this.tlpLoteCampos.Size = new System.Drawing.Size(248, 160); 
 
             this.dtpFecha.ValueChanged += dtpFecha_ValueChanged;
-            // En el constructor de MainForm, justo debajo de ConfigurarEstilosIndividual();
-            this.tlpEdicion.RowStyles.Clear(); // <- Borra cualquier residuo del diseñador
-            this.tlpEdicion.RowCount = 5;      // <- Fuerza exactamente 5 filas
-
-            for (int i = 0; i < 5; i++) {
-                this.tlpEdicion.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20f));
-            }
-
-            // ── AGREGAR LOS CONTROLES DE EDICIÓN A tlpEdicion ──
-            AgregarControlesAlTableLayout();
-            // Definir controles
-            nudLoteVendidos = new NumericUpDown { Dock = DockStyle.Fill, BackColor = Color.FromArgb(35, 35, 40), ForeColor = Color.White };
-            nudLotePrecio = new NumericUpDown { Dock = DockStyle.Fill, BackColor = Color.FromArgb(35, 35, 40), ForeColor = Color.White };
-
-            lblLoteVendidos = new Label { Text = "Cartones Vendidos:", ForeColor = Color.LightGray, TextAlign = ContentAlignment.MiddleLeft };
-            lblLotePrecio = new Label { Text = "Precio Partida:", ForeColor = Color.LightGray, TextAlign = ContentAlignment.MiddleLeft };
-
-            // Añadir a la tabla de lote (tlpLoteCampos)
-            // Suponiendo que ya tenías filas para partida inicial/final, añadimos estas al final
-            tlpLoteCampos.Controls.Add(lblLoteVendidos, 0, 2);
-            tlpLoteCampos.Controls.Add(nudLoteVendidos, 1, 2);
-
-            tlpLoteCampos.Controls.Add(lblLotePrecio, 0, 3);
-            tlpLoteCampos.Controls.Add(nudLotePrecio, 1, 3);
-
             this.FormClosed += (s, e) => BingoHistoricoEditor.Services.LogService.Close();
         }
 
@@ -84,34 +55,54 @@ namespace BingoHistoricoEditor {
             grid.AutoGenerateColumns = true;
             grid.ReadOnly = true;
             grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            grid.MultiSelect = false;
+            grid.MultiSelect = true;                    // ← Importante para rango con Shift
             grid.RowHeadersVisible = false;
             grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             grid.AllowUserToAddRows = false;
+
+            // Colores alternos
+            grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(40, 40, 45);
+            grid.DefaultCellStyle.BackColor = Color.FromArgb(30, 30, 35);
+            grid.DefaultCellStyle.ForeColor = Color.White;
+            grid.BackgroundColor = Color.FromArgb(30, 30, 35);
         }
 
         private void ConfigurarLimitesNumericos() {
+            nudPartida.Minimum = 1;
             nudPartida.Maximum = 99999;
+            nudPrecio.Minimum = 0;
             nudPrecio.Maximum = 9999;
             nudVendidos.Maximum = 9999;
             nudLinea.Maximum = 99999;
             nudBingo.Maximum = 99999;
 
             // Límites para los rangos de lote
+            nudPartidaInicial.Minimum = 1;
             nudPartidaInicial.Maximum = 99999;
             nudPartidaFinal.Maximum = 99999;
         }
 
-        private void AgregarControlesAlTableLayout() {
-            // Limpiar controles previos si existen
-            tlpEdicion.Controls.Clear();
+        /// <summary>
+        /// Agrega un par Label + NumericUpDown a una fila específica del TableLayoutPanel.
+        /// Se usa solo si se necesita agregar dinámicamente controles.
+        /// </summary>
+        private void AgregarControlEdicion(string etiqueta, NumericUpDown control, int fila) {
+            if (tlpEdicion == null) return;
 
-            // Agregar los 5 filas de controles: Partida, Precio, Vendidos, Línea, Bingo
-            AgregarControlEdicion("Partida:", nudPartida, 0);
-            AgregarControlEdicion("Precio:", nudPrecio, 1);
-            AgregarControlEdicion("Vendidos:", nudVendidos, 2);
-            AgregarControlEdicion("Línea:", nudLinea, 3);
-            AgregarControlEdicion("Bingo:", nudBingo, 4);
+            var lbl = new Label {
+                Text = etiqueta,
+                ForeColor = Color.LightGray,
+                BackColor = Color.Transparent,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Dock = DockStyle.Fill
+            };
+
+            control.BackColor = Color.FromArgb(35, 35, 40);
+            control.ForeColor = Color.White;
+            control.Dock = DockStyle.Fill;
+
+            tlpEdicion.Controls.Add(lbl, 0, fila);
+            tlpEdicion.Controls.Add(control, 1, fila);
         }
 
         // Método de Log actualizado con el usuario
@@ -135,17 +126,30 @@ namespace BingoHistoricoEditor {
         private async Task CargarPartidasAsync() {
             try {
                 SetBusy(true);
-                //EscribirLog("DB", $"Cargando datos del día {dtpFecha.Value:dd/MM/yyyy}...", registrarEnArchivo: false);
 
-                // USANDO EL NOMBRE CORRECTO DEL MÉTODO DE TU SERVICIO
                 _partidas = await _db.CargarPorFechaAsync(dtpFecha.Value, _codSala, _codConc);
 
                 grid.DataSource = null;
                 grid.DataSource = _partidas;
-                //EscribirLog("INFO", $"Carga completa: {_partidas.Count} registros encontrados.", registrarEnArchivo: false);
+
+                // === NUEVA LÓGICA: Asignar automáticamente Partida Final ===
+                if (_partidas != null && _partidas.Count > 0) {
+                    int maxPartida = _partidas.Max(p => p.PartidaDia);
+                    int minPartida = _partidas.Min(p => p.PartidaDia);
+
+                    nudPartidaInicial.Value = Math.Max(nudPartidaInicial.Minimum, minPartida);
+                    nudPartidaFinal.Value = Math.Max(nudPartidaFinal.Minimum, Math.Min(nudPartidaFinal.Maximum, maxPartida));
+
+                    EscribirLog("INFO", $"Rango de lote actualizado automáticamente: {minPartida} - {maxPartida}", false);
+                }
+                else {
+                    nudPartidaInicial.Value = nudPartidaInicial.Minimum;
+                    nudPartidaFinal.Value = nudPartidaFinal.Minimum;
+                }
+
             }
             catch (Exception ex) {
-                EscribirLog("ERROR", ex.Message, registrarEnArchivo: false);
+                EscribirLog("ERROR", ex.Message, false);
             }
             finally {
                 SetBusy(false);
@@ -153,15 +157,38 @@ namespace BingoHistoricoEditor {
         }
 
         private void grid_SelectionChanged(object sender, EventArgs e) {
-            if (grid.SelectedRows.Count > 0) {
-                _seleccionada = grid.SelectedRows[0].DataBoundItem as HistoricoEntry;
+            if (grid.SelectedRows.Count == 0) return;
+
+            // Ordenar filas seleccionadas por índice
+            var filasSeleccionadas = grid.SelectedRows.Cast<DataGridViewRow>()
+                .OrderBy(r => r.Index)
+                .ToList();
+
+            if (filasSeleccionadas.Count > 0) {
+                // Primera seleccionada → Partida Inicial
+                var primera = filasSeleccionadas.First().DataBoundItem as HistoricoEntry;
+                if (primera != null) {
+                    nudPartidaInicial.Value = primera.PartidaDia;
+                }
+
+                // Última seleccionada → Partida Final (funciona con Shift + clic)
+                if (filasSeleccionadas.Count > 1) {
+                    var ultima = filasSeleccionadas.Last().DataBoundItem as HistoricoEntry;
+                    if (ultima != null) {
+                        nudPartidaFinal.Value = ultima.PartidaDia;
+                    }
+                }
+            }
+
+            // Actualizar selección individual si no hay rango
+            if (filasSeleccionadas.Count == 1) {
+                _seleccionada = filasSeleccionadas[0].DataBoundItem as HistoricoEntry;
                 if (_seleccionada != null) {
                     nudPartida.Value = _seleccionada.PartidaDia;
                     nudPrecio.Value = _seleccionada.Precio;
                     nudVendidos.Value = _seleccionada.Vendidos;
                     nudLinea.Value = _seleccionada.Premio1;
                     nudBingo.Value = _seleccionada.Premio2;
-                    EscribirLog("GRID", $"Registro {_seleccionada.PartidaDia} seleccionado para editar.", registrarEnArchivo: false);
                 }
             }
         }
@@ -235,11 +262,10 @@ namespace BingoHistoricoEditor {
         /// <param name="busy"></param>
         private void SetBusy(bool busy) {
             this.Cursor = busy ? Cursors.WaitCursor : Cursors.Default;
+
             btnBuscar.Enabled = !busy;
             btnGuardar.Enabled = !busy;
             btnEliminar.Enabled = !busy;
-
-            // Deshabilitar también los botones de lote en procesos asíncronos
             btnBuscarFaltante.Enabled = !busy;
             btnGuardarLote.Enabled = !busy;
             btnEliminarLote.Enabled = !busy;
@@ -254,14 +280,40 @@ namespace BingoHistoricoEditor {
             _seleccionada = null;
             grid.ClearSelection();
 
-            // Limpiar controles
-            nudPartida.Value = 0;
+            // Limpiar todos los controles excepto Partida
             nudPrecio.Value = 0;
             nudVendidos.Value = 0;
             nudLinea.Value = 0;
             nudBingo.Value = 0;
 
-            EscribirLog("SISTEMA", "Listo para crear nueva partida.");
+            // Buscar la primera partida faltante en los datos actuales
+            if (_partidas != null && _partidas.Count > 0) {
+                // Obtener el rango min y max de las partidas cargadas
+                int min = _partidas.Min(p => p.PartidaDia);
+                int max = _partidas.Max(p => p.PartidaDia);
+
+                // Buscar la primera partida faltante en ese rango
+                int primerFaltante = -1;
+                for (int i = min; i <= max; i++) {
+                    if (!_partidas.Any(p => p.PartidaDia == i)) {
+                        primerFaltante = i;
+                        break;
+                    }
+                }
+
+                // Si no hay faltante en el rango, usar max + 1
+                if (primerFaltante == -1) {
+                    primerFaltante = max + 1;
+                }
+
+                nudPartida.Value = primerFaltante;
+                EscribirLog("SISTEMA", $"Listo para crear nueva partida. Número sugerido: {primerFaltante}");
+            }
+            else {
+                // Si no hay partidas, empezar desde 1
+                nudPartida.Value = 1;
+                EscribirLog("SISTEMA", "Listo para crear nueva partida. (Sin datos cargados)");
+            }
         }
 
         private async void btnBuscarFaltante_Click(object sender, EventArgs e) {
@@ -317,45 +369,64 @@ namespace BingoHistoricoEditor {
         private async void btnGuardarLote_Click(object sender, EventArgs e) {
             int inicio = (int)nudPartidaInicial.Value;
             int fin = (int)nudPartidaFinal.Value;
-
-            if (inicio > fin) {
-                EscribirLog("ADVERTENCIA", "La partida inicial no puede ser mayor que la final.", registrarEnArchivo: false);
-                return;
-            }
+            if (inicio > fin) { EscribirLog("ADVERTENCIA", "Rango inválido"); return; }
 
             try {
                 SetBusy(true);
-                EscribirLog("INFO", $"Iniciando guardado en lote desde {inicio} hasta {fin}...", registrarEnArchivo: true);
-                // Aquí irá la lógica para insertar/actualizar masivamente usando el rango
+                EscribirLog("INFO", $"Guardando lote {inicio}-{fin}", true);
+
+                for (int p = inicio; p <= fin; p++) {
+                    var entry = new HistoricoEntry {
+                        CodSala = _codSala,
+                        CodConc = _codConc,
+                        FechaSesion = dtpFecha.Value.Date,
+                        PartidaDia = p,
+                        Fecha = DateTime.Now,
+                        Precio = nudLotePrecio.Value,
+                        Vendidos = (int)nudLoteVendidos.Value,
+                        Premio1 = 0,
+                        Premio2 = 0
+                    };
+                    entry.Venta = entry.Precio * entry.Vendidos;
+                    await _db.GuardarAsync(entry);
+                }
+                EscribirLog("EXITO", "Lote guardado correctamente", true);
+                await CargarPartidasAsync();
             }
             catch (Exception ex) {
-                EscribirLog("ERROR_CRITICO", $"Fallo en guardado masivo: {ex.Message}", registrarEnArchivo: true);
+                EscribirLog("ERROR", ex.Message, true);
             }
-            finally {
-                SetBusy(false);
-            }
+            finally { SetBusy(false); }
         }
 
         private async void btnEliminarLote_Click(object sender, EventArgs e) {
             int inicio = (int)nudPartidaInicial.Value;
             int fin = (int)nudPartidaFinal.Value;
 
+            if (inicio > fin) {
+                EscribirLog("ADVERTENCIA", "Rango inválido (inicio > fin)");
+                return;
+            }
+
             var confirm = MessageBox.Show(
-                $"¿Estás seguro de que deseas eliminar TODAS las partidas entre la {inicio} y la {fin}?",
-                "Confirmación de eliminación masiva",
+                $"¿Eliminar TODAS las partidas del {inicio} al {fin}?\n\nEsta acción es IRREVERSIBLE.",
+                "⚠️ Confirmar eliminación masiva",
                 MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning
-            );
+                MessageBoxIcon.Warning);
 
             if (confirm != DialogResult.Yes) return;
 
             try {
                 SetBusy(true);
-                EscribirLog("INFO", $"Eliminando lote de partidas ({inicio} - {fin})...", registrarEnArchivo: true);
-                // Aquí irá el Delete masivo en base de datos
+                EscribirLog("DB_DELETE_LOTE", $"Eliminando rango {inicio}-{fin}", true);
+
+                await _db.EliminarRangoAsync(dtpFecha.Value.Date, _codSala, _codConc, inicio, fin);
+
+                EscribirLog("EXITO", $"Lote {inicio}-{fin} eliminado correctamente", true);
+                await CargarPartidasAsync();
             }
             catch (Exception ex) {
-                EscribirLog("ERROR_CRITICO", $"Fallo al eliminar lote: {ex.Message}", registrarEnArchivo: true);
+                EscribirLog("ERROR_CRITICO", ex.Message, true);
             }
             finally {
                 SetBusy(false);
@@ -363,7 +434,7 @@ namespace BingoHistoricoEditor {
         }
 
         private void dtpFecha_ValueChanged(object sender, EventArgs e) {                        
-            AsignarLimitesPartidasLote();
+            //AsignarLimitesPartidasLote();
         }
 
         private void AsignarLimitesPartidasLote() {
@@ -397,92 +468,50 @@ namespace BingoHistoricoEditor {
             }
         }
         private void ConfigurarEstilosLote() {
-            // 1. Textos y estilos base de lo que ya existe
-            lblIni.Text = "Partida Inicial:";
-            lblFin.Text = "Partida Final:";
-            lblIni.ForeColor = Color.LightGray;
-            lblFin.ForeColor = Color.LightGray;
-            lblIni.TextAlign = ContentAlignment.MiddleLeft;
-            lblFin.TextAlign = ContentAlignment.MiddleLeft;
-            lblIni.Dock = DockStyle.Fill;
-            lblFin.Dock = DockStyle.Fill;
+            // Aplicar estilos a los controles existentes en grpLote
+            // SIN recrear ningún control - solo aplicar propiedades visuales
+
+            // Estilo del GroupBox
+            grpLote.BackColor = Color.FromArgb(45, 45, 50);
             grpLote.ForeColor = Color.White;
 
-            // 2. Saneamiento total de tlpLoteCampos para evitar duplicados
-            tlpLoteCampos.Controls.Clear();
-            tlpLoteCampos.ColumnCount = 2;
-            tlpLoteCampos.RowCount = 4;
+            // Estilo del TableLayoutPanel
+            tlpLoteCampos.BackColor = Color.FromArgb(45, 45, 50);
 
-            // 3. Forzar reparto equitativo del espacio (25% por fila)
-            tlpLoteCampos.RowStyles.Clear();
-            for (int i = 0; i < 4; i++) {
-                tlpLoteCampos.RowStyles.Add(new RowStyle(SizeType.Percent, 25f));
+            // Aplicar estilos a todos los controles dentro de tlpLoteCampos
+            foreach (Control ctrl in tlpLoteCampos.Controls) {
+                if (ctrl is Label lbl) {
+                    lbl.ForeColor = Color.LightGray;
+                    lbl.BackColor = Color.Transparent;
+                    lbl.TextAlign = ContentAlignment.MiddleLeft;
+                }
+                else if (ctrl is NumericUpDown nud) {
+                    nud.BackColor = Color.FromArgb(35, 35, 40);
+                    nud.ForeColor = Color.White;
+                }
             }
 
-            // 4. Instanciación única de los controles de "Cartones Vendidos"
-            lblLoteVendidos = new Label {
-                Text = "Cartones Vendidos:",
-                ForeColor = Color.LightGray,
-                BackColor = Color.Transparent,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Dock = DockStyle.Fill
-            };
+            // Configurar textos de las etiquetas del rango
+            if (lblIni != null) {
+                lblIni.Text = "Partida Inicial:";
+            }
+            if (lblFin != null) {
+                lblFin.Text = "Partida Final:";
+            }
 
-            nudLoteVendidos = new NumericUpDown {
-                Minimum = 0,
-                Maximum = 999999,
-                BackColor = Color.FromArgb(35, 35, 40),
-                ForeColor = Color.White,
-                Dock = DockStyle.Fill
-            };
-
-            // 5. Instanciación única de los controles de "Precio Partida"
-            lblLotePrecio = new Label {
-                Text = "Precio Partida:",
-                ForeColor = Color.LightGray,
-                BackColor = Color.Transparent,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Dock = DockStyle.Fill
-            };
-
-            nudLotePrecio = new NumericUpDown {
-                Minimum = 0,
-                Maximum = 9999,
-                DecimalPlaces = 2,
-                Increment = 0.10m,
-                BackColor = Color.FromArgb(35, 35, 40),
-                ForeColor = Color.White,
-                Dock = DockStyle.Fill
-            };
-
-            // Estilos de los numéricos antiguos
-            nudPartidaInicial.BackColor = Color.FromArgb(35, 35, 40);
-            nudPartidaInicial.ForeColor = Color.White;
-            nudPartidaInicial.Dock = DockStyle.Fill;
-
-            nudPartidaFinal.BackColor = Color.FromArgb(35, 35, 40);
-            nudPartidaFinal.ForeColor = Color.White;
-            nudPartidaFinal.Dock = DockStyle.Fill;
-
-            // 6. Registro e Inserción estricta en la rejilla
-            // Fila 0
-            tlpLoteCampos.Controls.Add(lblIni, 0, 0);
-            tlpLoteCampos.Controls.Add(nudPartidaInicial, 1, 0);
-            // Fila 1
-            tlpLoteCampos.Controls.Add(lblFin, 0, 1);
-            tlpLoteCampos.Controls.Add(nudPartidaFinal, 1, 1);
-            // Fila 2
-            tlpLoteCampos.Controls.Add(lblLoteVendidos, 0, 2);
-            tlpLoteCampos.Controls.Add(nudLoteVendidos, 1, 2);
-            // Fila 3
-            tlpLoteCampos.Controls.Add(lblLotePrecio, 0, 3);
-            tlpLoteCampos.Controls.Add(nudLotePrecio, 1, 3);
+            // Estilo de los botones en flpBotonesLote
+            foreach (Control ctrl in flpBotonesLote.Controls) {
+                if (ctrl is Button btn) {
+                    btn.FlatStyle = FlatStyle.Flat;
+                    btn.ForeColor = Color.White;
+                }
+            }
         }
 
         private void ConfigurarEstilosIndividual() {
-            // 1. CRUCIAL para Modo Oscuro en TabPages: Desactivar el estilo visual nativo
+            // Aplicar estilos a los tabs
             if (tabIndividual != null) {
-                tabIndividual.UseVisualStyleBackColor = false; // Permite aplicar el BackColor personalizado
+                tabIndividual.UseVisualStyleBackColor = false;
                 tabIndividual.BackColor = Color.FromArgb(30, 30, 35);
             }
             if (tabLote != null) {
@@ -490,29 +519,25 @@ namespace BingoHistoricoEditor {
                 tabLote.BackColor = Color.FromArgb(30, 30, 35);
             }
 
-            // 2. Estilo del contenedor GroupBox de edición
+            // Aplicar estilos al GroupBox de edición
             if (grpEdicion != null) {
                 grpEdicion.BackColor = Color.FromArgb(45, 45, 50);
-                grpEdicion.ForeColor = Color.White; // Color del título del GroupBox
+                grpEdicion.ForeColor = Color.White;
             }
 
-            // 3. Estilo explícito para el TableLayoutPanel interno
+            // Aplicar estilos al TableLayoutPanel y sus controles
             if (tlpEdicion != null) {
                 tlpEdicion.BackColor = Color.FromArgb(45, 45, 50);
 
-                // 4. Forzar par Background/Foreground en todos los inputs
                 foreach (Control ctrl in tlpEdicion.Controls) {
                     if (ctrl is Label lbl) {
                         lbl.ForeColor = Color.LightGray;
-                        lbl.BackColor = Color.Transparent; // Evita bloques grises alrededor del texto
+                        lbl.BackColor = Color.Transparent;
+                        lbl.TextAlign = ContentAlignment.MiddleLeft;
                     }
                     else if (ctrl is NumericUpDown nud) {
                         nud.BackColor = Color.FromArgb(35, 35, 40);
                         nud.ForeColor = Color.White;
-                    }
-                    else if (ctrl is TextBox txt) {
-                        txt.BackColor = Color.FromArgb(35, 35, 40);
-                        txt.ForeColor = Color.White;
                     }
                 }
             }
