@@ -334,21 +334,26 @@ namespace BingoHistoricoEditor {
 
                 // 2. Buscamos secuencialmente el primer número que NO esté en el conjunto
                 int primerFaltante = -1;
+                int ultimoFaltante = -1;
+
                 for (int i = inicio; i <= fin; i++) {
                     if (!ocupados.Contains(i)) {
-                        primerFaltante = i;
-                        break;
+                        if (primerFaltante == -1) {
+                            primerFaltante = i;
+                        }
+                        ultimoFaltante = i;
                     }
                 }
 
                 // 3. Procesamos el resultado
                 if (primerFaltante != -1) {
-                    // Encontrado: Se lo asignamos al control numérico directamente
+                    // Encontrado: Se asignan el primer y último faltante
                     nudPartidaInicial.Value = primerFaltante;
+                    nudPartidaFinal.Value = ultimoFaltante;
 
-                    EscribirLog("EXITO", $"Primer número disponible encontrado: {primerFaltante}", registrarEnArchivo: false);
-                    MessageBox.Show($"La primera partida faltante en el rango es la número: {primerFaltante}.\n\nSe ha colocado automáticamente como Partida Inicial.",
-                                    "Hueco Encontrado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    EscribirLog("EXITO", $"Huecos encontrados: [{primerFaltante} - {ultimoFaltante}]", registrarEnArchivo: false);
+                    MessageBox.Show($"Partidas faltantes encontradas en el rango [{primerFaltante} - {ultimoFaltante}].\n\nSe han colocado automáticamente como rango de búsqueda.",
+                                    "Huecos Encontrados", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else {
                     // No hay huecos libres en todo el rango

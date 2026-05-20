@@ -11,7 +11,7 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.TabControl tabControlEdicion;
         private System.Windows.Forms.TabPage tabIndividual;
         private System.Windows.Forms.TabPage tabLote;
-
+        
         private System.Windows.Forms.GroupBox grpEdicion;
         private System.Windows.Forms.TableLayoutPanel tlpEdicion;
         private System.Windows.Forms.FlowLayoutPanel flpBotones;
@@ -47,16 +47,20 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.Label lblLoteVendidos;
         private System.Windows.Forms.Label lblLotePrecio;
 
+        // ToolTip para todos los controles
+        private System.Windows.Forms.ToolTip toolTip;
+
         protected override void Dispose(bool disposing) {
             if (disposing && (components != null)) {
                 components.Dispose();
             }
             base.Dispose(disposing);
         }
-
+        
         #region Windows Form Designer generated code
 
         private void InitializeComponent() {
+            components = new System.ComponentModel.Container();
             tlpMain = new TableLayoutPanel();
             pnlTop = new Panel();
             tlpHeader = new TableLayoutPanel();
@@ -105,6 +109,7 @@ namespace BingoHistoricoEditor {
             nudLoteVendidos = new NumericUpDown();
             lblLotePrecio = new Label();
             nudLotePrecio = new NumericUpDown();
+            toolTip = new ToolTip(components);
             tlpMain.SuspendLayout();
             pnlTop.SuspendLayout();
             tlpHeader.SuspendLayout();
@@ -225,6 +230,7 @@ namespace BingoHistoricoEditor {
             dtpFecha.Name = "dtpFecha";
             dtpFecha.Size = new Size(110, 26);
             dtpFecha.TabIndex = 1;
+            toolTip.SetToolTip(dtpFecha, "Selecciona la fecha para filtrar partidas.");
             // 
             // btnBuscar
             // 
@@ -237,6 +243,7 @@ namespace BingoHistoricoEditor {
             btnBuscar.Size = new Size(120, 35);
             btnBuscar.TabIndex = 2;
             btnBuscar.Text = "🔍 BUSCAR";
+            toolTip.SetToolTip(btnBuscar, "Buscar partidas por la fecha seleccionada.");
             btnBuscar.UseVisualStyleBackColor = false;
             btnBuscar.Click += btnBuscar_Click;
             // 
@@ -372,6 +379,7 @@ namespace BingoHistoricoEditor {
             btnNuevaPartida.Size = new Size(310, 35);
             btnNuevaPartida.TabIndex = 0;
             btnNuevaPartida.Text = "✨ NUEVA PARTIDA";
+            toolTip.SetToolTip(btnNuevaPartida, "Crear una nueva partida. Sugiere automáticamente la primera partida faltante.");
             btnNuevaPartida.UseVisualStyleBackColor = false;
             btnNuevaPartida.Click += btnNuevaPartida_Click;
             // 
@@ -385,6 +393,7 @@ namespace BingoHistoricoEditor {
             btnGuardar.Size = new Size(310, 35);
             btnGuardar.TabIndex = 1;
             btnGuardar.Text = "💾 GUARDAR";
+            toolTip.SetToolTip(btnGuardar, "Guardar los cambios de la partida seleccionada.");
             btnGuardar.UseVisualStyleBackColor = false;
             btnGuardar.Click += btnGuardar_Click;
             // 
@@ -398,6 +407,7 @@ namespace BingoHistoricoEditor {
             btnEliminar.Size = new Size(310, 35);
             btnEliminar.TabIndex = 2;
             btnEliminar.Text = "🗑 ELIMINAR";
+            toolTip.SetToolTip(btnEliminar, "Eliminar la partida seleccionada de la base de datos.");
             btnEliminar.UseVisualStyleBackColor = false;
             btnEliminar.Click += btnEliminar_Click;
             // 
@@ -446,6 +456,7 @@ namespace BingoHistoricoEditor {
             nudPartida.Name = "nudPartida";
             nudPartida.Size = new Size(192, 26);
             nudPartida.TabIndex = 1;
+            toolTip.SetToolTip(nudPartida, "Número de la partida del día.");
             // 
             // lblPrecio
             // 
@@ -465,6 +476,7 @@ namespace BingoHistoricoEditor {
             nudPrecio.Name = "nudPrecio";
             nudPrecio.Size = new Size(192, 26);
             nudPrecio.TabIndex = 3;
+            toolTip.SetToolTip(nudPrecio, "Precio de la partida en euros.");
             // 
             // lblVendidos
             // 
@@ -484,6 +496,7 @@ namespace BingoHistoricoEditor {
             nudVendidos.Name = "nudVendidos";
             nudVendidos.Size = new Size(192, 26);
             nudVendidos.TabIndex = 5;
+            toolTip.SetToolTip(nudVendidos, "Cantidad de cartones vendidos.");
             // 
             // lblLinea
             // 
@@ -503,6 +516,7 @@ namespace BingoHistoricoEditor {
             nudLinea.Name = "nudLinea";
             nudLinea.Size = new Size(192, 26);
             nudLinea.TabIndex = 7;
+            toolTip.SetToolTip(nudLinea, "Premio de línea.");
             // 
             // lblBingo
             // 
@@ -522,6 +536,7 @@ namespace BingoHistoricoEditor {
             nudBingo.Name = "nudBingo";
             nudBingo.Size = new Size(192, 26);
             nudBingo.TabIndex = 9;
+            toolTip.SetToolTip(nudBingo, "Premio de bingo.");
             // 
             // tabLote
             // 
@@ -570,6 +585,7 @@ namespace BingoHistoricoEditor {
             btnBuscarFaltante.Size = new Size(310, 35);
             btnBuscarFaltante.TabIndex = 0;
             btnBuscarFaltante.Text = "🔍 BUSCAR PRIMER FALTANTE";
+            toolTip.SetToolTip(btnBuscarFaltante, "Busca todas las partidas faltantes en el rango y establece automáticamente el primer y último hueco.");
             btnBuscarFaltante.UseVisualStyleBackColor = false;
             btnBuscarFaltante.Click += btnBuscarFaltante_Click;
             // 
@@ -583,6 +599,7 @@ namespace BingoHistoricoEditor {
             btnGuardarLote.Size = new Size(310, 35);
             btnGuardarLote.TabIndex = 1;
             btnGuardarLote.Text = "💾 GUARDAR LOTE";
+            toolTip.SetToolTip(btnGuardarLote, "Guardar múltiples partidas del rango especificado.");
             btnGuardarLote.UseVisualStyleBackColor = false;
             btnGuardarLote.Click += btnGuardarLote_Click;
             // 
@@ -596,6 +613,7 @@ namespace BingoHistoricoEditor {
             btnEliminarLote.Size = new Size(310, 35);
             btnEliminarLote.TabIndex = 2;
             btnEliminarLote.Text = "🗑 ELIMINAR LOTE";
+            toolTip.SetToolTip(btnEliminarLote, "Eliminar todas las partidas en el rango especificado.");
             btnEliminarLote.UseVisualStyleBackColor = false;
             btnEliminarLote.Click += btnEliminarLote_Click;
             // 
@@ -639,6 +657,7 @@ namespace BingoHistoricoEditor {
             nudPartidaInicial.Name = "nudPartidaInicial";
             nudPartidaInicial.Size = new Size(192, 26);
             nudPartidaInicial.TabIndex = 1;
+            toolTip.SetToolTip(nudPartidaInicial, "Primera partida del rango a procesar.");
             nudPartidaInicial.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
             // lblFin
@@ -657,6 +676,7 @@ namespace BingoHistoricoEditor {
             nudPartidaFinal.Name = "nudPartidaFinal";
             nudPartidaFinal.Size = new Size(192, 26);
             nudPartidaFinal.TabIndex = 3;
+            toolTip.SetToolTip(nudPartidaFinal, "Última partida del rango a procesar.");
             nudPartidaFinal.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
             // lblLoteVendidos
@@ -677,6 +697,7 @@ namespace BingoHistoricoEditor {
             nudLoteVendidos.Name = "nudLoteVendidos";
             nudLoteVendidos.Size = new Size(192, 26);
             nudLoteVendidos.TabIndex = 5;
+            toolTip.SetToolTip(nudLoteVendidos, "Cartones vendidos para todas las partidas del lote.");
             // 
             // lblLotePrecio
             // 
@@ -698,6 +719,7 @@ namespace BingoHistoricoEditor {
             nudLotePrecio.Name = "nudLotePrecio";
             nudLotePrecio.Size = new Size(192, 26);
             nudLotePrecio.TabIndex = 7;
+            toolTip.SetToolTip(nudLotePrecio, "Precio por partida para todas las partidas del lote.");
             // 
             // MainForm
             // 
