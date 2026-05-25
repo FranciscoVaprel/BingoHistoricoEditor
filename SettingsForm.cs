@@ -39,85 +39,10 @@ namespace BingoHistoricoEditor {
         private bool ValidarTodosLosValores() {
             lblMensaje.Text = "";
 
-            // Validar Base de Datos - Conexión
-            var (valid, error) = SettingsValidator.ValidateDbModo(cmbDbModo.Text);
-            if (!valid) {
-                lblMensaje.Text = error;
-                tabControl.SelectedIndex = 0;
-                return false;
-            }
-
-            (valid, error) = SettingsValidator.ValidateDbSource(txtDbSource.Text);
-            if (!valid) {
-                lblMensaje.Text = error;
-                tabControl.SelectedIndex = 0;
-                return false;
-            }
-
-            (valid, error) = SettingsValidator.ValidateDbPort(txtDbPort.Text);
-            if (!valid) {
-                lblMensaje.Text = error;
-                tabControl.SelectedIndex = 0;
-                return false;
-            }
-
-            // Validar Base de Datos - Rutas
-            (valid, error) = SettingsValidator.ValidateFilePath(txtDbRelativePath.Text);
-            if (!valid) {
-                lblMensaje.Text = $"Ruta Relativa: {error}";
-                tabControl.SelectedIndex = 0;
-                return false;
-            }
-
-            if (!string.IsNullOrWhiteSpace(txtDbAbsolutePath.Text)) {
-                (valid, error) = SettingsValidator.ValidateFilePath(txtDbAbsolutePath.Text);
-                if (!valid) {
-                    lblMensaje.Text = $"Ruta Absoluta: {error}";
-                    tabControl.SelectedIndex = 0;
-                    return false;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(txtDbRemotePath.Text)) {
-                (valid, error) = SettingsValidator.ValidateFilePath(txtDbRemotePath.Text);
-                if (!valid) {
-                    lblMensaje.Text = $"Ruta Remota: {error}";
-                    tabControl.SelectedIndex = 0;
-                    return false;
-                }
-            }
-
-            // Validar Base de Datos - Credenciales
-            (valid, error) = SettingsValidator.ValidateDbUser(txtDbUser.Text);
-            if (!valid) {
-                lblMensaje.Text = error;
-                tabControl.SelectedIndex = 0;
-                return false;
-            }
-
-            (valid, error) = SettingsValidator.ValidateDbPassword(txtDbPass.Text);
-            if (!valid) {
-                lblMensaje.Text = error;
-                tabControl.SelectedIndex = 0;
-                return false;
-            }
-
-            (valid, error) = SettingsValidator.ValidateDbCharset(cmbDbCharset.Text);
-            if (!valid) {
-                lblMensaje.Text = error;
-                tabControl.SelectedIndex = 0;
-                return false;
-            }
-
-            (valid, error) = SettingsValidator.ValidateDbDialect(txtDbDialect.Text);
-            if (!valid) {
-                lblMensaje.Text = error;
-                tabControl.SelectedIndex = 0;
-                return false;
-            }
+            // Validar solo los campos de Aplicación (BD es solo lectura)
 
             // Validar Aplicación
-            (valid, error) = SettingsValidator.ValidateNumericRange(txtCodSala.Text, "Código Sala", 1, 9999);
+            var (valid, error) = SettingsValidator.ValidateNumericRange(txtCodSala.Text, "Código Sala", 1, 9999);
             if (!valid) {
                 lblMensaje.Text = error;
                 tabControl.SelectedIndex = 1;
@@ -155,18 +80,18 @@ namespace BingoHistoricoEditor {
             }
 
             try {
-                // Guardar todos los valores
+                // Guardar solo los campos de Aplicación (BD no es editable)
                 Program.GuardarConfiguracion(
-                    dbModo: cmbDbModo.Text,
-                    dbSource: txtDbSource.Text,
-                    dbPort: txtDbPort.Text,
-                    dbRelativePath: txtDbRelativePath.Text,
-                    dbAbsolutePath: txtDbAbsolutePath.Text,
-                    dbRemotePath: txtDbRemotePath.Text,
-                    dbUser: txtDbUser.Text,
-                    dbPass: txtDbPass.Text,
-                    dbCharset: cmbDbCharset.Text,
-                    dbDialect: txtDbDialect.Text,
+                    dbModo: null,
+                    dbSource: null,
+                    dbPort: null,
+                    dbRelativePath: null,
+                    dbAbsolutePath: null,
+                    dbRemotePath: null,
+                    dbUser: null,
+                    dbPass: null,
+                    dbCharset: null,
+                    dbDialect: null,
                     codSala: txtCodSala.Text,
                     codConc: txtCodConc.Text,
                     appUser: txtAppUser.Text,

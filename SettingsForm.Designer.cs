@@ -143,6 +143,7 @@ namespace BingoHistoricoEditor {
             cmbDbModo.Name = "cmbDbModo";
             cmbDbModo.Size = new System.Drawing.Size(350, 23);
             cmbDbModo.TabIndex = 1;
+            cmbDbModo.Enabled = false;
 
             // lblDbSource
             lblDbSource.ForeColor = System.Drawing.Color.White;
@@ -158,6 +159,7 @@ namespace BingoHistoricoEditor {
             txtDbSource.Name = "txtDbSource";
             txtDbSource.Size = new System.Drawing.Size(350, 23);
             txtDbSource.TabIndex = 3;
+            txtDbSource.ReadOnly = true;
 
             // lblDbPort
             lblDbPort.ForeColor = System.Drawing.Color.White;
@@ -173,6 +175,7 @@ namespace BingoHistoricoEditor {
             txtDbPort.Name = "txtDbPort";
             txtDbPort.Size = new System.Drawing.Size(350, 23);
             txtDbPort.TabIndex = 5;
+            txtDbPort.ReadOnly = true;
 
             // grpRutas
             grpRutas.Controls.Add(lblDbRelativePath);
@@ -203,6 +206,7 @@ namespace BingoHistoricoEditor {
             txtDbRelativePath.Name = "txtDbRelativePath";
             txtDbRelativePath.Size = new System.Drawing.Size(350, 23);
             txtDbRelativePath.TabIndex = 1;
+            txtDbRelativePath.ReadOnly = true;
 
             // lblDbAbsolutePath
             lblDbAbsolutePath.ForeColor = System.Drawing.Color.White;
@@ -218,6 +222,7 @@ namespace BingoHistoricoEditor {
             txtDbAbsolutePath.Name = "txtDbAbsolutePath";
             txtDbAbsolutePath.Size = new System.Drawing.Size(350, 23);
             txtDbAbsolutePath.TabIndex = 3;
+            txtDbAbsolutePath.ReadOnly = true;
 
             // lblDbRemotePath
             lblDbRemotePath.ForeColor = System.Drawing.Color.White;
@@ -233,6 +238,7 @@ namespace BingoHistoricoEditor {
             txtDbRemotePath.Name = "txtDbRemotePath";
             txtDbRemotePath.Size = new System.Drawing.Size(350, 23);
             txtDbRemotePath.TabIndex = 5;
+            txtDbRemotePath.ReadOnly = true;
 
             // grpCredenciales
             grpCredenciales.Controls.Add(lblDbDialect);
@@ -265,6 +271,7 @@ namespace BingoHistoricoEditor {
             txtDbUser.Name = "txtDbUser";
             txtDbUser.Size = new System.Drawing.Size(350, 23);
             txtDbUser.TabIndex = 1;
+            txtDbUser.ReadOnly = true;
 
             // lblDbPass
             lblDbPass.ForeColor = System.Drawing.Color.White;
@@ -281,6 +288,7 @@ namespace BingoHistoricoEditor {
             txtDbPass.Size = new System.Drawing.Size(350, 23);
             txtDbPass.TabIndex = 3;
             txtDbPass.UseSystemPasswordChar = true;
+            txtDbPass.ReadOnly = true;
 
             // lblDbCharset
             lblDbCharset.ForeColor = System.Drawing.Color.White;
@@ -297,6 +305,7 @@ namespace BingoHistoricoEditor {
             cmbDbCharset.Name = "cmbDbCharset";
             cmbDbCharset.Size = new System.Drawing.Size(350, 23);
             cmbDbCharset.TabIndex = 5;
+            cmbDbCharset.Enabled = false;
 
             // lblDbDialect
             lblDbDialect.ForeColor = System.Drawing.Color.White;
@@ -312,6 +321,7 @@ namespace BingoHistoricoEditor {
             txtDbDialect.Name = "txtDbDialect";
             txtDbDialect.Size = new System.Drawing.Size(350, 23);
             txtDbDialect.TabIndex = 7;
+            txtDbDialect.ReadOnly = true;
 
             // ─────────────────────────────────────────────────────────────
             // tabAplicacion

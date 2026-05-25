@@ -74,10 +74,8 @@ namespace BingoHistoricoEditor {
         // ── Gestión de usuarios ───────────────────────────────────────────────
 
         private void AbrirGestionUsuarios() {
-            // Para gestionar usuarios hay que autenticarse primero
-            using var auth = new AutenticacionPrevia();
-            if (auth.ShowDialog() != DialogResult.OK) return;
-
+            // La gestión de usuarios está disponible sin autenticación previa.
+            // La autenticación se solicita solo cuando se va a cambiar la contraseña.
             using var gestor = new UserManagerForm();
             gestor.ShowDialog();
         }
@@ -103,7 +101,7 @@ namespace BingoHistoricoEditor {
     /// Pide las credenciales de cualquier usuario existente antes
     /// de permitir abrir la gestión de usuarios.
     /// </summary>
-    internal class AutenticacionPrevia : Form {
+    public class AutenticacionPrevia : Form {
         private TextBox _txtUser = null!, _txtPass = null!;
         private Label   _lblErr  = null!;
 

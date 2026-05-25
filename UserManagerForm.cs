@@ -110,6 +110,15 @@ namespace BingoHistoricoEditor {
                 MessageBox.Show("Selecciona un usuario de la lista.", "Aviso",
                     MessageBoxButtons.OK, MessageBoxIcon.Information); return;
             }
+
+            // Solicitar autenticación antes de cambiar contraseña
+            using var auth = new AutenticacionPrevia();
+            if (auth.ShowDialog() != DialogResult.OK) {
+                MessageBox.Show("No se puede cambiar la contraseña sin autenticación.", "Acceso denegado",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
             using var dlg = new CambiarPasswordForm(seleccionado);
             if (dlg.ShowDialog() != DialogResult.OK) return;
             try {
