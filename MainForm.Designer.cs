@@ -3,6 +3,7 @@ namespace BingoHistoricoEditor {
         private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.TableLayoutPanel tlpMain;
         private System.Windows.Forms.Panel pnlTop;
+        private System.Windows.Forms.Panel pnlTextos;
         private System.Windows.Forms.TableLayoutPanel tlpHeader;
         private System.Windows.Forms.TableLayoutPanel tlpContent;
         private System.Windows.Forms.TableLayoutPanel tlpIzquierda;
@@ -19,8 +20,14 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.Label lblTitulo;
         private System.Windows.Forms.Label lblSalaConc;
         private System.Windows.Forms.Label lblEstado;
+        private System.Windows.Forms.Label lblPartida;
+        private System.Windows.Forms.Label lblPrecio;
+        private System.Windows.Forms.Label lblVendidos;
+        private System.Windows.Forms.Label lblLinea;
+        private System.Windows.Forms.Label lblBingo;
         private System.Windows.Forms.DateTimePicker dtpFecha;
         private System.Windows.Forms.Button btnBuscar;
+        private System.Windows.Forms.Button btnConfiguracion;
         private System.Windows.Forms.DataGridView grid;
         private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.NumericUpDown nudPartida;
@@ -46,6 +53,8 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.NumericUpDown nudLotePrecio;
         private System.Windows.Forms.Label lblLoteVendidos;
         private System.Windows.Forms.Label lblLotePrecio;
+        private System.Windows.Forms.Label lblIni;
+        private System.Windows.Forms.Label lblFin;
 
         // ToolTip para todos los controles
         private System.Windows.Forms.ToolTip toolTip;
@@ -56,7 +65,7 @@ namespace BingoHistoricoEditor {
             }
             base.Dispose(disposing);
         }
-        
+
         #region Windows Form Designer generated code
 
         private void InitializeComponent() {
@@ -70,6 +79,7 @@ namespace BingoHistoricoEditor {
             lblEstado = new Label();
             dtpFecha = new DateTimePicker();
             btnBuscar = new Button();
+            btnConfiguracion = new Button();
             tlpContent = new TableLayoutPanel();
             tlpIzquierda = new TableLayoutPanel();
             grid = new DataGridView();
@@ -166,13 +176,15 @@ namespace BingoHistoricoEditor {
             // 
             // tlpHeader
             // 
-            tlpHeader.ColumnCount = 3;
+            tlpHeader.ColumnCount = 4;
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
             tlpHeader.Controls.Add(pnlTextos, 0, 0);
             tlpHeader.Controls.Add(dtpFecha, 1, 0);
             tlpHeader.Controls.Add(btnBuscar, 2, 0);
+            tlpHeader.Controls.Add(btnConfiguracion, 3, 0);
             tlpHeader.Dock = DockStyle.Fill;
             tlpHeader.Location = new Point(0, 0);
             tlpHeader.Name = "tlpHeader";
@@ -226,7 +238,7 @@ namespace BingoHistoricoEditor {
             // 
             dtpFecha.Anchor = AnchorStyles.Right;
             dtpFecha.Format = DateTimePickerFormat.Short;
-            dtpFecha.Location = new Point(961, 24);
+            dtpFecha.Location = new Point(811, 24);
             dtpFecha.Name = "dtpFecha";
             dtpFecha.Size = new Size(110, 26);
             dtpFecha.TabIndex = 1;
@@ -238,7 +250,7 @@ namespace BingoHistoricoEditor {
             btnBuscar.BackColor = Color.FromArgb(40, 167, 69);
             btnBuscar.FlatStyle = FlatStyle.Flat;
             btnBuscar.ForeColor = Color.White;
-            btnBuscar.Location = new Point(1089, 19);
+            btnBuscar.Location = new Point(939, 19);
             btnBuscar.Name = "btnBuscar";
             btnBuscar.Size = new Size(120, 35);
             btnBuscar.TabIndex = 2;
@@ -246,6 +258,21 @@ namespace BingoHistoricoEditor {
             toolTip.SetToolTip(btnBuscar, "Buscar partidas por la fecha seleccionada.");
             btnBuscar.UseVisualStyleBackColor = false;
             btnBuscar.Click += btnBuscar_Click;
+            // 
+            // btnConfiguracion
+            // 
+            btnConfiguracion.Anchor = AnchorStyles.None;
+            btnConfiguracion.BackColor = Color.FromArgb(0, 123, 255);
+            btnConfiguracion.FlatStyle = FlatStyle.Flat;
+            btnConfiguracion.ForeColor = Color.White;
+            btnConfiguracion.Location = new Point(1089, 19);
+            btnConfiguracion.Name = "btnConfiguracion";
+            btnConfiguracion.Size = new Size(120, 35);
+            btnConfiguracion.TabIndex = 3;
+            btnConfiguracion.Text = "⚙ CONFIG";
+            toolTip.SetToolTip(btnConfiguracion, "Abrir configuración de la aplicación.");
+            btnConfiguracion.UseVisualStyleBackColor = false;
+            btnConfiguracion.Click += btnConfiguracion_Click;
             // 
             // tlpContent
             // 
@@ -773,14 +800,5 @@ namespace BingoHistoricoEditor {
         }
 
         #endregion
-
-        private Panel pnlTextos;
-        private Label lblIni;
-        private Label lblFin;
-        private Label lblPartida;
-        private Label lblPrecio;
-        private Label lblVendidos;
-        private Label lblLinea;
-        private Label lblBingo;
     }
 }

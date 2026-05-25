@@ -11,6 +11,7 @@ using System.Windows.Forms;
 namespace BingoHistoricoEditor {
     public partial class MainForm : Form {
         private readonly FirebirdService _db;
+        private readonly IConfiguration _config;
         private readonly int _codSala;
         private readonly int _codConc;
         private List<HistoricoEntry> _partidas = new();
@@ -20,6 +21,7 @@ namespace BingoHistoricoEditor {
         public MainForm(FirebirdService db, IConfiguration config, string usuario) {
             InitializeComponent();
             _db = db;
+            _config = config;
             _codSala = GetConfigInt(config, "BingoSettings:CodSala", 1);
             _codConc = GetConfigInt(config, "BingoSettings:CodConc", 1);
             _usuarioActual = usuario;
@@ -30,7 +32,9 @@ namespace BingoHistoricoEditor {
             ConfigurarEstilosIndividual();
             ConfigurarEstilosLote();
 
-            this.dtpFecha.ValueChanged += dtpFecha_ValueChanged;
+            // Suscribir a eventos después de que InitializeComponent() ha creado todos los controles
+            if (dtpFecha != null) dtpFecha.ValueChanged += dtpFecha_ValueChanged;
+            if (btnConfiguracion != null) btnConfiguracion.Click += btnConfiguracion_Click;
             this.FormClosed += (s, e) => BingoHistoricoEditor.Services.LogService.Close();
         }
 
@@ -75,6 +79,11 @@ namespace BingoHistoricoEditor {
             nudVendidos.Maximum = 9999;
             nudLinea.Maximum = 99999;
             nudBingo.Maximum = 99999;
+
+            // Cargar el precio de partida por defecto desde configuración
+            decimal precioPartida = Program.ObtenerPrecioPartida();
+            nudPrecio.Value = precioPartida;
+            nudLotePrecio.Value = precioPartida;
 
             // Límites para los rangos de lote
             nudPartidaInicial.Minimum = 1;
@@ -332,27 +341,33 @@ namespace BingoHistoricoEditor {
                 // 1. Buscamos en la Base de Datos los números ocupados
                 HashSet<int> ocupados = await _db.ObtenerPartidasExistentesEnRangoAsync(dtpFecha.Value, _codSala, _codConc, inicio, fin);
 
-                // 2. Buscamos secuencialmente el primer número que NO esté en el conjunto
+                // 2. Buscamos el PRIMER grupo de huecos consecutivos
                 int primerFaltante = -1;
                 int ultimoFaltante = -1;
 
                 for (int i = inicio; i <= fin; i++) {
-                    if (!ocupados.Contains(i)) {
-                        if (primerFaltante == -1) {
-                            primerFaltante = i;
-                        }
+                    // Si encontramos el primer hueco libre
+                    if (!ocupados.Contains(i) && primerFaltante == -1) {
+                        primerFaltante = i;
+                    }
+                    // Si ya tenemos el primer hueco, buscamos dónde termina la secuencia
+                    else if (primerFaltante != -1 && !ocupados.Contains(i)) {
                         ultimoFaltante = i;
+                    }
+                    // Si encontramos un ocupado después de huecos, terminamos
+                    else if (primerFaltante != -1 && ocupados.Contains(i)) {
+                        break;
                     }
                 }
 
                 // 3. Procesamos el resultado
                 if (primerFaltante != -1) {
-                    // Encontrado: Se asignan el primer y último faltante
+                    // Encontrado: Se asignan el primer y último faltante del primer grupo
                     nudPartidaInicial.Value = primerFaltante;
                     nudPartidaFinal.Value = ultimoFaltante;
 
-                    EscribirLog("EXITO", $"Huecos encontrados: [{primerFaltante} - {ultimoFaltante}]", registrarEnArchivo: false);
-                    MessageBox.Show($"Partidas faltantes encontradas en el rango [{primerFaltante} - {ultimoFaltante}].\n\nSe han colocado automáticamente como rango de búsqueda.",
+                    EscribirLog("EXITO", $"Primer grupo de huecos encontrado: [{primerFaltante} - {ultimoFaltante}]", registrarEnArchivo: false);
+                    MessageBox.Show($"Primer grupo de partidas faltantes encontrado en el rango [{primerFaltante} - {ultimoFaltante}].\n\nSe han colocado automáticamente como rango de búsqueda.",
                                     "Huecos Encontrados", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
                 else {
@@ -544,6 +559,16 @@ namespace BingoHistoricoEditor {
                         nud.BackColor = Color.FromArgb(35, 35, 40);
                         nud.ForeColor = Color.White;
                     }
+                }
+            }
+        }
+
+        private void btnConfiguracion_Click(object sender, EventArgs e) {
+            using (var settingsForm = new SettingsForm(_config)) {
+                if (settingsForm.ShowDialog(this) == DialogResult.OK) {
+                    // Recargar la configuración actualizada
+                    MessageBox.Show("Configuración guardada correctamente.\n\nPor favor, reinicia la aplicación para aplicar los cambios de base de datos.",
+                        "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
         }

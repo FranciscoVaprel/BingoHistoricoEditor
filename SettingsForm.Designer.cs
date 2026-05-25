@@ -1,0 +1,488 @@
+namespace BingoHistoricoEditor {
+    partial class SettingsForm {
+        private System.ComponentModel.IContainer components = null;
+
+        protected override void Dispose(bool disposing) {
+            if (disposing && (components != null)) {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        private void InitializeComponent() {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SettingsForm));
+
+            btnGuardar = new System.Windows.Forms.Button();
+            btnCancelar = new System.Windows.Forms.Button();
+            tabControl = new System.Windows.Forms.TabControl();
+            tabBaseDatos = new System.Windows.Forms.TabPage();
+            grpConexion = new System.Windows.Forms.GroupBox();
+            lblDbSource = new System.Windows.Forms.Label();
+            txtDbSource = new System.Windows.Forms.TextBox();
+            lblDbPort = new System.Windows.Forms.Label();
+            txtDbPort = new System.Windows.Forms.TextBox();
+            lblDbModo = new System.Windows.Forms.Label();
+            cmbDbModo = new System.Windows.Forms.ComboBox();
+            grpRutas = new System.Windows.Forms.GroupBox();
+            lblDbAbsolutePath = new System.Windows.Forms.Label();
+            txtDbAbsolutePath = new System.Windows.Forms.TextBox();
+            lblDbRemotePath = new System.Windows.Forms.Label();
+            txtDbRemotePath = new System.Windows.Forms.TextBox();
+            lblDbRelativePath = new System.Windows.Forms.Label();
+            txtDbRelativePath = new System.Windows.Forms.TextBox();
+            grpCredenciales = new System.Windows.Forms.GroupBox();
+            lblDbPass = new System.Windows.Forms.Label();
+            txtDbPass = new System.Windows.Forms.TextBox();
+            lblDbUser = new System.Windows.Forms.Label();
+            txtDbUser = new System.Windows.Forms.TextBox();
+            lblDbCharset = new System.Windows.Forms.Label();
+            cmbDbCharset = new System.Windows.Forms.ComboBox();
+            lblDbDialect = new System.Windows.Forms.Label();
+            txtDbDialect = new System.Windows.Forms.TextBox();
+
+            tabAplicacion = new System.Windows.Forms.TabPage();
+            grpAplicacion = new System.Windows.Forms.GroupBox();
+            lblCodSala = new System.Windows.Forms.Label();
+            txtCodSala = new System.Windows.Forms.TextBox();
+            lblCodConc = new System.Windows.Forms.Label();
+            txtCodConc = new System.Windows.Forms.TextBox();
+            lblAppUser = new System.Windows.Forms.Label();
+            txtAppUser = new System.Windows.Forms.TextBox();
+            lblPrecioPartida = new System.Windows.Forms.Label();
+            txtPrecioPartida = new System.Windows.Forms.TextBox();
+
+            lblMensaje = new System.Windows.Forms.Label();
+
+            tabControl.SuspendLayout();
+            tabBaseDatos.SuspendLayout();
+            grpConexion.SuspendLayout();
+            grpRutas.SuspendLayout();
+            grpCredenciales.SuspendLayout();
+            tabAplicacion.SuspendLayout();
+            grpAplicacion.SuspendLayout();
+            SuspendLayout();
+
+            // ─────────────────────────────────────────────────────────────
+            // btnGuardar
+            btnGuardar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            btnGuardar.BackColor = System.Drawing.Color.FromArgb(40, 167, 69);
+            btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btnGuardar.ForeColor = System.Drawing.Color.White;
+            btnGuardar.Location = new System.Drawing.Point(308, 525);
+            btnGuardar.Name = "btnGuardar";
+            btnGuardar.Size = new System.Drawing.Size(110, 35);
+            btnGuardar.TabIndex = 0;
+            btnGuardar.Text = "💾 Guardar";
+            btnGuardar.UseVisualStyleBackColor = false;
+            btnGuardar.Click += btnGuardar_Click;
+
+            // btnCancelar
+            btnCancelar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
+            btnCancelar.BackColor = System.Drawing.Color.FromArgb(220, 53, 69);
+            btnCancelar.DialogResult = System.Windows.Forms.DialogResult.Cancel;
+            btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            btnCancelar.ForeColor = System.Drawing.Color.White;
+            btnCancelar.Location = new System.Drawing.Point(424, 525);
+            btnCancelar.Name = "btnCancelar";
+            btnCancelar.Size = new System.Drawing.Size(110, 35);
+            btnCancelar.TabIndex = 1;
+            btnCancelar.Text = "✕ Cancelar";
+            btnCancelar.UseVisualStyleBackColor = false;
+
+            // tabControl
+            tabControl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
+            tabControl.Controls.Add(tabBaseDatos);
+            tabControl.Controls.Add(tabAplicacion);
+            tabControl.Location = new System.Drawing.Point(12, 12);
+            tabControl.Name = "tabControl";
+            tabControl.SelectedIndex = 0;
+            tabControl.Size = new System.Drawing.Size(522, 505);
+            tabControl.TabIndex = 2;
+
+            // ─────────────────────────────────────────────────────────────
+            // tabBaseDatos
+            tabBaseDatos.BackColor = System.Drawing.Color.FromArgb(30, 30, 35);
+            tabBaseDatos.Controls.Add(grpConexion);
+            tabBaseDatos.Controls.Add(grpRutas);
+            tabBaseDatos.Controls.Add(grpCredenciales);
+            tabBaseDatos.ForeColor = System.Drawing.Color.White;
+            tabBaseDatos.Location = new System.Drawing.Point(4, 24);
+            tabBaseDatos.Name = "tabBaseDatos";
+            tabBaseDatos.Padding = new System.Windows.Forms.Padding(10);
+            tabBaseDatos.Size = new System.Drawing.Size(514, 477);
+            tabBaseDatos.TabIndex = 0;
+            tabBaseDatos.Text = "Base de Datos";
+
+            // grpConexion
+            grpConexion.Controls.Add(lblDbModo);
+            grpConexion.Controls.Add(cmbDbModo);
+            grpConexion.Controls.Add(lblDbSource);
+            grpConexion.Controls.Add(txtDbSource);
+            grpConexion.Controls.Add(lblDbPort);
+            grpConexion.Controls.Add(txtDbPort);
+            grpConexion.ForeColor = System.Drawing.Color.Gold;
+            grpConexion.Location = new System.Drawing.Point(13, 13);
+            grpConexion.Name = "grpConexion";
+            grpConexion.Size = new System.Drawing.Size(488, 120);
+            grpConexion.TabIndex = 0;
+            grpConexion.TabStop = false;
+            grpConexion.Text = " Conexión ";
+
+            // lblDbModo
+            lblDbModo.ForeColor = System.Drawing.Color.White;
+            lblDbModo.Location = new System.Drawing.Point(10, 25);
+            lblDbModo.Name = "lblDbModo";
+            lblDbModo.Size = new System.Drawing.Size(100, 20);
+            lblDbModo.TabIndex = 0;
+            lblDbModo.Text = "Modo BD:";
+
+            cmbDbModo.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            cmbDbModo.ForeColor = System.Drawing.Color.White;
+            cmbDbModo.Items.AddRange(new object[] { "Local", "Remote" });
+            cmbDbModo.Location = new System.Drawing.Point(120, 25);
+            cmbDbModo.Name = "cmbDbModo";
+            cmbDbModo.Size = new System.Drawing.Size(350, 23);
+            cmbDbModo.TabIndex = 1;
+
+            // lblDbSource
+            lblDbSource.ForeColor = System.Drawing.Color.White;
+            lblDbSource.Location = new System.Drawing.Point(10, 55);
+            lblDbSource.Name = "lblDbSource";
+            lblDbSource.Size = new System.Drawing.Size(100, 20);
+            lblDbSource.TabIndex = 2;
+            lblDbSource.Text = "Servidor:";
+
+            txtDbSource.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtDbSource.ForeColor = System.Drawing.Color.White;
+            txtDbSource.Location = new System.Drawing.Point(120, 55);
+            txtDbSource.Name = "txtDbSource";
+            txtDbSource.Size = new System.Drawing.Size(350, 23);
+            txtDbSource.TabIndex = 3;
+
+            // lblDbPort
+            lblDbPort.ForeColor = System.Drawing.Color.White;
+            lblDbPort.Location = new System.Drawing.Point(10, 85);
+            lblDbPort.Name = "lblDbPort";
+            lblDbPort.Size = new System.Drawing.Size(100, 20);
+            lblDbPort.TabIndex = 4;
+            lblDbPort.Text = "Puerto:";
+
+            txtDbPort.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtDbPort.ForeColor = System.Drawing.Color.White;
+            txtDbPort.Location = new System.Drawing.Point(120, 85);
+            txtDbPort.Name = "txtDbPort";
+            txtDbPort.Size = new System.Drawing.Size(350, 23);
+            txtDbPort.TabIndex = 5;
+
+            // grpRutas
+            grpRutas.Controls.Add(lblDbRelativePath);
+            grpRutas.Controls.Add(txtDbRelativePath);
+            grpRutas.Controls.Add(lblDbRemotePath);
+            grpRutas.Controls.Add(txtDbRemotePath);
+            grpRutas.Controls.Add(lblDbAbsolutePath);
+            grpRutas.Controls.Add(txtDbAbsolutePath);
+            grpRutas.ForeColor = System.Drawing.Color.Gold;
+            grpRutas.Location = new System.Drawing.Point(13, 140);
+            grpRutas.Name = "grpRutas";
+            grpRutas.Size = new System.Drawing.Size(488, 130);
+            grpRutas.TabIndex = 1;
+            grpRutas.TabStop = false;
+            grpRutas.Text = " Rutas ";
+
+            // lblDbRelativePath
+            lblDbRelativePath.ForeColor = System.Drawing.Color.White;
+            lblDbRelativePath.Location = new System.Drawing.Point(10, 25);
+            lblDbRelativePath.Name = "lblDbRelativePath";
+            lblDbRelativePath.Size = new System.Drawing.Size(100, 20);
+            lblDbRelativePath.TabIndex = 0;
+            lblDbRelativePath.Text = "Ruta Relativa:";
+
+            txtDbRelativePath.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtDbRelativePath.ForeColor = System.Drawing.Color.White;
+            txtDbRelativePath.Location = new System.Drawing.Point(120, 25);
+            txtDbRelativePath.Name = "txtDbRelativePath";
+            txtDbRelativePath.Size = new System.Drawing.Size(350, 23);
+            txtDbRelativePath.TabIndex = 1;
+
+            // lblDbAbsolutePath
+            lblDbAbsolutePath.ForeColor = System.Drawing.Color.White;
+            lblDbAbsolutePath.Location = new System.Drawing.Point(10, 55);
+            lblDbAbsolutePath.Name = "lblDbAbsolutePath";
+            lblDbAbsolutePath.Size = new System.Drawing.Size(100, 20);
+            lblDbAbsolutePath.TabIndex = 2;
+            lblDbAbsolutePath.Text = "Ruta Absoluta:";
+
+            txtDbAbsolutePath.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtDbAbsolutePath.ForeColor = System.Drawing.Color.White;
+            txtDbAbsolutePath.Location = new System.Drawing.Point(120, 55);
+            txtDbAbsolutePath.Name = "txtDbAbsolutePath";
+            txtDbAbsolutePath.Size = new System.Drawing.Size(350, 23);
+            txtDbAbsolutePath.TabIndex = 3;
+
+            // lblDbRemotePath
+            lblDbRemotePath.ForeColor = System.Drawing.Color.White;
+            lblDbRemotePath.Location = new System.Drawing.Point(10, 85);
+            lblDbRemotePath.Name = "lblDbRemotePath";
+            lblDbRemotePath.Size = new System.Drawing.Size(100, 20);
+            lblDbRemotePath.TabIndex = 4;
+            lblDbRemotePath.Text = "Ruta Remota:";
+
+            txtDbRemotePath.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtDbRemotePath.ForeColor = System.Drawing.Color.White;
+            txtDbRemotePath.Location = new System.Drawing.Point(120, 85);
+            txtDbRemotePath.Name = "txtDbRemotePath";
+            txtDbRemotePath.Size = new System.Drawing.Size(350, 23);
+            txtDbRemotePath.TabIndex = 5;
+
+            // grpCredenciales
+            grpCredenciales.Controls.Add(lblDbDialect);
+            grpCredenciales.Controls.Add(txtDbDialect);
+            grpCredenciales.Controls.Add(lblDbCharset);
+            grpCredenciales.Controls.Add(cmbDbCharset);
+            grpCredenciales.Controls.Add(lblDbUser);
+            grpCredenciales.Controls.Add(txtDbUser);
+            grpCredenciales.Controls.Add(lblDbPass);
+            grpCredenciales.Controls.Add(txtDbPass);
+            grpCredenciales.ForeColor = System.Drawing.Color.Gold;
+            grpCredenciales.Location = new System.Drawing.Point(13, 277);
+            grpCredenciales.Name = "grpCredenciales";
+            grpCredenciales.Size = new System.Drawing.Size(488, 160);
+            grpCredenciales.TabIndex = 2;
+            grpCredenciales.TabStop = false;
+            grpCredenciales.Text = " Credenciales BD ";
+
+            // lblDbUser
+            lblDbUser.ForeColor = System.Drawing.Color.White;
+            lblDbUser.Location = new System.Drawing.Point(10, 25);
+            lblDbUser.Name = "lblDbUser";
+            lblDbUser.Size = new System.Drawing.Size(100, 20);
+            lblDbUser.TabIndex = 0;
+            lblDbUser.Text = "Usuario:";
+
+            txtDbUser.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtDbUser.ForeColor = System.Drawing.Color.White;
+            txtDbUser.Location = new System.Drawing.Point(120, 25);
+            txtDbUser.Name = "txtDbUser";
+            txtDbUser.Size = new System.Drawing.Size(350, 23);
+            txtDbUser.TabIndex = 1;
+
+            // lblDbPass
+            lblDbPass.ForeColor = System.Drawing.Color.White;
+            lblDbPass.Location = new System.Drawing.Point(10, 55);
+            lblDbPass.Name = "lblDbPass";
+            lblDbPass.Size = new System.Drawing.Size(100, 20);
+            lblDbPass.TabIndex = 2;
+            lblDbPass.Text = "Contraseña:";
+
+            txtDbPass.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtDbPass.ForeColor = System.Drawing.Color.White;
+            txtDbPass.Location = new System.Drawing.Point(120, 55);
+            txtDbPass.Name = "txtDbPass";
+            txtDbPass.Size = new System.Drawing.Size(350, 23);
+            txtDbPass.TabIndex = 3;
+            txtDbPass.UseSystemPasswordChar = true;
+
+            // lblDbCharset
+            lblDbCharset.ForeColor = System.Drawing.Color.White;
+            lblDbCharset.Location = new System.Drawing.Point(10, 85);
+            lblDbCharset.Name = "lblDbCharset";
+            lblDbCharset.Size = new System.Drawing.Size(100, 20);
+            lblDbCharset.TabIndex = 4;
+            lblDbCharset.Text = "Charset:";
+
+            cmbDbCharset.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            cmbDbCharset.ForeColor = System.Drawing.Color.White;
+            cmbDbCharset.Items.AddRange(new object[] { "UTF8", "ISO8859_1", "WIN1252" });
+            cmbDbCharset.Location = new System.Drawing.Point(120, 85);
+            cmbDbCharset.Name = "cmbDbCharset";
+            cmbDbCharset.Size = new System.Drawing.Size(350, 23);
+            cmbDbCharset.TabIndex = 5;
+
+            // lblDbDialect
+            lblDbDialect.ForeColor = System.Drawing.Color.White;
+            lblDbDialect.Location = new System.Drawing.Point(10, 115);
+            lblDbDialect.Name = "lblDbDialect";
+            lblDbDialect.Size = new System.Drawing.Size(100, 20);
+            lblDbDialect.TabIndex = 6;
+            lblDbDialect.Text = "Dialecto:";
+
+            txtDbDialect.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtDbDialect.ForeColor = System.Drawing.Color.White;
+            txtDbDialect.Location = new System.Drawing.Point(120, 115);
+            txtDbDialect.Name = "txtDbDialect";
+            txtDbDialect.Size = new System.Drawing.Size(350, 23);
+            txtDbDialect.TabIndex = 7;
+
+            // ─────────────────────────────────────────────────────────────
+            // tabAplicacion
+            tabAplicacion.BackColor = System.Drawing.Color.FromArgb(30, 30, 35);
+            tabAplicacion.Controls.Add(grpAplicacion);
+            tabAplicacion.ForeColor = System.Drawing.Color.White;
+            tabAplicacion.Location = new System.Drawing.Point(4, 24);
+            tabAplicacion.Name = "tabAplicacion";
+            tabAplicacion.Padding = new System.Windows.Forms.Padding(10);
+            tabAplicacion.Size = new System.Drawing.Size(514, 477);
+            tabAplicacion.TabIndex = 1;
+            tabAplicacion.Text = "Aplicación";
+
+            // grpAplicacion
+            grpAplicacion.Controls.Add(lblPrecioPartida);
+            grpAplicacion.Controls.Add(txtPrecioPartida);
+            grpAplicacion.Controls.Add(lblAppUser);
+            grpAplicacion.Controls.Add(txtAppUser);
+            grpAplicacion.Controls.Add(lblCodConc);
+            grpAplicacion.Controls.Add(txtCodConc);
+            grpAplicacion.Controls.Add(lblCodSala);
+            grpAplicacion.Controls.Add(txtCodSala);
+            grpAplicacion.ForeColor = System.Drawing.Color.Gold;
+            grpAplicacion.Location = new System.Drawing.Point(13, 13);
+            grpAplicacion.Name = "grpAplicacion";
+            grpAplicacion.Size = new System.Drawing.Size(488, 180);
+            grpAplicacion.TabIndex = 0;
+            grpAplicacion.TabStop = false;
+            grpAplicacion.Text = " Configuración ";
+
+            // lblCodSala
+            lblCodSala.ForeColor = System.Drawing.Color.White;
+            lblCodSala.Location = new System.Drawing.Point(10, 25);
+            lblCodSala.Name = "lblCodSala";
+            lblCodSala.Size = new System.Drawing.Size(100, 20);
+            lblCodSala.TabIndex = 0;
+            lblCodSala.Text = "Código Sala:";
+
+            txtCodSala.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtCodSala.ForeColor = System.Drawing.Color.White;
+            txtCodSala.Location = new System.Drawing.Point(120, 25);
+            txtCodSala.Name = "txtCodSala";
+            txtCodSala.Size = new System.Drawing.Size(350, 23);
+            txtCodSala.TabIndex = 1;
+
+            // lblCodConc
+            lblCodConc.ForeColor = System.Drawing.Color.White;
+            lblCodConc.Location = new System.Drawing.Point(10, 55);
+            lblCodConc.Name = "lblCodConc";
+            lblCodConc.Size = new System.Drawing.Size(100, 20);
+            lblCodConc.TabIndex = 2;
+            lblCodConc.Text = "Código Conc:";
+
+            txtCodConc.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtCodConc.ForeColor = System.Drawing.Color.White;
+            txtCodConc.Location = new System.Drawing.Point(120, 55);
+            txtCodConc.Name = "txtCodConc";
+            txtCodConc.Size = new System.Drawing.Size(350, 23);
+            txtCodConc.TabIndex = 3;
+
+            // lblAppUser
+            lblAppUser.ForeColor = System.Drawing.Color.White;
+            lblAppUser.Location = new System.Drawing.Point(10, 85);
+            lblAppUser.Name = "lblAppUser";
+            lblAppUser.Size = new System.Drawing.Size(100, 20);
+            lblAppUser.TabIndex = 4;
+            lblAppUser.Text = "Usuario App:";
+
+            txtAppUser.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtAppUser.ForeColor = System.Drawing.Color.White;
+            txtAppUser.Location = new System.Drawing.Point(120, 85);
+            txtAppUser.Name = "txtAppUser";
+            txtAppUser.Size = new System.Drawing.Size(350, 23);
+            txtAppUser.TabIndex = 5;
+
+            // lblPrecioPartida
+            lblPrecioPartida.ForeColor = System.Drawing.Color.White;
+            lblPrecioPartida.Location = new System.Drawing.Point(10, 115);
+            lblPrecioPartida.Name = "lblPrecioPartida";
+            lblPrecioPartida.Size = new System.Drawing.Size(100, 20);
+            lblPrecioPartida.TabIndex = 6;
+            lblPrecioPartida.Text = "Precio Partida:";
+
+            txtPrecioPartida.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
+            txtPrecioPartida.ForeColor = System.Drawing.Color.White;
+            txtPrecioPartida.Location = new System.Drawing.Point(120, 115);
+            txtPrecioPartida.Name = "txtPrecioPartida";
+            txtPrecioPartida.Size = new System.Drawing.Size(350, 23);
+            txtPrecioPartida.TabIndex = 7;
+
+            // lblMensaje
+            lblMensaje.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
+            lblMensaje.ForeColor = System.Drawing.Color.Red;
+            lblMensaje.Location = new System.Drawing.Point(12, 525);
+            lblMensaje.Name = "lblMensaje";
+            lblMensaje.Size = new System.Drawing.Size(290, 35);
+            lblMensaje.TabIndex = 3;
+            lblMensaje.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+
+            // SettingsForm
+            AcceptButton = btnGuardar;
+            AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            BackColor = System.Drawing.Color.FromArgb(30, 30, 35);
+            CancelButton = btnCancelar;
+            ClientSize = new System.Drawing.Size(546, 572);
+            Controls.Add(btnGuardar);
+            Controls.Add(btnCancelar);
+            Controls.Add(tabControl);
+            Controls.Add(lblMensaje);
+            ForeColor = System.Drawing.Color.White;
+            FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            // Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            MaximizeBox = false;
+            MinimizeBox = false;
+            Name = "SettingsForm";
+            ShowInTaskbar = false;
+            StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            Text = "Configuración";
+            tabControl.ResumeLayout(false);
+            tabBaseDatos.ResumeLayout(false);
+            grpConexion.ResumeLayout(false);
+            grpConexion.PerformLayout();
+            grpRutas.ResumeLayout(false);
+            grpRutas.PerformLayout();
+            grpCredenciales.ResumeLayout(false);
+            grpCredenciales.PerformLayout();
+            tabAplicacion.ResumeLayout(false);
+            grpAplicacion.ResumeLayout(false);
+            grpAplicacion.PerformLayout();
+            ResumeLayout(false);
+            PerformLayout();
+        }
+
+        private System.Windows.Forms.Button btnGuardar;
+        private System.Windows.Forms.Button btnCancelar;
+        private System.Windows.Forms.TabControl tabControl;
+        private System.Windows.Forms.TabPage tabBaseDatos;
+        private System.Windows.Forms.TabPage tabAplicacion;
+        private System.Windows.Forms.GroupBox grpConexion;
+        private System.Windows.Forms.GroupBox grpRutas;
+        private System.Windows.Forms.GroupBox grpCredenciales;
+        private System.Windows.Forms.GroupBox grpAplicacion;
+        private System.Windows.Forms.Label lblDbModo;
+        private System.Windows.Forms.ComboBox cmbDbModo;
+        private System.Windows.Forms.Label lblDbSource;
+        private System.Windows.Forms.TextBox txtDbSource;
+        private System.Windows.Forms.Label lblDbPort;
+        private System.Windows.Forms.TextBox txtDbPort;
+        private System.Windows.Forms.Label lblDbRelativePath;
+        private System.Windows.Forms.TextBox txtDbRelativePath;
+        private System.Windows.Forms.Label lblDbAbsolutePath;
+        private System.Windows.Forms.TextBox txtDbAbsolutePath;
+        private System.Windows.Forms.Label lblDbRemotePath;
+        private System.Windows.Forms.TextBox txtDbRemotePath;
+        private System.Windows.Forms.Label lblDbUser;
+        private System.Windows.Forms.TextBox txtDbUser;
+        private System.Windows.Forms.Label lblDbPass;
+        private System.Windows.Forms.TextBox txtDbPass;
+        private System.Windows.Forms.Label lblDbCharset;
+        private System.Windows.Forms.ComboBox cmbDbCharset;
+        private System.Windows.Forms.Label lblDbDialect;
+        private System.Windows.Forms.TextBox txtDbDialect;
+        private System.Windows.Forms.Label lblCodSala;
+        private System.Windows.Forms.TextBox txtCodSala;
+        private System.Windows.Forms.Label lblCodConc;
+        private System.Windows.Forms.TextBox txtCodConc;
+        private System.Windows.Forms.Label lblAppUser;
+        private System.Windows.Forms.TextBox txtAppUser;
+        private System.Windows.Forms.Label lblPrecioPartida;
+        private System.Windows.Forms.TextBox txtPrecioPartida;
+        private System.Windows.Forms.Label lblMensaje;
+    }
+}
