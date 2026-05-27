@@ -2,7 +2,6 @@ using BingoHistoricoEditor.Models;
 using FirebirdSql.Data.FirebirdClient;
 using Microsoft.Extensions.Configuration;
 using System.Globalization;
-using FirebirdSql.Data.FirebirdClient;
 
 namespace BingoHistoricoEditor.Data {
     public class FirebirdService {
@@ -10,6 +9,7 @@ namespace BingoHistoricoEditor.Data {
 
         public FirebirdService(IConfiguration config) {
             _cs = BuildConnectionString(config);
+
         }
 
         // ── Resolución de connection string (igual que en el servicio) ────────
@@ -44,7 +44,34 @@ namespace BingoHistoricoEditor.Data {
 
         // ── Verificar conexión ────────────────────────────────────────────────
 
+        /// <summary>
+        /// Verifica si la BD existe y la ruta está configurada correctamente
+        /// </summary>
+        public string ObtenerRutaBD() {
+            var s = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
+                .Build();
+
+            var section = s.GetSection("BingoSettings");
+            string modo = section["DbModo"] ?? "Local";
+            return ResolverRuta(modo, section);
+        }
+
+        /// <summary>
+        /// Verifica si el archivo .fdb existe
+        /// </summary>
+        public bool ExisteBD() {
+            string rutaBD = ObtenerRutaBD();
+            return File.Exists(rutaBD);
+        }
+
         public async Task<bool> TestConnectionAsync() {
+            using (var conn = new FbConnection(_cs)) {
+                await conn.OpenAsync();
+                // ServerVersion te devolverá un string detallado (Ej: "WI-V3.0.7.33374 Firebird 3.0")
+                System.Diagnostics.Debug.WriteLine($"Versión de Firebird: {conn.ServerVersion}");
+            }
             try {
                 using var conn = new FbConnection(_cs);
                 await conn.OpenAsync();
@@ -221,5 +248,203 @@ namespace BingoHistoricoEditor.Data {
                 throw new Exception($"Error al eliminar rango {inicio}-{fin}: {ex.Message}", ex);
             }
         }
+
+        // ── Crear tabla de operaciones si no existe ────────────────────────────
+
+        public async Task CrearTablaOperacionesAsync() {
+            try {
+                using var conn = new FbConnection(_cs);
+                await conn.OpenAsync();
+
+                // 1. Comprobar si TABLA existe (si no existe, result será null)
+                // En Firebird 2.5, contar registros es más confiable que SELECT 1
+                const string sqlCheckTabla = "SELECT COUNT(*) FROM RDB$RELATIONS WHERE TRIM(RDB$RELATION_NAME) = 'OPERACIONESBGEDITOR'";                
+                using (var cmd = new FbCommand(sqlCheckTabla, conn)) {
+                    var result = await cmd.ExecuteScalarAsync();
+                    int count = result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+
+                    if (count == 0) {
+                        const string sqlTabla = @"CREATE TABLE operacionesBGEditor (
+                            ID INTEGER PRIMARY KEY,
+                            FECHA TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                            USUARIO VARCHAR(100) NOT NULL,
+                            OPERACION VARCHAR(100) NOT NULL,
+                            DETALLES BLOB SUB_TYPE TEXT,
+                            CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                        )";
+                        using var cmdCreateTable = new FbCommand(sqlTabla, conn);
+                        await cmdCreateTable.ExecuteNonQueryAsync();
+                        System.Diagnostics.Debug.WriteLine("✓ Tabla 'operacionesBGEditor' creada.");
+                    }
+                    else {
+                        System.Diagnostics.Debug.WriteLine("✓ Tabla 'operacionesBGEditor' ya existe.");
+                    }
+                }
+
+                // 2. Comprobar y crear GENERADOR
+                const string sqlCheckGen = "SELECT COUNT(*) FROM RDB$GENERATORS WHERE TRIM(RDB$GENERATOR_NAME) = 'GEN_OPERACIONESBGEDITOR_ID'";
+                using (var cmd = new FbCommand(sqlCheckGen, conn)) {
+                    var result = await cmd.ExecuteScalarAsync();
+                    int count = result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+
+                    if (count == 0) {
+                        const string sqlGen = "CREATE GENERATOR GEN_OPERACIONESBGEDITOR_ID;";
+                        using var cmdCreateGen = new FbCommand(sqlGen, conn);
+                        await cmdCreateGen.ExecuteNonQueryAsync();
+                        System.Diagnostics.Debug.WriteLine("✓ Generador 'GEN_OPERACIONESBGEDITOR_ID' creado.");
+                    }
+                    else {
+                        System.Diagnostics.Debug.WriteLine("✓ Generador 'GEN_OPERACIONESBGEDITOR_ID' ya existe.");
+                    }
+                }
+
+                // 3. Comprobar y crear TRIGGER
+                const string sqlCheckTrig = "SELECT COUNT(*) FROM RDB$TRIGGERS WHERE TRIM(RDB$TRIGGER_NAME) = 'BI_OPERACIONESBGEDITOR_ID'";
+                using (var cmd = new FbCommand(sqlCheckTrig, conn)) {
+                    var result = await cmd.ExecuteScalarAsync();
+                    int count = result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+
+                    if (count == 0) {
+                        const string sqlTrig = @"CREATE TRIGGER BI_OPERACIONESBGEDITOR_ID FOR operacionesBGEditor
+                            ACTIVE BEFORE INSERT POSITION 0
+                            AS
+                            BEGIN
+                                IF (NEW.ID IS NULL OR NEW.ID = 0) THEN
+                                    NEW.ID = GEN_ID(GEN_OPERACIONESBGEDITOR_ID, 1);
+                            END";
+                        using var cmdCreateTrig = new FbCommand(sqlTrig, conn);
+                        await cmdCreateTrig.ExecuteNonQueryAsync();
+                        System.Diagnostics.Debug.WriteLine("✓ Trigger 'BI_OPERACIONESBGEDITOR_ID' creado.");
+                    }
+                    else {
+                        System.Diagnostics.Debug.WriteLine("✓ Trigger 'BI_OPERACIONESBGEDITOR_ID' ya existe.");
+                    }
+                }
+            }
+            catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"✗ Error al crear tabla de operaciones: {ex.Message}");
+            }
+        }
+
+        // ── Insertar operación en la tabla de log ────────────────────────────
+
+        public async Task InsertarOperacionAsync(string usuario, string operacion, string detalles = null) {
+            const string sql = @"INSERT INTO operacionesBGEditor (USUARIO, OPERACION, DETALLES)
+                                 VALUES (@usuario, @operacion, @detalles)";
+            
+            try {
+                using var conn = new FbConnection(_cs);
+                using var cmd = new FbCommand(sql, conn);
+                cmd.Parameters.Add("@usuario", FbDbType.VarChar).Value = usuario ?? "SISTEMA";
+                cmd.Parameters.Add("@operacion", FbDbType.VarChar).Value = operacion ?? "";
+                cmd.Parameters.Add("@detalles", FbDbType.Text).Value = detalles ?? "";
+
+                await conn.OpenAsync();
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Error al insertar operación: {ex.Message}");
+                // No lanzar excepción, el log no debe interrumpir la operación principal
+            }
+        }
+
+        // ── Consultar operaciones para auditoría ────────────────────────────
+
+        /// <summary>
+        /// Obtiene todas las operaciones registradas en la tabla
+        /// </summary>
+        public async Task<List<OperacionLog>> ObtenerOperacionesAsync(int? ultimasN = null) {
+            var operaciones = new List<OperacionLog>();
+
+            string sql = @"SELECT ID, FECHA, USUARIO, OPERACION, DETALLES 
+                          FROM operacionesBGEditor 
+                          ORDER BY ID DESC";
+
+            // Si se especifica un límite, agregar ROWS
+            if (ultimasN.HasValue && ultimasN.Value > 0) {
+                sql = $"SELECT FIRST {ultimasN.Value} ID, FECHA, USUARIO, OPERACION, DETALLES FROM operacionesBGEditor ORDER BY ID DESC";
+            }
+
+            try {
+                using var conn = new FbConnection(_cs);
+                using var cmd = new FbCommand(sql, conn);
+
+                await conn.OpenAsync();
+                using var rd = await cmd.ExecuteReaderAsync();
+
+                while (await rd.ReadAsync()) {
+                    operaciones.Add(new OperacionLog {
+                        ID = rd.GetInt32(0),
+                        Fecha = rd.IsDBNull(1) ? DateTime.MinValue : rd.GetDateTime(1),
+                        Usuario = rd.IsDBNull(2) ? "" : rd.GetString(2),
+                        Operacion = rd.IsDBNull(3) ? "" : rd.GetString(3),
+                        Detalles = rd.IsDBNull(4) ? "" : rd.GetString(4)
+                    });
+                }
+            }
+            catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Error al obtener operaciones: {ex.Message}");
+            }
+
+            return operaciones;
+        }
+
+        /// <summary>
+        /// Obtiene el conteo total de operaciones registradas
+        /// </summary>
+        public async Task<int> ObtenerCountOperacionesAsync() {
+            const string sql = "SELECT COUNT(*) FROM operacionesBGEditor";
+
+            try {
+                using var conn = new FbConnection(_cs);
+                using var cmd = new FbCommand(sql, conn);
+
+                await conn.OpenAsync();
+                var result = await cmd.ExecuteScalarAsync();
+                return result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+            }
+            catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Error al contar operaciones: {ex.Message}");
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Obtiene operaciones de un usuario específico
+        /// </summary>
+        public async Task<List<OperacionLog>> ObtenerOperacionesPorUsuarioAsync(string usuario, int? ultimasN = null) {
+            var operaciones = new List<OperacionLog>();
+
+            string limitClause = ultimasN.HasValue && ultimasN.Value > 0 ? $"FIRST {ultimasN.Value} " : "";
+            string sql = $@"SELECT {limitClause}ID, FECHA, USUARIO, OPERACION, DETALLES 
+                          FROM operacionesBGEditor 
+                          WHERE USUARIO = @usuario 
+                          ORDER BY ID DESC";
+
+            try {
+                using var conn = new FbConnection(_cs);
+                using var cmd = new FbCommand(sql, conn);
+                cmd.Parameters.Add("@usuario", FbDbType.VarChar).Value = usuario ?? "";
+
+                await conn.OpenAsync();
+                using var rd = await cmd.ExecuteReaderAsync();
+
+                while (await rd.ReadAsync()) {
+                    operaciones.Add(new OperacionLog {
+                        ID = rd.GetInt32(0),
+                        Fecha = rd.IsDBNull(1) ? DateTime.MinValue : rd.GetDateTime(1),
+                        Usuario = rd.IsDBNull(2) ? "" : rd.GetString(2),
+                        Operacion = rd.IsDBNull(3) ? "" : rd.GetString(3),
+                        Detalles = rd.IsDBNull(4) ? "" : rd.GetString(4)
+                    });
+                }
+            }
+            catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Error al obtener operaciones del usuario: {ex.Message}");
+            }
+
+            return operaciones;
+        }
     }
 }
+

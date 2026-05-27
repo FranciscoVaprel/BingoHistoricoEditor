@@ -1,6 +1,7 @@
 using BingoHistoricoEditor.Data;
 using BingoHistoricoEditor.Models;
 using BingoHistoricoEditor.Services;
+using FirebirdSql.Data.FirebirdClient;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace BingoHistoricoEditor {
         private readonly int _codConc;
         private List<HistoricoEntry> _partidas = new();
         private HistoricoEntry? _seleccionada;
-        private string _usuarioActual;        
+        private string _usuarioActual;
 
         public MainForm(FirebirdService db, IConfiguration config, string usuario) {
             InitializeComponent();
@@ -26,6 +27,7 @@ namespace BingoHistoricoEditor {
             _codConc = GetConfigInt(config, "BingoSettings:CodConc", 1);
             _usuarioActual = usuario;
             LogService.SetCurrentUser(usuario);
+            LogService.SetDbService(db);  // Pasar el servicio de BD para logueo
 
             ConfigurarGrid();
             ConfigurarLimitesNumericos();
@@ -40,8 +42,20 @@ namespace BingoHistoricoEditor {
 
         protected override async void OnLoad(EventArgs e) {
             base.OnLoad(e);
+
             dtpFecha.Value = DateTime.Today;
             lblSalaConc.Text = $"SALA: {_codSala} | CONCESIONARIO: {_codConc}";
+
+            // Verificar si la BD existe
+            string rutaBD = _db.ObtenerRutaBD();
+            bool existeBD = _db.ExisteBD();
+
+            EscribirLog("SISTEMA", $"BD configurada en: {rutaBD}");
+            if (!existeBD) {
+                EscribirLog("ADVERTENCIA", "El archivo .fdb NO existe. Se creará al conectar.");
+            } else {
+                EscribirLog("SISTEMA", "✓ Archivo .fdb encontrado.");
+            }
 
             EscribirLog("SISTEMA", "Probando conexión a base de datos...");
             bool ok = await _db.TestConnectionAsync(); //
@@ -51,6 +65,15 @@ namespace BingoHistoricoEditor {
 
             if (ok) {
                 EscribirLog("SISTEMA", "Conexión establecida correctamente.");
+
+                // Crear tabla de operaciones si no existe
+                try {
+                    await _db.CrearTablaOperacionesAsync();
+                }
+                catch (Exception ex) {
+                    EscribirLog("SISTEMA", $"Error al crear tabla de operaciones: {ex.Message}");
+                }
+
                 await CargarPartidasAsync();
             }
         }
@@ -116,7 +139,7 @@ namespace BingoHistoricoEditor {
 
         // Método de Log actualizado con el usuario
         private void EscribirLog(string accion, string detalles, bool registrarEnArchivo = false) {
-             if (txtLog.IsDisposed) return;
+            if (txtLog.IsDisposed) return;
 
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
             string usuario = _usuarioActual.ToUpper().PadRight(10);
@@ -124,7 +147,7 @@ namespace BingoHistoricoEditor {
 
             txtLog.AppendText(linea);
             txtLog.ScrollToCaret();
-            
+
             if (registrarEnArchivo) {
                 Services.LogService.Write(linea, null);
             }
@@ -453,7 +476,7 @@ namespace BingoHistoricoEditor {
             }
         }
 
-        private void dtpFecha_ValueChanged(object sender, EventArgs e) {                        
+        private void dtpFecha_ValueChanged(object sender, EventArgs e) {
             //AsignarLimitesPartidasLote();
         }
 
@@ -572,5 +595,32 @@ namespace BingoHistoricoEditor {
                 }
             }
         }
+
+        /// <summary>
+        /// Método de DEBUG: Verifica las operaciones guardadas en la BD
+        /// Llama esto desde la consola de debug con: await MainFormInstance.VerificarOperacionesAsync();
+        /// </summary>
+        public async Task VerificarOperacionesAsync() {
+            try {
+                int totalOps = await _db.ObtenerCountOperacionesAsync();
+                EscribirLog("DEBUG", $"Total de operaciones en BD: {totalOps}");
+
+                var ultimas = await _db.ObtenerOperacionesAsync(ultimasN: 10);
+
+                if (ultimas.Count == 0) {
+                    EscribirLog("DEBUG", "No hay operaciones registradas aún.");
+                } else {
+                    EscribirLog("DEBUG", $"Últimas {ultimas.Count} operaciones:");
+                    foreach (var op in ultimas) {
+                        string detalles = op.Detalles.Length > 50 ? op.Detalles.Substring(0, 50) + "..." : op.Detalles;
+                        EscribirLog("DEBUG", $"  [{op.ID}] {op.Fecha:yyyy-MM-dd HH:mm:ss} | {op.Usuario} | {op.Operacion} | {detalles}");
+                    }
+                }
+            }
+            catch (Exception ex) {
+                EscribirLog("ERROR", $"Error verificando operaciones: {ex.Message}");
+            }
+        }
+
     }
 }

@@ -5,11 +5,14 @@ using System;
 using System.IO;
 using System.Text.Json;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using BingoHistoricoEditor.Data;
 
 namespace BingoHistoricoEditor.Services {
     public static class LogService {
         private static ILogger _logger;
         private static string _currentUser = "SISTEMA";
+        private static FirebirdService _dbService;
 
         static LogService() {
             try {
@@ -35,12 +38,22 @@ namespace BingoHistoricoEditor.Services {
         public static void SetCurrentUser(string username) => _currentUser = username?.ToUpper() ?? "SISTEMA";
 
         /// <summary>
+        /// Asigna el servicio de base de datos para loguear operaciones
+        /// </summary>
+        public static void SetDbService(FirebirdService dbService) {
+            _dbService = dbService;
+        }
+
+        /// <summary>
         /// Registro general de operaciones
         /// </summary>
         public static void Write(string operacion, object datos = null) {
             try {
                 // El uso de @ es crítico para que Serilog desestructure objetos complejos
                 _logger?.Information("{Operacion} {@Datos}", operacion, datos);
+
+                // También guardar en la base de datos si está disponible
+                _ = RegistrarEnBDAsync(operacion, datos);
             }
             catch { }
         }
@@ -57,6 +70,21 @@ namespace BingoHistoricoEditor.Services {
         /// </summary>
         public static void AuditDB(string operacion, object datos) {
             Write(operacion, datos);
+        }
+
+        /// <summary>
+        /// Registra la operación en la base de datos de forma asíncrona
+        /// </summary>
+        private static async Task RegistrarEnBDAsync(string operacion, object datos) {
+            if (_dbService == null) return;
+
+            try {
+                string detalles = datos != null ? JsonSerializer.Serialize(datos) : "";
+                await _dbService.InsertarOperacionAsync(_currentUser, operacion, detalles);
+            }
+            catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Error al registrar en BD: {ex.Message}");
+            }
         }
 
         public static void Close() => Log.CloseAndFlush();
