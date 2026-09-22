@@ -20,27 +20,18 @@ namespace BingoHistoricoEditor {
         // ── UI ────────────────────────────────────────────────────────────────
 
         private void BuildUI() {
-            var clrFondo = Color.FromArgb(18,  20,  28);
-            var clrPanel = Color.FromArgb(26,  29,  40);
-            var clrTexto = Color.FromArgb(220, 225, 240);
-            var clrSub   = Color.FromArgb(130, 140, 165);
-            var clrVerde = Color.FromArgb( 72, 187, 120);
-            var clrRojo  = Color.FromArgb(220,  80,  80);
-            var clrAzul  = Color.FromArgb( 99, 179, 237);
-            var clrGris  = Color.FromArgb( 48,  54,  72);
-
             Text            = "Gestión de usuarios";
             Size            = new Size(400, 380);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox     = false; MinimizeBox = false;
             StartPosition   = FormStartPosition.CenterParent;
-            BackColor       = clrFondo; ForeColor = clrTexto;
+            BackColor       = SystemColors.Control; ForeColor = SystemColors.ControlText;
             Font            = new Font("Segoe UI", 9f);
 
             var lblTitulo = new Label {
                 Text      = "Usuarios con acceso",
                 Font      = new Font("Segoe UI", 11f, FontStyle.Bold),
-                ForeColor = clrAzul,
+                ForeColor = SystemColors.HotTrack,
                 AutoSize  = true,
                 Location  = new Point(20, 18),
             };
@@ -48,23 +39,23 @@ namespace BingoHistoricoEditor {
             _lstUsuarios = new ListBox {
                 Size      = new Size(350, 150),
                 Location  = new Point(20, 48),
-                BackColor = Color.FromArgb(32, 36, 50),
-                ForeColor = clrTexto,
+                BackColor = SystemColors.Window,
+                ForeColor = SystemColors.WindowText,
                 BorderStyle = BorderStyle.FixedSingle,
                 Font      = new Font("Segoe UI", 10f),
             };
 
             _lblInfo = new Label {
                 Text      = "",
-                ForeColor = clrSub,
+                ForeColor = SystemColors.GrayText,
                 AutoSize  = true,
                 Location  = new Point(20, 206),
             };
 
-            _btnAnadir = Boton("＋  Añadir usuario",   clrVerde, clrFondo, new Point(20,  230), new Size(165, 36));
-            _btnCambiarPass = Boton("🔑  Cambiar contraseña", clrAzul, clrFondo, new Point(195, 230), new Size(175, 36));
-            _btnEliminar = Boton("✕  Eliminar usuario", clrRojo,  clrFondo, new Point(20,  278), new Size(165, 36));
-            _btnCerrar   = Boton("Cerrar",              clrGris,  clrTexto, new Point(195, 278), new Size(175, 36));
+            _btnAnadir = Boton("＋  Añadir usuario",   new Point(20,  230), new Size(165, 36));
+            _btnCambiarPass = Boton("🔑  Cambiar contraseña", new Point(195, 230), new Size(175, 36));
+            _btnEliminar = Boton("✕  Eliminar usuario", new Point(20,  278), new Size(165, 36));
+            _btnCerrar   = Boton("Cerrar",              new Point(195, 278), new Size(175, 36));
 
             _btnAnadir.Click      += BtnAnadir_Click;
             _btnCambiarPass.Click += BtnCambiarPass_Click;
@@ -77,20 +68,21 @@ namespace BingoHistoricoEditor {
             });
         }
 
-        private static Button Boton(string texto, Color fondo, Color texto2, Point loc, Size size) {
-            var b = new Button {
+        private static Button Boton(string texto, Point loc, Size size) {
+            return new Button {
                 Text = texto, Location = loc, Size = size,
-                BackColor = fondo, ForeColor = texto2,
-                FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand,
+                ForeColor = SystemColors.ControlText,
+                FlatStyle = FlatStyle.Standard, Cursor = Cursors.Hand,
                 Font = new Font("Segoe UI", 8.5f, FontStyle.Bold),
+                UseVisualStyleBackColor = true,
             };
-            b.FlatAppearance.BorderSize = 0;
-            return b;
         }
 
         // ── Eventos ───────────────────────────────────────────────────────────
 
         private void BtnAnadir_Click(object sender, EventArgs e) {
+            if (!RequerirAutenticacion()) return;
+
             using var dlg = new SetPasswordForm(primerArranque: false);
             if (dlg.ShowDialog() != DialogResult.OK) return;
             try {
@@ -111,13 +103,7 @@ namespace BingoHistoricoEditor {
                     MessageBoxButtons.OK, MessageBoxIcon.Information); return;
             }
 
-            // Solicitar autenticación antes de cambiar contraseña
-            using var auth = new AutenticacionPrevia();
-            if (auth.ShowDialog() != DialogResult.OK) {
-                MessageBox.Show("No se puede cambiar la contraseña sin autenticación.", "Acceso denegado",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            if (!RequerirAutenticacion()) return;
 
             using var dlg = new CambiarPasswordForm(seleccionado);
             if (dlg.ShowDialog() != DialogResult.OK) return;
@@ -136,6 +122,9 @@ namespace BingoHistoricoEditor {
                 MessageBox.Show("Selecciona un usuario de la lista.", "Aviso",
                     MessageBoxButtons.OK, MessageBoxIcon.Information); return;
             }
+
+            if (!RequerirAutenticacion()) return;
+
             var confirm = MessageBox.Show(
                 $"¿Eliminar el usuario '{seleccionado}'?",
                 "Confirmar eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
@@ -152,6 +141,19 @@ namespace BingoHistoricoEditor {
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Pide las credenciales de un usuario existente antes de permitir una
+        /// operación sensible (añadir, eliminar o cambiar contraseña).
+        /// </summary>
+        private bool RequerirAutenticacion() {
+            using var auth = new AutenticacionPrevia();
+            if (auth.ShowDialog() == DialogResult.OK) return true;
+
+            MessageBox.Show("Esta acción requiere autenticación.", "Acceso denegado",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return false;
+        }
 
         private void RefrescarLista() {
             _lstUsuarios.Items.Clear();
@@ -175,39 +177,31 @@ namespace BingoHistoricoEditor {
         private Label   _lblErr   = null!;
 
         public CambiarPasswordForm(string usuario) {
-            var clrFondo = Color.FromArgb(18, 20, 28);
-            var clrInput = Color.FromArgb(32, 36, 50);
-            var clrTexto = Color.FromArgb(220, 225, 240);
-            var clrSub   = Color.FromArgb(130, 140, 165);
-            var clrVerde = Color.FromArgb( 72, 187, 120);
-            var clrRojo  = Color.FromArgb(220,  80,  80);
-
             Text = $"Cambiar contraseña — {usuario}";
             Size = new Size(320, 260);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false; MinimizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
-            BackColor = clrFondo; ForeColor = clrTexto;
+            BackColor = SystemColors.Control; ForeColor = SystemColors.ControlText;
             Font = new Font("Segoe UI", 9f);
 
-            var lbl1 = new Label { Text = "Nueva contraseña",  ForeColor = clrSub, AutoSize = true, Location = new Point(24, 20) };
-            var lbl2 = new Label { Text = "Repetir contraseña",ForeColor = clrSub, AutoSize = true, Location = new Point(24, 80) };
+            var lbl1 = new Label { Text = "Nueva contraseña",  ForeColor = SystemColors.GrayText, AutoSize = true, Location = new Point(24, 20) };
+            var lbl2 = new Label { Text = "Repetir contraseña",ForeColor = SystemColors.GrayText, AutoSize = true, Location = new Point(24, 80) };
 
             _txtNueva   = new TextBox { UseSystemPasswordChar = true, Size = new Size(268, 26),
-                Location = new Point(24, 40), BackColor = clrInput, ForeColor = clrTexto,
+                Location = new Point(24, 40), BackColor = SystemColors.Window, ForeColor = SystemColors.WindowText,
                 BorderStyle = BorderStyle.FixedSingle, Font = new Font("Segoe UI", 10f) };
             _txtRepetir = new TextBox { UseSystemPasswordChar = true, Size = new Size(268, 26),
-                Location = new Point(24, 100), BackColor = clrInput, ForeColor = clrTexto,
+                Location = new Point(24, 100), BackColor = SystemColors.Window, ForeColor = SystemColors.WindowText,
                 BorderStyle = BorderStyle.FixedSingle, Font = new Font("Segoe UI", 10f) };
 
-            _lblErr = new Label { ForeColor = clrRojo, AutoSize = true,
+            _lblErr = new Label { ForeColor = Color.Red, AutoSize = true,
                 Location = new Point(24, 136), Visible = false };
 
             var btnOk = new Button { Text = "Guardar", Size = new Size(268, 36),
-                Location = new Point(24, 164), BackColor = clrVerde, ForeColor = clrFondo,
-                FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                Cursor = Cursors.Hand };
-            btnOk.FlatAppearance.BorderSize = 0;
+                Location = new Point(24, 164), ForeColor = SystemColors.ControlText,
+                FlatStyle = FlatStyle.Standard, Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                Cursor = Cursors.Hand, UseVisualStyleBackColor = true };
             btnOk.Click += (_, _) => Guardar();
 
             Controls.AddRange(new Control[] { lbl1, _txtNueva, lbl2, _txtRepetir, _lblErr, btnOk });

@@ -61,7 +61,7 @@ namespace BingoHistoricoEditor {
             bool ok = await _db.TestConnectionAsync(); //
 
             lblEstado.Text = ok ? "Estado: Conectado a Firebird" : "Estado: ERROR DE CONEXIÓN";
-            lblEstado.ForeColor = ok ? Color.LimeGreen : Color.Red;
+            lblEstado.ForeColor = ok ? Color.Green : Color.Red;
 
             if (ok) {
                 EscribirLog("SISTEMA", "Conexión establecida correctamente.");
@@ -87,11 +87,11 @@ namespace BingoHistoricoEditor {
             grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             grid.AllowUserToAddRows = false;
 
-            // Colores alternos
-            grid.AlternatingRowsDefaultCellStyle.BackColor = Color.FromArgb(40, 40, 45);
-            grid.DefaultCellStyle.BackColor = Color.FromArgb(30, 30, 35);
-            grid.DefaultCellStyle.ForeColor = Color.White;
-            grid.BackgroundColor = Color.FromArgb(30, 30, 35);
+            // Colores alternos (paleta estándar de Windows)
+            grid.AlternatingRowsDefaultCellStyle.BackColor = SystemColors.ControlLight;
+            grid.DefaultCellStyle.BackColor = SystemColors.Window;
+            grid.DefaultCellStyle.ForeColor = SystemColors.WindowText;
+            grid.BackgroundColor = SystemColors.Window;
         }
 
         private void ConfigurarLimitesNumericos() {
@@ -123,14 +123,14 @@ namespace BingoHistoricoEditor {
 
             var lbl = new Label {
                 Text = etiqueta,
-                ForeColor = Color.LightGray,
+                ForeColor = SystemColors.ControlText,
                 BackColor = Color.Transparent,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Dock = DockStyle.Fill
             };
 
-            control.BackColor = Color.FromArgb(35, 35, 40);
-            control.ForeColor = Color.White;
+            control.BackColor = SystemColors.Window;
+            control.ForeColor = SystemColors.WindowText;
             control.Dock = DockStyle.Fill;
 
             tlpEdicion.Controls.Add(lbl, 0, fila);
@@ -418,8 +418,9 @@ namespace BingoHistoricoEditor {
                 SetBusy(true);
                 EscribirLog("INFO", $"Guardando lote {inicio}-{fin}", true);
 
+                var entradas = new List<HistoricoEntry>();
                 for (int p = inicio; p <= fin; p++) {
-                    var entry = new HistoricoEntry {
+                    entradas.Add(new HistoricoEntry {
                         CodSala = _codSala,
                         CodConc = _codConc,
                         FechaSesion = dtpFecha.Value.Date,
@@ -429,10 +430,10 @@ namespace BingoHistoricoEditor {
                         Vendidos = (int)nudLoteVendidos.Value,
                         Premio1 = 0,
                         Premio2 = 0
-                    };
-                    entry.Venta = entry.Precio * entry.Vendidos;
-                    await _db.GuardarAsync(entry);
+                    });
                 }
+                await _db.GuardarLoteAsync(entradas);
+
                 EscribirLog("EXITO", "Lote guardado correctamente", true);
                 await CargarPartidasAsync();
             }
@@ -514,23 +515,23 @@ namespace BingoHistoricoEditor {
             // Aplicar estilos a los controles existentes en grpLote
             // SIN recrear ningún control - solo aplicar propiedades visuales
 
-            // Estilo del GroupBox
-            grpLote.BackColor = Color.FromArgb(45, 45, 50);
-            grpLote.ForeColor = Color.White;
+            // Estilo del GroupBox (paleta estándar de Windows)
+            grpLote.BackColor = SystemColors.Control;
+            grpLote.ForeColor = SystemColors.ControlText;
 
             // Estilo del TableLayoutPanel
-            tlpLoteCampos.BackColor = Color.FromArgb(45, 45, 50);
+            tlpLoteCampos.BackColor = SystemColors.Control;
 
             // Aplicar estilos a todos los controles dentro de tlpLoteCampos
             foreach (Control ctrl in tlpLoteCampos.Controls) {
                 if (ctrl is Label lbl) {
-                    lbl.ForeColor = Color.LightGray;
+                    lbl.ForeColor = SystemColors.ControlText;
                     lbl.BackColor = Color.Transparent;
                     lbl.TextAlign = ContentAlignment.MiddleLeft;
                 }
                 else if (ctrl is NumericUpDown nud) {
-                    nud.BackColor = Color.FromArgb(35, 35, 40);
-                    nud.ForeColor = Color.White;
+                    nud.BackColor = SystemColors.Window;
+                    nud.ForeColor = SystemColors.WindowText;
                 }
             }
 
@@ -545,42 +546,43 @@ namespace BingoHistoricoEditor {
             // Estilo de los botones en flpBotonesLote
             foreach (Control ctrl in flpBotonesLote.Controls) {
                 if (ctrl is Button btn) {
-                    btn.FlatStyle = FlatStyle.Flat;
-                    btn.ForeColor = Color.White;
+                    btn.FlatStyle = FlatStyle.Standard;
+                    btn.UseVisualStyleBackColor = true;
+                    btn.ForeColor = SystemColors.ControlText;
                 }
             }
         }
 
         private void ConfigurarEstilosIndividual() {
-            // Aplicar estilos a los tabs
+            // Aplicar estilos a los tabs (paleta estándar de Windows)
             if (tabIndividual != null) {
-                tabIndividual.UseVisualStyleBackColor = false;
-                tabIndividual.BackColor = Color.FromArgb(30, 30, 35);
+                tabIndividual.UseVisualStyleBackColor = true;
+                tabIndividual.BackColor = SystemColors.Control;
             }
             if (tabLote != null) {
-                tabLote.UseVisualStyleBackColor = false;
-                tabLote.BackColor = Color.FromArgb(30, 30, 35);
+                tabLote.UseVisualStyleBackColor = true;
+                tabLote.BackColor = SystemColors.Control;
             }
 
             // Aplicar estilos al GroupBox de edición
             if (grpEdicion != null) {
-                grpEdicion.BackColor = Color.FromArgb(45, 45, 50);
-                grpEdicion.ForeColor = Color.White;
+                grpEdicion.BackColor = SystemColors.Control;
+                grpEdicion.ForeColor = SystemColors.ControlText;
             }
 
             // Aplicar estilos al TableLayoutPanel y sus controles
             if (tlpEdicion != null) {
-                tlpEdicion.BackColor = Color.FromArgb(45, 45, 50);
+                tlpEdicion.BackColor = SystemColors.Control;
 
                 foreach (Control ctrl in tlpEdicion.Controls) {
                     if (ctrl is Label lbl) {
-                        lbl.ForeColor = Color.LightGray;
+                        lbl.ForeColor = SystemColors.ControlText;
                         lbl.BackColor = Color.Transparent;
                         lbl.TextAlign = ContentAlignment.MiddleLeft;
                     }
                     else if (ctrl is NumericUpDown nud) {
-                        nud.BackColor = Color.FromArgb(35, 35, 40);
-                        nud.ForeColor = Color.White;
+                        nud.BackColor = SystemColors.Window;
+                        nud.ForeColor = SystemColors.WindowText;
                     }
                 }
             }

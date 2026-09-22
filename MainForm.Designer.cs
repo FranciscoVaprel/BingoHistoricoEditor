@@ -12,7 +12,7 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.TabControl tabControlEdicion;
         private System.Windows.Forms.TabPage tabIndividual;
         private System.Windows.Forms.TabPage tabLote;
-        
+
         private System.Windows.Forms.GroupBox grpEdicion;
         private System.Windows.Forms.TableLayoutPanel tlpEdicion;
         private System.Windows.Forms.FlowLayoutPanel flpBotones;
@@ -148,9 +148,9 @@ namespace BingoHistoricoEditor {
             ((System.ComponentModel.ISupportInitialize)nudLoteVendidos).BeginInit();
             ((System.ComponentModel.ISupportInitialize)nudLotePrecio).BeginInit();
             SuspendLayout();
-            // 
+            //
             // tlpMain
-            // 
+            //
             tlpMain.ColumnCount = 1;
             tlpMain.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
             tlpMain.Controls.Add(pnlTop, 0, 0);
@@ -163,19 +163,19 @@ namespace BingoHistoricoEditor {
             tlpMain.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tlpMain.Size = new Size(1250, 750);
             tlpMain.TabIndex = 0;
-            // 
+            //
             // pnlTop
-            // 
-            pnlTop.BackColor = Color.FromArgb(45, 45, 50);
+            //
+            pnlTop.BackColor = SystemColors.ControlLight;
             pnlTop.Controls.Add(tlpHeader);
             pnlTop.Dock = DockStyle.Fill;
             pnlTop.Location = new Point(3, 3);
             pnlTop.Name = "pnlTop";
             pnlTop.Size = new Size(1244, 74);
             pnlTop.TabIndex = 0;
-            // 
+            //
             // tlpHeader
-            // 
+            //
             tlpHeader.ColumnCount = 4;
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
@@ -192,9 +192,9 @@ namespace BingoHistoricoEditor {
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tlpHeader.Size = new Size(1244, 74);
             tlpHeader.TabIndex = 0;
-            // 
+            //
             // pnlTextos
-            // 
+            //
             pnlTextos.Controls.Add(lblTitulo);
             pnlTextos.Controls.Add(lblSalaConc);
             pnlTextos.Controls.Add(lblEstado);
@@ -202,40 +202,40 @@ namespace BingoHistoricoEditor {
             pnlTextos.Name = "pnlTextos";
             pnlTextos.Size = new Size(539, 68);
             pnlTextos.TabIndex = 0;
-            // 
+            //
             // lblTitulo
-            // 
+            //
             lblTitulo.AutoSize = true;
             lblTitulo.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
-            lblTitulo.ForeColor = Color.White;
+            lblTitulo.ForeColor = SystemColors.ControlText;
             lblTitulo.Location = new Point(0, 15);
             lblTitulo.Name = "lblTitulo";
             lblTitulo.Size = new Size(237, 25);
             lblTitulo.TabIndex = 0;
             lblTitulo.Text = "HISTÓRICO DE PARTIDAS";
-            // 
+            //
             // lblSalaConc
-            // 
+            //
             lblSalaConc.AutoSize = true;
-            lblSalaConc.ForeColor = Color.DarkGray;
+            lblSalaConc.ForeColor = SystemColors.GrayText;
             lblSalaConc.Location = new Point(2, 45);
             lblSalaConc.Name = "lblSalaConc";
             lblSalaConc.Size = new Size(192, 19);
             lblSalaConc.TabIndex = 1;
             lblSalaConc.Text = "SALA: 0 | CONCESIONARIO: 0";
-            // 
+            //
             // lblEstado
-            // 
+            //
             lblEstado.AutoSize = true;
-            lblEstado.ForeColor = Color.Orange;
+            lblEstado.ForeColor = Color.DarkOrange;
             lblEstado.Location = new Point(220, 45);
             lblEstado.Name = "lblEstado";
             lblEstado.Size = new Size(143, 19);
             lblEstado.TabIndex = 2;
             lblEstado.Text = "Estado: Desconectado";
-            // 
+            //
             // dtpFecha
-            // 
+            //
             dtpFecha.Anchor = AnchorStyles.Right;
             dtpFecha.Format = DateTimePickerFormat.Short;
             dtpFecha.Location = new Point(811, 24);
@@ -243,39 +243,37 @@ namespace BingoHistoricoEditor {
             dtpFecha.Size = new Size(110, 26);
             dtpFecha.TabIndex = 1;
             toolTip.SetToolTip(dtpFecha, "Selecciona la fecha para filtrar partidas.");
-            // 
+            //
             // btnBuscar
-            // 
+            //
             btnBuscar.Anchor = AnchorStyles.None;
-            btnBuscar.BackColor = Color.FromArgb(40, 167, 69);
-            btnBuscar.FlatStyle = FlatStyle.Flat;
-            btnBuscar.ForeColor = Color.White;
+            btnBuscar.FlatStyle = FlatStyle.Standard;
+            btnBuscar.ForeColor = SystemColors.ControlText;
             btnBuscar.Location = new Point(939, 19);
             btnBuscar.Name = "btnBuscar";
             btnBuscar.Size = new Size(120, 35);
             btnBuscar.TabIndex = 2;
             btnBuscar.Text = "🔍 BUSCAR";
             toolTip.SetToolTip(btnBuscar, "Buscar partidas por la fecha seleccionada.");
-            btnBuscar.UseVisualStyleBackColor = false;
+            btnBuscar.UseVisualStyleBackColor = true;
             btnBuscar.Click += btnBuscar_Click;
-            // 
+            //
             // btnConfiguracion
-            // 
+            //
             btnConfiguracion.Anchor = AnchorStyles.None;
-            btnConfiguracion.BackColor = Color.FromArgb(0, 123, 255);
-            btnConfiguracion.FlatStyle = FlatStyle.Flat;
-            btnConfiguracion.ForeColor = Color.White;
+            btnConfiguracion.FlatStyle = FlatStyle.Standard;
+            btnConfiguracion.ForeColor = SystemColors.ControlText;
             btnConfiguracion.Location = new Point(1089, 19);
             btnConfiguracion.Name = "btnConfiguracion";
             btnConfiguracion.Size = new Size(120, 35);
             btnConfiguracion.TabIndex = 3;
             btnConfiguracion.Text = "⚙ CONFIG";
             toolTip.SetToolTip(btnConfiguracion, "Abrir configuración de la aplicación.");
-            btnConfiguracion.UseVisualStyleBackColor = false;
+            btnConfiguracion.UseVisualStyleBackColor = true;
             btnConfiguracion.Click += btnConfiguracion_Click;
-            // 
+            //
             // tlpContent
-            // 
+            //
             tlpContent.ColumnCount = 2;
             tlpContent.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tlpContent.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 360F));
@@ -287,9 +285,9 @@ namespace BingoHistoricoEditor {
             tlpContent.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tlpContent.Size = new Size(1244, 664);
             tlpContent.TabIndex = 1;
-            // 
+            //
             // tlpIzquierda
-            // 
+            //
             tlpIzquierda.ColumnCount = 1;
             tlpIzquierda.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
             tlpIzquierda.Controls.Add(grid, 0, 0);
@@ -302,11 +300,11 @@ namespace BingoHistoricoEditor {
             tlpIzquierda.RowStyles.Add(new RowStyle(SizeType.Absolute, 130F));
             tlpIzquierda.Size = new Size(878, 658);
             tlpIzquierda.TabIndex = 0;
-            // 
+            //
             // grid
-            // 
-            grid.BackgroundColor = Color.FromArgb(30, 30, 35);
-            grid.BorderStyle = BorderStyle.None;
+            //
+            grid.BackgroundColor = SystemColors.Window;
+            grid.BorderStyle = BorderStyle.FixedSingle;
             grid.Dock = DockStyle.Fill;
             grid.Location = new Point(3, 3);
             grid.Name = "grid";
@@ -314,42 +312,42 @@ namespace BingoHistoricoEditor {
             grid.Size = new Size(872, 522);
             grid.TabIndex = 0;
             grid.SelectionChanged += grid_SelectionChanged;
-            // 
+            //
             // pnlLog
-            // 
-            pnlLog.BackColor = Color.Black;
+            //
+            pnlLog.BackColor = SystemColors.Window;
             pnlLog.Controls.Add(txtLog);
             pnlLog.Dock = DockStyle.Fill;
             pnlLog.Location = new Point(3, 531);
             pnlLog.Name = "pnlLog";
             pnlLog.Size = new Size(872, 124);
             pnlLog.TabIndex = 1;
-            // 
+            //
             // txtLog
-            // 
-            txtLog.BackColor = Color.Black;
+            //
+            txtLog.BackColor = SystemColors.Window;
             txtLog.BorderStyle = BorderStyle.None;
             txtLog.Dock = DockStyle.Fill;
             txtLog.Font = new Font("Consolas", 9F);
-            txtLog.ForeColor = Color.LimeGreen;
+            txtLog.ForeColor = SystemColors.WindowText;
             txtLog.Location = new Point(0, 0);
             txtLog.Multiline = true;
             txtLog.Name = "txtLog";
             txtLog.ReadOnly = true;
             txtLog.Size = new Size(872, 124);
             txtLog.TabIndex = 0;
-            // 
+            //
             // pnlRight
-            // 
+            //
             pnlRight.Controls.Add(tabControlEdicion);
             pnlRight.Dock = DockStyle.Fill;
             pnlRight.Location = new Point(887, 3);
             pnlRight.Name = "pnlRight";
             pnlRight.Size = new Size(354, 658);
             pnlRight.TabIndex = 1;
-            // 
+            //
             // tabControlEdicion
-            // 
+            //
             tabControlEdicion.Controls.Add(tabIndividual);
             tabControlEdicion.Controls.Add(tabLote);
             tabControlEdicion.Dock = DockStyle.Fill;
@@ -358,10 +356,10 @@ namespace BingoHistoricoEditor {
             tabControlEdicion.SelectedIndex = 0;
             tabControlEdicion.Size = new Size(354, 658);
             tabControlEdicion.TabIndex = 0;
-            // 
+            //
             // tabIndividual
-            // 
-            tabIndividual.BackColor = Color.FromArgb(30, 30, 35);
+            //
+            tabIndividual.BackColor = SystemColors.Control;
             tabIndividual.Controls.Add(grpEdicion);
             tabIndividual.Location = new Point(4, 28);
             tabIndividual.Name = "tabIndividual";
@@ -369,22 +367,22 @@ namespace BingoHistoricoEditor {
             tabIndividual.Size = new Size(346, 626);
             tabIndividual.TabIndex = 0;
             tabIndividual.Text = "Edición Individual";
-            // 
+            //
             // grpEdicion
-            // 
+            //
             grpEdicion.Controls.Add(flpBotones);
             grpEdicion.Controls.Add(tlpEdicion);
             grpEdicion.Dock = DockStyle.Fill;
-            grpEdicion.ForeColor = Color.Gold;
+            grpEdicion.ForeColor = SystemColors.ControlText;
             grpEdicion.Location = new Point(5, 5);
             grpEdicion.Name = "grpEdicion";
             grpEdicion.Size = new Size(336, 616);
             grpEdicion.TabIndex = 0;
             grpEdicion.TabStop = false;
             grpEdicion.Text = " DATOS PARTIDA ";
-            // 
+            //
             // flpBotones
-            // 
+            //
             flpBotones.Controls.Add(btnNuevaPartida);
             flpBotones.Controls.Add(btnGuardar);
             flpBotones.Controls.Add(btnEliminar);
@@ -395,51 +393,48 @@ namespace BingoHistoricoEditor {
             flpBotones.Padding = new Padding(10, 5, 10, 5);
             flpBotones.Size = new Size(330, 160);
             flpBotones.TabIndex = 0;
-            // 
+            //
             // btnNuevaPartida
-            // 
-            btnNuevaPartida.BackColor = Color.FromArgb(0, 122, 204);
-            btnNuevaPartida.FlatStyle = FlatStyle.Flat;
-            btnNuevaPartida.ForeColor = Color.White;
+            //
+            btnNuevaPartida.FlatStyle = FlatStyle.Standard;
+            btnNuevaPartida.ForeColor = SystemColors.ControlText;
             btnNuevaPartida.Location = new Point(13, 8);
             btnNuevaPartida.Name = "btnNuevaPartida";
             btnNuevaPartida.Size = new Size(310, 35);
             btnNuevaPartida.TabIndex = 0;
             btnNuevaPartida.Text = "✨ NUEVA PARTIDA";
             toolTip.SetToolTip(btnNuevaPartida, "Crear una nueva partida. Sugiere automáticamente la primera partida faltante.");
-            btnNuevaPartida.UseVisualStyleBackColor = false;
+            btnNuevaPartida.UseVisualStyleBackColor = true;
             btnNuevaPartida.Click += btnNuevaPartida_Click;
-            // 
+            //
             // btnGuardar
-            // 
-            btnGuardar.BackColor = Color.FromArgb(40, 167, 69);
-            btnGuardar.FlatStyle = FlatStyle.Flat;
-            btnGuardar.ForeColor = Color.White;
+            //
+            btnGuardar.FlatStyle = FlatStyle.Standard;
+            btnGuardar.ForeColor = SystemColors.ControlText;
             btnGuardar.Location = new Point(13, 49);
             btnGuardar.Name = "btnGuardar";
             btnGuardar.Size = new Size(310, 35);
             btnGuardar.TabIndex = 1;
             btnGuardar.Text = "💾 GUARDAR";
             toolTip.SetToolTip(btnGuardar, "Guardar los cambios de la partida seleccionada.");
-            btnGuardar.UseVisualStyleBackColor = false;
+            btnGuardar.UseVisualStyleBackColor = true;
             btnGuardar.Click += btnGuardar_Click;
-            // 
+            //
             // btnEliminar
-            // 
-            btnEliminar.BackColor = Color.FromArgb(220, 53, 69);
-            btnEliminar.FlatStyle = FlatStyle.Flat;
-            btnEliminar.ForeColor = Color.White;
+            //
+            btnEliminar.FlatStyle = FlatStyle.Standard;
+            btnEliminar.ForeColor = SystemColors.ControlText;
             btnEliminar.Location = new Point(13, 90);
             btnEliminar.Name = "btnEliminar";
             btnEliminar.Size = new Size(310, 35);
             btnEliminar.TabIndex = 2;
             btnEliminar.Text = "🗑 ELIMINAR";
             toolTip.SetToolTip(btnEliminar, "Eliminar la partida seleccionada de la base de datos.");
-            btnEliminar.UseVisualStyleBackColor = false;
+            btnEliminar.UseVisualStyleBackColor = true;
             btnEliminar.Click += btnEliminar_Click;
-            // 
+            //
             // tlpEdicion
-            // 
+            //
             tlpEdicion.ColumnCount = 2;
             tlpEdicion.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
             tlpEdicion.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60F));
@@ -464,110 +459,110 @@ namespace BingoHistoricoEditor {
             tlpEdicion.RowStyles.Add(new RowStyle(SizeType.Percent, 20F));
             tlpEdicion.Size = new Size(330, 250);
             tlpEdicion.TabIndex = 1;
-            // 
+            //
             // lblPartida
-            // 
+            //
             lblPartida.Dock = DockStyle.Fill;
-            lblPartida.ForeColor = Color.LightGray;
+            lblPartida.ForeColor = SystemColors.ControlText;
             lblPartida.Location = new Point(3, 0);
             lblPartida.Name = "lblPartida";
             lblPartida.Size = new Size(126, 50);
             lblPartida.TabIndex = 0;
             lblPartida.Text = "Partida:";
             lblPartida.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // nudPartida
-            // 
+            //
             nudPartida.Dock = DockStyle.Fill;
             nudPartida.Location = new Point(135, 3);
             nudPartida.Name = "nudPartida";
             nudPartida.Size = new Size(192, 26);
             nudPartida.TabIndex = 1;
             toolTip.SetToolTip(nudPartida, "Número de la partida del día.");
-            // 
+            //
             // lblPrecio
-            // 
+            //
             lblPrecio.Dock = DockStyle.Fill;
-            lblPrecio.ForeColor = Color.LightGray;
+            lblPrecio.ForeColor = SystemColors.ControlText;
             lblPrecio.Location = new Point(3, 50);
             lblPrecio.Name = "lblPrecio";
             lblPrecio.Size = new Size(126, 50);
             lblPrecio.TabIndex = 2;
             lblPrecio.Text = "Precio:";
             lblPrecio.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // nudPrecio
-            // 
+            //
             nudPrecio.Dock = DockStyle.Fill;
             nudPrecio.Location = new Point(135, 53);
             nudPrecio.Name = "nudPrecio";
             nudPrecio.Size = new Size(192, 26);
             nudPrecio.TabIndex = 3;
             toolTip.SetToolTip(nudPrecio, "Precio de la partida en euros.");
-            // 
+            //
             // lblVendidos
-            // 
+            //
             lblVendidos.Dock = DockStyle.Fill;
-            lblVendidos.ForeColor = Color.LightGray;
+            lblVendidos.ForeColor = SystemColors.ControlText;
             lblVendidos.Location = new Point(3, 100);
             lblVendidos.Name = "lblVendidos";
             lblVendidos.Size = new Size(126, 50);
             lblVendidos.TabIndex = 4;
             lblVendidos.Text = "Vendidos:";
             lblVendidos.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // nudVendidos
-            // 
+            //
             nudVendidos.Dock = DockStyle.Fill;
             nudVendidos.Location = new Point(135, 103);
             nudVendidos.Name = "nudVendidos";
             nudVendidos.Size = new Size(192, 26);
             nudVendidos.TabIndex = 5;
             toolTip.SetToolTip(nudVendidos, "Cantidad de cartones vendidos.");
-            // 
+            //
             // lblLinea
-            // 
+            //
             lblLinea.Dock = DockStyle.Fill;
-            lblLinea.ForeColor = Color.LightGray;
+            lblLinea.ForeColor = SystemColors.ControlText;
             lblLinea.Location = new Point(3, 150);
             lblLinea.Name = "lblLinea";
             lblLinea.Size = new Size(126, 50);
             lblLinea.TabIndex = 6;
             lblLinea.Text = "Línea:";
             lblLinea.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // nudLinea
-            // 
+            //
             nudLinea.Dock = DockStyle.Fill;
             nudLinea.Location = new Point(135, 153);
             nudLinea.Name = "nudLinea";
             nudLinea.Size = new Size(192, 26);
             nudLinea.TabIndex = 7;
             toolTip.SetToolTip(nudLinea, "Premio de línea.");
-            // 
+            //
             // lblBingo
-            // 
+            //
             lblBingo.Dock = DockStyle.Fill;
-            lblBingo.ForeColor = Color.LightGray;
+            lblBingo.ForeColor = SystemColors.ControlText;
             lblBingo.Location = new Point(3, 200);
             lblBingo.Name = "lblBingo";
             lblBingo.Size = new Size(126, 50);
             lblBingo.TabIndex = 8;
             lblBingo.Text = "Bingo:";
             lblBingo.TextAlign = ContentAlignment.MiddleLeft;
-            // 
+            //
             // nudBingo
-            // 
+            //
             nudBingo.Dock = DockStyle.Fill;
             nudBingo.Location = new Point(135, 203);
             nudBingo.Name = "nudBingo";
             nudBingo.Size = new Size(192, 26);
             nudBingo.TabIndex = 9;
             toolTip.SetToolTip(nudBingo, "Premio de bingo.");
-            // 
+            //
             // tabLote
-            // 
-            tabLote.BackColor = Color.FromArgb(30, 30, 35);
+            //
+            tabLote.BackColor = SystemColors.Control;
             tabLote.Controls.Add(grpLote);
             tabLote.Location = new Point(4, 28);
             tabLote.Name = "tabLote";
@@ -575,22 +570,22 @@ namespace BingoHistoricoEditor {
             tabLote.Size = new Size(346, 626);
             tabLote.TabIndex = 1;
             tabLote.Text = "Edición en Lote";
-            // 
+            //
             // grpLote
-            // 
+            //
             grpLote.Controls.Add(flpBotonesLote);
             grpLote.Controls.Add(tlpLoteCampos);
             grpLote.Dock = DockStyle.Fill;
-            grpLote.ForeColor = Color.Gold;
+            grpLote.ForeColor = SystemColors.ControlText;
             grpLote.Location = new Point(5, 5);
             grpLote.Name = "grpLote";
             grpLote.Size = new Size(336, 616);
             grpLote.TabIndex = 0;
             grpLote.TabStop = false;
             grpLote.Text = " ACCIONES MASIVAS ";
-            // 
+            //
             // flpBotonesLote
-            // 
+            //
             flpBotonesLote.Controls.Add(btnBuscarFaltante);
             flpBotonesLote.Controls.Add(btnGuardarLote);
             flpBotonesLote.Controls.Add(btnEliminarLote);
@@ -601,51 +596,48 @@ namespace BingoHistoricoEditor {
             flpBotonesLote.Padding = new Padding(10, 5, 10, 5);
             flpBotonesLote.Size = new Size(330, 160);
             flpBotonesLote.TabIndex = 0;
-            // 
+            //
             // btnBuscarFaltante
-            // 
-            btnBuscarFaltante.BackColor = Color.FromArgb(230, 126, 34);
-            btnBuscarFaltante.FlatStyle = FlatStyle.Flat;
-            btnBuscarFaltante.ForeColor = Color.White;
+            //
+            btnBuscarFaltante.FlatStyle = FlatStyle.Standard;
+            btnBuscarFaltante.ForeColor = SystemColors.ControlText;
             btnBuscarFaltante.Location = new Point(13, 8);
             btnBuscarFaltante.Name = "btnBuscarFaltante";
             btnBuscarFaltante.Size = new Size(310, 35);
             btnBuscarFaltante.TabIndex = 0;
             btnBuscarFaltante.Text = "🔍 BUSCAR PRIMER FALTANTE";
             toolTip.SetToolTip(btnBuscarFaltante, "Busca todas las partidas faltantes en el rango y establece automáticamente el primer y último hueco.");
-            btnBuscarFaltante.UseVisualStyleBackColor = false;
+            btnBuscarFaltante.UseVisualStyleBackColor = true;
             btnBuscarFaltante.Click += btnBuscarFaltante_Click;
-            // 
+            //
             // btnGuardarLote
-            // 
-            btnGuardarLote.BackColor = Color.FromArgb(40, 167, 69);
-            btnGuardarLote.FlatStyle = FlatStyle.Flat;
-            btnGuardarLote.ForeColor = Color.White;
+            //
+            btnGuardarLote.FlatStyle = FlatStyle.Standard;
+            btnGuardarLote.ForeColor = SystemColors.ControlText;
             btnGuardarLote.Location = new Point(13, 49);
             btnGuardarLote.Name = "btnGuardarLote";
             btnGuardarLote.Size = new Size(310, 35);
             btnGuardarLote.TabIndex = 1;
             btnGuardarLote.Text = "💾 GUARDAR LOTE";
             toolTip.SetToolTip(btnGuardarLote, "Guardar múltiples partidas del rango especificado.");
-            btnGuardarLote.UseVisualStyleBackColor = false;
+            btnGuardarLote.UseVisualStyleBackColor = true;
             btnGuardarLote.Click += btnGuardarLote_Click;
-            // 
+            //
             // btnEliminarLote
-            // 
-            btnEliminarLote.BackColor = Color.FromArgb(220, 53, 69);
-            btnEliminarLote.FlatStyle = FlatStyle.Flat;
-            btnEliminarLote.ForeColor = Color.White;
+            //
+            btnEliminarLote.FlatStyle = FlatStyle.Standard;
+            btnEliminarLote.ForeColor = SystemColors.ControlText;
             btnEliminarLote.Location = new Point(13, 90);
             btnEliminarLote.Name = "btnEliminarLote";
             btnEliminarLote.Size = new Size(310, 35);
             btnEliminarLote.TabIndex = 2;
             btnEliminarLote.Text = "🗑 ELIMINAR LOTE";
             toolTip.SetToolTip(btnEliminarLote, "Eliminar todas las partidas en el rango especificado.");
-            btnEliminarLote.UseVisualStyleBackColor = false;
+            btnEliminarLote.UseVisualStyleBackColor = true;
             btnEliminarLote.Click += btnEliminarLote_Click;
-            // 
+            //
             // tlpLoteCampos
-            // 
+            //
             tlpLoteCampos.ColumnCount = 2;
             tlpLoteCampos.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 40F));
             tlpLoteCampos.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 60F));
@@ -667,18 +659,18 @@ namespace BingoHistoricoEditor {
             tlpLoteCampos.RowStyles.Add(new RowStyle(SizeType.Percent, 25F));
             tlpLoteCampos.Size = new Size(330, 180);
             tlpLoteCampos.TabIndex = 1;
-            // 
+            //
             // lblIni
-            // 
-            lblIni.ForeColor = Color.White;
+            //
+            lblIni.ForeColor = SystemColors.ControlText;
             lblIni.Location = new Point(3, 0);
             lblIni.Name = "lblIni";
             lblIni.Size = new Size(100, 23);
             lblIni.TabIndex = 0;
             lblIni.Text = "Partida Inicial";
-            // 
+            //
             // nudPartidaInicial
-            // 
+            //
             nudPartidaInicial.Dock = DockStyle.Fill;
             nudPartidaInicial.Location = new Point(135, 3);
             nudPartidaInicial.Name = "nudPartidaInicial";
@@ -686,18 +678,18 @@ namespace BingoHistoricoEditor {
             nudPartidaInicial.TabIndex = 1;
             toolTip.SetToolTip(nudPartidaInicial, "Primera partida del rango a procesar.");
             nudPartidaInicial.Value = new decimal(new int[] { 1, 0, 0, 0 });
-            // 
+            //
             // lblFin
-            // 
-            lblFin.ForeColor = Color.White;
+            //
+            lblFin.ForeColor = SystemColors.ControlText;
             lblFin.Location = new Point(3, 45);
             lblFin.Name = "lblFin";
             lblFin.Size = new Size(100, 23);
             lblFin.TabIndex = 2;
             lblFin.Text = "Partida Final";
-            // 
+            //
             // nudPartidaFinal
-            // 
+            //
             nudPartidaFinal.Dock = DockStyle.Fill;
             nudPartidaFinal.Location = new Point(135, 48);
             nudPartidaFinal.Name = "nudPartidaFinal";
@@ -705,19 +697,19 @@ namespace BingoHistoricoEditor {
             nudPartidaFinal.TabIndex = 3;
             toolTip.SetToolTip(nudPartidaFinal, "Última partida del rango a procesar.");
             nudPartidaFinal.Value = new decimal(new int[] { 1, 0, 0, 0 });
-            // 
+            //
             // lblLoteVendidos
-            // 
+            //
             lblLoteVendidos.Dock = DockStyle.Fill;
-            lblLoteVendidos.ForeColor = Color.LightGray;
+            lblLoteVendidos.ForeColor = SystemColors.ControlText;
             lblLoteVendidos.Location = new Point(3, 90);
             lblLoteVendidos.Name = "lblLoteVendidos";
             lblLoteVendidos.Size = new Size(126, 45);
             lblLoteVendidos.TabIndex = 4;
             lblLoteVendidos.Text = "Cartones Vendidos:";
-            // 
+            //
             // nudLoteVendidos
-            // 
+            //
             nudLoteVendidos.Dock = DockStyle.Fill;
             nudLoteVendidos.Location = new Point(135, 93);
             nudLoteVendidos.Maximum = new decimal(new int[] { 999999, 0, 0, 0 });
@@ -725,19 +717,19 @@ namespace BingoHistoricoEditor {
             nudLoteVendidos.Size = new Size(192, 26);
             nudLoteVendidos.TabIndex = 5;
             toolTip.SetToolTip(nudLoteVendidos, "Cartones vendidos para todas las partidas del lote.");
-            // 
+            //
             // lblLotePrecio
-            // 
+            //
             lblLotePrecio.Dock = DockStyle.Fill;
-            lblLotePrecio.ForeColor = Color.LightGray;
+            lblLotePrecio.ForeColor = SystemColors.ControlText;
             lblLotePrecio.Location = new Point(3, 135);
             lblLotePrecio.Name = "lblLotePrecio";
             lblLotePrecio.Size = new Size(126, 45);
             lblLotePrecio.TabIndex = 6;
             lblLotePrecio.Text = "Precio Partida:";
-            // 
+            //
             // nudLotePrecio
-            // 
+            //
             nudLotePrecio.DecimalPlaces = 2;
             nudLotePrecio.Dock = DockStyle.Fill;
             nudLotePrecio.Increment = new decimal(new int[] { 1, 0, 0, 131072 });
@@ -747,10 +739,10 @@ namespace BingoHistoricoEditor {
             nudLotePrecio.Size = new Size(192, 26);
             nudLotePrecio.TabIndex = 7;
             toolTip.SetToolTip(nudLotePrecio, "Precio por partida para todas las partidas del lote.");
-            // 
+            //
             // MainForm
-            // 
-            BackColor = Color.FromArgb(30, 30, 35);
+            //
+            BackColor = SystemColors.Control;
             ClientSize = new Size(1250, 750);
             Controls.Add(tlpMain);
             Name = "MainForm";
@@ -790,7 +782,7 @@ namespace BingoHistoricoEditor {
         private void AgregarControlEdicion(string texto, System.Windows.Forms.Control ctrl, int row) {
             var lbl = new System.Windows.Forms.Label {
                 Text = texto,
-                ForeColor = System.Drawing.Color.LightGray,
+                ForeColor = System.Drawing.SystemColors.ControlText,
                 TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
                 Dock = System.Windows.Forms.DockStyle.Fill
             };

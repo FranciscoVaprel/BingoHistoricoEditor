@@ -20,41 +20,36 @@ namespace BingoHistoricoEditor {
         }
 
         private void InitializeComponent() {
-            var clrFondo    = System.Drawing.Color.FromArgb(18,  20,  28);
-            var clrPanel    = System.Drawing.Color.FromArgb(26,  29,  40);
-            var clrTexto    = System.Drawing.Color.FromArgb(220, 225, 240);
-            var clrSubtexto = System.Drawing.Color.FromArgb(130, 140, 165);
-            var clrVerde    = System.Drawing.Color.FromArgb( 72, 187, 120);
-            var clrGris     = System.Drawing.Color.FromArgb( 48,  54,  72);
-            var clrRojo     = System.Drawing.Color.FromArgb(220,  80,  80);
-
             this.SuspendLayout();
 
             // ── Formulario ────────────────────────────────────────────────────
             this.Text            = "Acceso — Histórico Bingo";
-            this.Size            = new System.Drawing.Size(360, 440);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.ClientSize      = new System.Drawing.Size(360, 440);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.MaximizeBox     = false;
+            this.MinimizeBox     = false;
             this.StartPosition   = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.BackColor       = clrFondo;
+            this.BackColor       = System.Drawing.SystemColors.Control;
 
             // ── Panel central ─────────────────────────────────────────────────
             this.pnlCentro = new System.Windows.Forms.Panel {
-                Size      = new System.Drawing.Size(300, 380),
-                Location  = new System.Drawing.Point(30, 30),
-                BackColor = clrPanel,
+                Size        = new System.Drawing.Size(300, 380),
+                Location    = new System.Drawing.Point(30, 30),
+                BackColor   = System.Drawing.SystemColors.Control,
+                BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle,
             };
 
             this.lblTitulo = new System.Windows.Forms.Label {
                 Text      = "BIENVENIDO",
                 Font      = new System.Drawing.Font("Segoe UI", 16f, System.Drawing.FontStyle.Bold),
-                ForeColor = System.Drawing.Color.White,
+                ForeColor = System.Drawing.SystemColors.ControlText,
                 Location  = new System.Drawing.Point(24, 20),
                 AutoSize  = true,
             };
             this.lblSubtitulo = new System.Windows.Forms.Label {
                 Text      = "Identifícate para continuar",
                 Font      = new System.Drawing.Font("Segoe UI", 9f),
-                ForeColor = clrSubtexto,
+                ForeColor = System.Drawing.SystemColors.GrayText,
                 Location  = new System.Drawing.Point(24, 50),
                 AutoSize  = true,
             };
@@ -63,15 +58,15 @@ namespace BingoHistoricoEditor {
             this.lblUserLabel = new System.Windows.Forms.Label {
                 Text      = "USUARIO",
                 Font      = new System.Drawing.Font("Segoe UI", 8f, System.Drawing.FontStyle.Bold),
-                ForeColor = clrSubtexto,
+                ForeColor = System.Drawing.SystemColors.GrayText,
                 Location  = new System.Drawing.Point(24, 85),
                 AutoSize  = true,
             };
             this.txtUsuario = new System.Windows.Forms.TextBox {
                 Size        = new System.Drawing.Size(252, 25),
                 Location    = new System.Drawing.Point(24, 105),
-                BackColor   = System.Drawing.Color.FromArgb(32, 36, 50),
-                ForeColor   = clrTexto,
+                BackColor   = System.Drawing.SystemColors.Window,
+                ForeColor   = System.Drawing.SystemColors.WindowText,
                 BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle,
                 Font        = new System.Drawing.Font("Segoe UI", 10f),
                 TabIndex    = 0,
@@ -82,15 +77,15 @@ namespace BingoHistoricoEditor {
             this.lblPasswordLabel = new System.Windows.Forms.Label {
                 Text      = "CONTRASEÑA",
                 Font      = new System.Drawing.Font("Segoe UI", 8f, System.Drawing.FontStyle.Bold),
-                ForeColor = clrSubtexto,
+                ForeColor = System.Drawing.SystemColors.GrayText,
                 Location  = new System.Drawing.Point(24, 145),
                 AutoSize  = true,
             };
             this.txtPassword = new System.Windows.Forms.TextBox {
                 Size         = new System.Drawing.Size(252, 25),
                 Location     = new System.Drawing.Point(24, 165),
-                BackColor    = System.Drawing.Color.FromArgb(32, 36, 50),
-                ForeColor    = clrTexto,
+                BackColor    = System.Drawing.SystemColors.Window,
+                ForeColor    = System.Drawing.SystemColors.WindowText,
                 BorderStyle  = System.Windows.Forms.BorderStyle.FixedSingle,
                 PasswordChar = '●',
                 Font         = new System.Drawing.Font("Segoe UI", 10f),
@@ -100,7 +95,7 @@ namespace BingoHistoricoEditor {
 
             // Error
             this.lblError = new System.Windows.Forms.Label {
-                ForeColor = clrRojo,
+                ForeColor = System.Drawing.Color.Red,
                 Font      = new System.Drawing.Font("Segoe UI", 8f),
                 Location  = new System.Drawing.Point(24, 200),
                 Size      = new System.Drawing.Size(252, 20),
@@ -113,14 +108,13 @@ namespace BingoHistoricoEditor {
                 Text      = "ENTRAR",
                 Size      = new System.Drawing.Size(252, 40),
                 Location  = new System.Drawing.Point(24, 228),
-                BackColor = clrVerde,
-                ForeColor = clrFondo,
-                FlatStyle = System.Windows.Forms.FlatStyle.Flat,
+                ForeColor = System.Drawing.SystemColors.ControlText,
+                FlatStyle = System.Windows.Forms.FlatStyle.Standard,
                 Font      = new System.Drawing.Font("Segoe UI", 10f, System.Drawing.FontStyle.Bold),
                 Cursor    = System.Windows.Forms.Cursors.Hand,
                 TabIndex  = 2,
+                UseVisualStyleBackColor = true,
             };
-            this.btnEntrar.FlatAppearance.BorderSize = 0;
             this.btnEntrar.Click += this.btnEntrar_Click;
 
             // Botón Gestionar usuarios (discreto, debajo del login)
@@ -128,14 +122,13 @@ namespace BingoHistoricoEditor {
                 Text      = "⚙  Gestionar usuarios",
                 Size      = new System.Drawing.Size(252, 30),
                 Location  = new System.Drawing.Point(24, 282),
-                BackColor = clrGris,
-                ForeColor = clrSubtexto,
-                FlatStyle = System.Windows.Forms.FlatStyle.Flat,
+                ForeColor = System.Drawing.SystemColors.GrayText,
+                FlatStyle = System.Windows.Forms.FlatStyle.Standard,
                 Font      = new System.Drawing.Font("Segoe UI", 8.5f),
                 Cursor    = System.Windows.Forms.Cursors.Hand,
                 TabIndex  = 3,
+                UseVisualStyleBackColor = true,
             };
-            this.btnGestionar.FlatAppearance.BorderSize = 0;
             this.btnGestionar.Click += this.btnGestionar_Click;
 
             // Botón Cerrar
@@ -143,14 +136,13 @@ namespace BingoHistoricoEditor {
                 Text      = "✕  Cerrar",
                 Size      = new System.Drawing.Size(252, 30),
                 Location  = new System.Drawing.Point(24, 326),
-                BackColor = clrRojo,
-                ForeColor = System.Drawing.Color.White,
-                FlatStyle = System.Windows.Forms.FlatStyle.Flat,
+                ForeColor = System.Drawing.SystemColors.ControlText,
+                FlatStyle = System.Windows.Forms.FlatStyle.Standard,
                 Font      = new System.Drawing.Font("Segoe UI", 8.5f),
                 Cursor    = System.Windows.Forms.Cursors.Hand,
                 TabIndex  = 4,
+                UseVisualStyleBackColor = true,
             };
-            this.btnCerrar.FlatAppearance.BorderSize = 0;
             this.btnCerrar.Click += this.btnCerrar_Click;
 
             this.pnlCentro.Controls.AddRange(new System.Windows.Forms.Control[] {

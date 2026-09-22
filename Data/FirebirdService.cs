@@ -67,14 +67,11 @@ namespace BingoHistoricoEditor.Data {
         }
 
         public async Task<bool> TestConnectionAsync() {
-            using (var conn = new FbConnection(_cs)) {
-                await conn.OpenAsync();
-                // ServerVersion te devolverá un string detallado (Ej: "WI-V3.0.7.33374 Firebird 3.0")
-                System.Diagnostics.Debug.WriteLine($"Versión de Firebird: {conn.ServerVersion}");
-            }
             try {
                 using var conn = new FbConnection(_cs);
                 await conn.OpenAsync();
+                // ServerVersion te devolverá un string detallado (Ej: "WI-V3.0.7.33374 Firebird 3.0")
+                System.Diagnostics.Debug.WriteLine($"Versión de Firebird: {conn.ServerVersion}");
                 return true;
             }
             catch { return false; }
@@ -144,7 +141,7 @@ namespace BingoHistoricoEditor.Data {
                 cmd.Parameters.Add("@venta",    FbDbType.Decimal).Value = e.Venta;
                 cmd.Parameters.Add("@premio1",  FbDbType.Decimal).Value = e.Premio1;
                 cmd.Parameters.Add("@premio2",  FbDbType.Decimal).Value = e.Premio2;
-
+                
                 await conn.OpenAsync();
                 await cmd.ExecuteNonQueryAsync();
             }
@@ -153,8 +150,49 @@ namespace BingoHistoricoEditor.Data {
             }
         }
 
-        // ── Eliminar ──────────────────────────────────────────────────────────
+        // ── Guardar en lote (una sola conexión + transacción) ──────────────────
 
+        /// <summary>
+        /// Guarda varias partidas en una única conexión/transacción: o se guardan
+        /// todas o, si alguna falla, no queda ninguna a medio guardar.
+        /// </summary>
+        public async Task GuardarLoteAsync(IEnumerable<HistoricoEntry> entradas) {
+            const string sql = @"UPDATE OR INSERT INTO HISTORICO
+                (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA,
+                 FECHA, PRECIO, VENDIDOS, VENTA, PREMIO1, PREMIO2)
+                VALUES (@sala, @conc, @sesion, @pdia,
+                        'NOW', @precio, @vendidos, @venta, @premio1, @premio2)
+                MATCHING (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA)";
+
+            using var conn = new FbConnection(_cs);
+            await conn.OpenAsync();
+            using var tx = conn.BeginTransaction();
+            try {
+                foreach (var e in entradas) {
+                    e.Venta = e.Precio * e.Vendidos;   // recalcular siempre
+
+                    using var cmd = new FbCommand(sql, conn, tx);
+                    cmd.Parameters.Add("@sala",     FbDbType.Integer).Value = e.CodSala;
+                    cmd.Parameters.Add("@conc",     FbDbType.Integer).Value = e.CodConc;
+                    cmd.Parameters.Add("@sesion",   FbDbType.Date).Value    = e.FechaSesion.Date;
+                    cmd.Parameters.Add("@pdia",     FbDbType.Integer).Value = e.PartidaDia;
+                    cmd.Parameters.Add("@precio",   FbDbType.Decimal).Value = e.Precio;
+                    cmd.Parameters.Add("@vendidos", FbDbType.Integer).Value = e.Vendidos;
+                    cmd.Parameters.Add("@venta",    FbDbType.Decimal).Value = e.Venta;
+                    cmd.Parameters.Add("@premio1",  FbDbType.Decimal).Value = e.Premio1;
+                    cmd.Parameters.Add("@premio2",  FbDbType.Decimal).Value = e.Premio2;
+
+                    await cmd.ExecuteNonQueryAsync();
+                }
+                await tx.CommitAsync();
+            }
+            catch (Exception ex) {
+                await tx.RollbackAsync();
+                throw new Exception($"Error al guardar el lote (se ha revertido todo el lote): {ex.Message}", ex);
+            }
+        }
+
+        // ── Eliminar ──────────────────────────────────────────────────────────
         public async Task EliminarAsync(HistoricoEntry e) {
             const string sql = @"DELETE FROM HISTORICO
                                   WHERE COD_SALA=@sala AND COD_CONC=@conc
@@ -180,14 +218,13 @@ namespace BingoHistoricoEditor.Data {
 
             // CORREGIDO: Nombres exactos de columnas con guiones bajos tal como están en tu BD
             string query = @"
-        SELECT PARTIDA_DIA 
-        FROM HISTORICO 
-        WHERE FECHA_SESION = @Fecha 
-          AND COD_SALA = @Sala 
-          AND COD_CONC = @Conc 
-          AND PARTIDA_DIA BETWEEN @Inicio AND @Fin
-        ORDER BY PARTIDA_DIA ASC";
-
+                SELECT PARTIDA_DIA 
+                FROM HISTORICO 
+                WHERE FECHA_SESION = @Fecha 
+                  AND COD_SALA = @Sala 
+                  AND COD_CONC = @Conc 
+                  AND PARTIDA_DIA BETWEEN @Inicio AND @Fin
+                ORDER BY PARTIDA_DIA ASC";
             try {
                 // CORREGIDO: Usamos '_cs' que es tu variable de conexión real
                 using (var conn = new FbConnection(_cs)) {
@@ -349,7 +386,6 @@ namespace BingoHistoricoEditor.Data {
         }
 
         // ── Consultar operaciones para auditoría ────────────────────────────
-
         /// <summary>
         /// Obtiene todas las operaciones registradas en la tabla
         /// </summary>
@@ -420,7 +456,6 @@ namespace BingoHistoricoEditor.Data {
                           FROM operacionesBGEditor 
                           WHERE USUARIO = @usuario 
                           ORDER BY ID DESC";
-
             try {
                 using var conn = new FbConnection(_cs);
                 using var cmd = new FbCommand(sql, conn);
@@ -442,7 +477,6 @@ namespace BingoHistoricoEditor.Data {
             catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"Error al obtener operaciones del usuario: {ex.Message}");
             }
-
             return operaciones;
         }
     }

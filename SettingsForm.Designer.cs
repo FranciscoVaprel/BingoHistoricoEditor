@@ -65,29 +65,27 @@ namespace BingoHistoricoEditor {
             // ─────────────────────────────────────────────────────────────
             // btnGuardar
             btnGuardar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            btnGuardar.BackColor = System.Drawing.Color.FromArgb(40, 167, 69);
-            btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            btnGuardar.ForeColor = System.Drawing.Color.White;
+            btnGuardar.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
+            btnGuardar.ForeColor = System.Drawing.SystemColors.ControlText;
             btnGuardar.Location = new System.Drawing.Point(308, 525);
             btnGuardar.Name = "btnGuardar";
             btnGuardar.Size = new System.Drawing.Size(110, 35);
             btnGuardar.TabIndex = 0;
             btnGuardar.Text = "💾 Guardar";
-            btnGuardar.UseVisualStyleBackColor = false;
+            btnGuardar.UseVisualStyleBackColor = true;
             btnGuardar.Click += btnGuardar_Click;
 
             // btnCancelar
             btnCancelar.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right;
-            btnCancelar.BackColor = System.Drawing.Color.FromArgb(220, 53, 69);
             btnCancelar.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            btnCancelar.ForeColor = System.Drawing.Color.White;
+            btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
+            btnCancelar.ForeColor = System.Drawing.SystemColors.ControlText;
             btnCancelar.Location = new System.Drawing.Point(424, 525);
             btnCancelar.Name = "btnCancelar";
             btnCancelar.Size = new System.Drawing.Size(110, 35);
             btnCancelar.TabIndex = 1;
             btnCancelar.Text = "✕ Cancelar";
-            btnCancelar.UseVisualStyleBackColor = false;
+            btnCancelar.UseVisualStyleBackColor = true;
 
             // tabControl
             tabControl.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
@@ -101,11 +99,11 @@ namespace BingoHistoricoEditor {
 
             // ─────────────────────────────────────────────────────────────
             // tabBaseDatos
-            tabBaseDatos.BackColor = System.Drawing.Color.FromArgb(30, 30, 35);
+            tabBaseDatos.BackColor = System.Drawing.SystemColors.Control;
             tabBaseDatos.Controls.Add(grpConexion);
             tabBaseDatos.Controls.Add(grpRutas);
             tabBaseDatos.Controls.Add(grpCredenciales);
-            tabBaseDatos.ForeColor = System.Drawing.Color.White;
+            tabBaseDatos.ForeColor = System.Drawing.SystemColors.ControlText;
             tabBaseDatos.Location = new System.Drawing.Point(4, 24);
             tabBaseDatos.Name = "tabBaseDatos";
             tabBaseDatos.Padding = new System.Windows.Forms.Padding(10);
@@ -120,7 +118,7 @@ namespace BingoHistoricoEditor {
             grpConexion.Controls.Add(txtDbSource);
             grpConexion.Controls.Add(lblDbPort);
             grpConexion.Controls.Add(txtDbPort);
-            grpConexion.ForeColor = System.Drawing.Color.Gold;
+            grpConexion.ForeColor = System.Drawing.SystemColors.ControlText;
             grpConexion.Location = new System.Drawing.Point(13, 13);
             grpConexion.Name = "grpConexion";
             grpConexion.Size = new System.Drawing.Size(488, 120);
@@ -129,16 +127,16 @@ namespace BingoHistoricoEditor {
             grpConexion.Text = " Conexión ";
 
             // lblDbModo
-            lblDbModo.ForeColor = System.Drawing.Color.White;
+            lblDbModo.ForeColor = System.Drawing.SystemColors.ControlText;
             lblDbModo.Location = new System.Drawing.Point(10, 25);
             lblDbModo.Name = "lblDbModo";
             lblDbModo.Size = new System.Drawing.Size(100, 20);
             lblDbModo.TabIndex = 0;
             lblDbModo.Text = "Modo BD:";
 
-            cmbDbModo.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            cmbDbModo.ForeColor = System.Drawing.Color.White;
-            cmbDbModo.Items.AddRange(new object[] { "Local", "Remote" });
+            cmbDbModo.BackColor = System.Drawing.SystemColors.Window;
+            cmbDbModo.ForeColor = System.Drawing.SystemColors.WindowText;
+            cmbDbModo.Items.AddRange(new object[] { "Local", "Remoto", "Alias" });
             cmbDbModo.Location = new System.Drawing.Point(120, 25);
             cmbDbModo.Name = "cmbDbModo";
             cmbDbModo.Size = new System.Drawing.Size(350, 23);
@@ -146,15 +144,15 @@ namespace BingoHistoricoEditor {
             cmbDbModo.Enabled = false;
 
             // lblDbSource
-            lblDbSource.ForeColor = System.Drawing.Color.White;
+            lblDbSource.ForeColor = System.Drawing.SystemColors.ControlText;
             lblDbSource.Location = new System.Drawing.Point(10, 55);
             lblDbSource.Name = "lblDbSource";
             lblDbSource.Size = new System.Drawing.Size(100, 20);
             lblDbSource.TabIndex = 2;
             lblDbSource.Text = "Servidor:";
 
-            txtDbSource.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtDbSource.ForeColor = System.Drawing.Color.White;
+            txtDbSource.BackColor = System.Drawing.SystemColors.Window;
+            txtDbSource.ForeColor = System.Drawing.SystemColors.WindowText;
             txtDbSource.Location = new System.Drawing.Point(120, 55);
             txtDbSource.Name = "txtDbSource";
             txtDbSource.Size = new System.Drawing.Size(350, 23);
@@ -162,15 +160,15 @@ namespace BingoHistoricoEditor {
             txtDbSource.ReadOnly = true;
 
             // lblDbPort
-            lblDbPort.ForeColor = System.Drawing.Color.White;
+            lblDbPort.ForeColor = System.Drawing.SystemColors.ControlText;
             lblDbPort.Location = new System.Drawing.Point(10, 85);
             lblDbPort.Name = "lblDbPort";
             lblDbPort.Size = new System.Drawing.Size(100, 20);
             lblDbPort.TabIndex = 4;
             lblDbPort.Text = "Puerto:";
 
-            txtDbPort.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtDbPort.ForeColor = System.Drawing.Color.White;
+            txtDbPort.BackColor = System.Drawing.SystemColors.Window;
+            txtDbPort.ForeColor = System.Drawing.SystemColors.WindowText;
             txtDbPort.Location = new System.Drawing.Point(120, 85);
             txtDbPort.Name = "txtDbPort";
             txtDbPort.Size = new System.Drawing.Size(350, 23);
@@ -184,7 +182,7 @@ namespace BingoHistoricoEditor {
             grpRutas.Controls.Add(txtDbRemotePath);
             grpRutas.Controls.Add(lblDbAbsolutePath);
             grpRutas.Controls.Add(txtDbAbsolutePath);
-            grpRutas.ForeColor = System.Drawing.Color.Gold;
+            grpRutas.ForeColor = System.Drawing.SystemColors.ControlText;
             grpRutas.Location = new System.Drawing.Point(13, 140);
             grpRutas.Name = "grpRutas";
             grpRutas.Size = new System.Drawing.Size(488, 130);
@@ -193,15 +191,15 @@ namespace BingoHistoricoEditor {
             grpRutas.Text = " Rutas ";
 
             // lblDbRelativePath
-            lblDbRelativePath.ForeColor = System.Drawing.Color.White;
+            lblDbRelativePath.ForeColor = System.Drawing.SystemColors.ControlText;
             lblDbRelativePath.Location = new System.Drawing.Point(10, 25);
             lblDbRelativePath.Name = "lblDbRelativePath";
             lblDbRelativePath.Size = new System.Drawing.Size(100, 20);
             lblDbRelativePath.TabIndex = 0;
             lblDbRelativePath.Text = "Ruta Relativa:";
 
-            txtDbRelativePath.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtDbRelativePath.ForeColor = System.Drawing.Color.White;
+            txtDbRelativePath.BackColor = System.Drawing.SystemColors.Window;
+            txtDbRelativePath.ForeColor = System.Drawing.SystemColors.WindowText;
             txtDbRelativePath.Location = new System.Drawing.Point(120, 25);
             txtDbRelativePath.Name = "txtDbRelativePath";
             txtDbRelativePath.Size = new System.Drawing.Size(350, 23);
@@ -209,15 +207,15 @@ namespace BingoHistoricoEditor {
             txtDbRelativePath.ReadOnly = true;
 
             // lblDbAbsolutePath
-            lblDbAbsolutePath.ForeColor = System.Drawing.Color.White;
+            lblDbAbsolutePath.ForeColor = System.Drawing.SystemColors.ControlText;
             lblDbAbsolutePath.Location = new System.Drawing.Point(10, 55);
             lblDbAbsolutePath.Name = "lblDbAbsolutePath";
             lblDbAbsolutePath.Size = new System.Drawing.Size(100, 20);
             lblDbAbsolutePath.TabIndex = 2;
             lblDbAbsolutePath.Text = "Ruta Absoluta:";
 
-            txtDbAbsolutePath.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtDbAbsolutePath.ForeColor = System.Drawing.Color.White;
+            txtDbAbsolutePath.BackColor = System.Drawing.SystemColors.Window;
+            txtDbAbsolutePath.ForeColor = System.Drawing.SystemColors.WindowText;
             txtDbAbsolutePath.Location = new System.Drawing.Point(120, 55);
             txtDbAbsolutePath.Name = "txtDbAbsolutePath";
             txtDbAbsolutePath.Size = new System.Drawing.Size(350, 23);
@@ -225,15 +223,15 @@ namespace BingoHistoricoEditor {
             txtDbAbsolutePath.ReadOnly = true;
 
             // lblDbRemotePath
-            lblDbRemotePath.ForeColor = System.Drawing.Color.White;
+            lblDbRemotePath.ForeColor = System.Drawing.SystemColors.ControlText;
             lblDbRemotePath.Location = new System.Drawing.Point(10, 85);
             lblDbRemotePath.Name = "lblDbRemotePath";
             lblDbRemotePath.Size = new System.Drawing.Size(100, 20);
             lblDbRemotePath.TabIndex = 4;
             lblDbRemotePath.Text = "Ruta Remota:";
 
-            txtDbRemotePath.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtDbRemotePath.ForeColor = System.Drawing.Color.White;
+            txtDbRemotePath.BackColor = System.Drawing.SystemColors.Window;
+            txtDbRemotePath.ForeColor = System.Drawing.SystemColors.WindowText;
             txtDbRemotePath.Location = new System.Drawing.Point(120, 85);
             txtDbRemotePath.Name = "txtDbRemotePath";
             txtDbRemotePath.Size = new System.Drawing.Size(350, 23);
@@ -249,7 +247,7 @@ namespace BingoHistoricoEditor {
             grpCredenciales.Controls.Add(txtDbUser);
             grpCredenciales.Controls.Add(lblDbPass);
             grpCredenciales.Controls.Add(txtDbPass);
-            grpCredenciales.ForeColor = System.Drawing.Color.Gold;
+            grpCredenciales.ForeColor = System.Drawing.SystemColors.ControlText;
             grpCredenciales.Location = new System.Drawing.Point(13, 277);
             grpCredenciales.Name = "grpCredenciales";
             grpCredenciales.Size = new System.Drawing.Size(488, 160);
@@ -258,15 +256,15 @@ namespace BingoHistoricoEditor {
             grpCredenciales.Text = " Credenciales BD ";
 
             // lblDbUser
-            lblDbUser.ForeColor = System.Drawing.Color.White;
+            lblDbUser.ForeColor = System.Drawing.SystemColors.ControlText;
             lblDbUser.Location = new System.Drawing.Point(10, 25);
             lblDbUser.Name = "lblDbUser";
             lblDbUser.Size = new System.Drawing.Size(100, 20);
             lblDbUser.TabIndex = 0;
             lblDbUser.Text = "Usuario:";
 
-            txtDbUser.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtDbUser.ForeColor = System.Drawing.Color.White;
+            txtDbUser.BackColor = System.Drawing.SystemColors.Window;
+            txtDbUser.ForeColor = System.Drawing.SystemColors.WindowText;
             txtDbUser.Location = new System.Drawing.Point(120, 25);
             txtDbUser.Name = "txtDbUser";
             txtDbUser.Size = new System.Drawing.Size(350, 23);
@@ -274,15 +272,15 @@ namespace BingoHistoricoEditor {
             txtDbUser.ReadOnly = true;
 
             // lblDbPass
-            lblDbPass.ForeColor = System.Drawing.Color.White;
+            lblDbPass.ForeColor = System.Drawing.SystemColors.ControlText;
             lblDbPass.Location = new System.Drawing.Point(10, 55);
             lblDbPass.Name = "lblDbPass";
             lblDbPass.Size = new System.Drawing.Size(100, 20);
             lblDbPass.TabIndex = 2;
             lblDbPass.Text = "Contraseña:";
 
-            txtDbPass.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtDbPass.ForeColor = System.Drawing.Color.White;
+            txtDbPass.BackColor = System.Drawing.SystemColors.Window;
+            txtDbPass.ForeColor = System.Drawing.SystemColors.WindowText;
             txtDbPass.Location = new System.Drawing.Point(120, 55);
             txtDbPass.Name = "txtDbPass";
             txtDbPass.Size = new System.Drawing.Size(350, 23);
@@ -291,15 +289,15 @@ namespace BingoHistoricoEditor {
             txtDbPass.ReadOnly = true;
 
             // lblDbCharset
-            lblDbCharset.ForeColor = System.Drawing.Color.White;
+            lblDbCharset.ForeColor = System.Drawing.SystemColors.ControlText;
             lblDbCharset.Location = new System.Drawing.Point(10, 85);
             lblDbCharset.Name = "lblDbCharset";
             lblDbCharset.Size = new System.Drawing.Size(100, 20);
             lblDbCharset.TabIndex = 4;
             lblDbCharset.Text = "Charset:";
 
-            cmbDbCharset.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            cmbDbCharset.ForeColor = System.Drawing.Color.White;
+            cmbDbCharset.BackColor = System.Drawing.SystemColors.Window;
+            cmbDbCharset.ForeColor = System.Drawing.SystemColors.WindowText;
             cmbDbCharset.Items.AddRange(new object[] { "UTF8", "ISO8859_1", "WIN1252" });
             cmbDbCharset.Location = new System.Drawing.Point(120, 85);
             cmbDbCharset.Name = "cmbDbCharset";
@@ -308,15 +306,15 @@ namespace BingoHistoricoEditor {
             cmbDbCharset.Enabled = false;
 
             // lblDbDialect
-            lblDbDialect.ForeColor = System.Drawing.Color.White;
+            lblDbDialect.ForeColor = System.Drawing.SystemColors.ControlText;
             lblDbDialect.Location = new System.Drawing.Point(10, 115);
             lblDbDialect.Name = "lblDbDialect";
             lblDbDialect.Size = new System.Drawing.Size(100, 20);
             lblDbDialect.TabIndex = 6;
             lblDbDialect.Text = "Dialecto:";
 
-            txtDbDialect.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtDbDialect.ForeColor = System.Drawing.Color.White;
+            txtDbDialect.BackColor = System.Drawing.SystemColors.Window;
+            txtDbDialect.ForeColor = System.Drawing.SystemColors.WindowText;
             txtDbDialect.Location = new System.Drawing.Point(120, 115);
             txtDbDialect.Name = "txtDbDialect";
             txtDbDialect.Size = new System.Drawing.Size(350, 23);
@@ -325,9 +323,9 @@ namespace BingoHistoricoEditor {
 
             // ─────────────────────────────────────────────────────────────
             // tabAplicacion
-            tabAplicacion.BackColor = System.Drawing.Color.FromArgb(30, 30, 35);
+            tabAplicacion.BackColor = System.Drawing.SystemColors.Control;
             tabAplicacion.Controls.Add(grpAplicacion);
-            tabAplicacion.ForeColor = System.Drawing.Color.White;
+            tabAplicacion.ForeColor = System.Drawing.SystemColors.ControlText;
             tabAplicacion.Location = new System.Drawing.Point(4, 24);
             tabAplicacion.Name = "tabAplicacion";
             tabAplicacion.Padding = new System.Windows.Forms.Padding(10);
@@ -344,7 +342,7 @@ namespace BingoHistoricoEditor {
             grpAplicacion.Controls.Add(txtCodConc);
             grpAplicacion.Controls.Add(lblCodSala);
             grpAplicacion.Controls.Add(txtCodSala);
-            grpAplicacion.ForeColor = System.Drawing.Color.Gold;
+            grpAplicacion.ForeColor = System.Drawing.SystemColors.ControlText;
             grpAplicacion.Location = new System.Drawing.Point(13, 13);
             grpAplicacion.Name = "grpAplicacion";
             grpAplicacion.Size = new System.Drawing.Size(488, 180);
@@ -353,60 +351,60 @@ namespace BingoHistoricoEditor {
             grpAplicacion.Text = " Configuración ";
 
             // lblCodSala
-            lblCodSala.ForeColor = System.Drawing.Color.White;
+            lblCodSala.ForeColor = System.Drawing.SystemColors.ControlText;
             lblCodSala.Location = new System.Drawing.Point(10, 25);
             lblCodSala.Name = "lblCodSala";
             lblCodSala.Size = new System.Drawing.Size(100, 20);
             lblCodSala.TabIndex = 0;
             lblCodSala.Text = "Código Sala:";
 
-            txtCodSala.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtCodSala.ForeColor = System.Drawing.Color.White;
+            txtCodSala.BackColor = System.Drawing.SystemColors.Window;
+            txtCodSala.ForeColor = System.Drawing.SystemColors.WindowText;
             txtCodSala.Location = new System.Drawing.Point(120, 25);
             txtCodSala.Name = "txtCodSala";
             txtCodSala.Size = new System.Drawing.Size(350, 23);
             txtCodSala.TabIndex = 1;
 
             // lblCodConc
-            lblCodConc.ForeColor = System.Drawing.Color.White;
+            lblCodConc.ForeColor = System.Drawing.SystemColors.ControlText;
             lblCodConc.Location = new System.Drawing.Point(10, 55);
             lblCodConc.Name = "lblCodConc";
             lblCodConc.Size = new System.Drawing.Size(100, 20);
             lblCodConc.TabIndex = 2;
             lblCodConc.Text = "Código Conc:";
 
-            txtCodConc.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtCodConc.ForeColor = System.Drawing.Color.White;
+            txtCodConc.BackColor = System.Drawing.SystemColors.Window;
+            txtCodConc.ForeColor = System.Drawing.SystemColors.WindowText;
             txtCodConc.Location = new System.Drawing.Point(120, 55);
             txtCodConc.Name = "txtCodConc";
             txtCodConc.Size = new System.Drawing.Size(350, 23);
             txtCodConc.TabIndex = 3;
 
             // lblAppUser
-            lblAppUser.ForeColor = System.Drawing.Color.White;
+            lblAppUser.ForeColor = System.Drawing.SystemColors.ControlText;
             lblAppUser.Location = new System.Drawing.Point(10, 85);
             lblAppUser.Name = "lblAppUser";
             lblAppUser.Size = new System.Drawing.Size(100, 20);
             lblAppUser.TabIndex = 4;
             lblAppUser.Text = "Usuario App:";
 
-            txtAppUser.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtAppUser.ForeColor = System.Drawing.Color.White;
+            txtAppUser.BackColor = System.Drawing.SystemColors.Window;
+            txtAppUser.ForeColor = System.Drawing.SystemColors.WindowText;
             txtAppUser.Location = new System.Drawing.Point(120, 85);
             txtAppUser.Name = "txtAppUser";
             txtAppUser.Size = new System.Drawing.Size(350, 23);
             txtAppUser.TabIndex = 5;
 
             // lblPrecioPartida
-            lblPrecioPartida.ForeColor = System.Drawing.Color.White;
+            lblPrecioPartida.ForeColor = System.Drawing.SystemColors.ControlText;
             lblPrecioPartida.Location = new System.Drawing.Point(10, 115);
             lblPrecioPartida.Name = "lblPrecioPartida";
             lblPrecioPartida.Size = new System.Drawing.Size(100, 20);
             lblPrecioPartida.TabIndex = 6;
             lblPrecioPartida.Text = "Precio Partida:";
 
-            txtPrecioPartida.BackColor = System.Drawing.Color.FromArgb(45, 45, 50);
-            txtPrecioPartida.ForeColor = System.Drawing.Color.White;
+            txtPrecioPartida.BackColor = System.Drawing.SystemColors.Window;
+            txtPrecioPartida.ForeColor = System.Drawing.SystemColors.WindowText;
             txtPrecioPartida.Location = new System.Drawing.Point(120, 115);
             txtPrecioPartida.Name = "txtPrecioPartida";
             txtPrecioPartida.Size = new System.Drawing.Size(350, 23);
@@ -425,14 +423,14 @@ namespace BingoHistoricoEditor {
             AcceptButton = btnGuardar;
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            BackColor = System.Drawing.Color.FromArgb(30, 30, 35);
+            BackColor = System.Drawing.SystemColors.Control;
             CancelButton = btnCancelar;
             ClientSize = new System.Drawing.Size(546, 572);
             Controls.Add(btnGuardar);
             Controls.Add(btnCancelar);
             Controls.Add(tabControl);
             Controls.Add(lblMensaje);
-            ForeColor = System.Drawing.Color.White;
+            ForeColor = System.Drawing.SystemColors.ControlText;
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             // Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;

@@ -20,13 +20,6 @@ namespace BingoHistoricoEditor {
         }
 
         private void InitializeComponent() {
-            var clrFondo    = System.Drawing.Color.FromArgb(18,  20,  28);
-            var clrPanel    = System.Drawing.Color.FromArgb(26,  29,  40);
-            var clrTexto    = System.Drawing.Color.FromArgb(220, 225, 240);
-            var clrSubtexto = System.Drawing.Color.FromArgb(130, 140, 165);
-            var clrVerde    = System.Drawing.Color.FromArgb( 72, 187, 120);
-            var clrRojo     = System.Drawing.Color.FromArgb(220,  80,  80);
-            var clrInput    = System.Drawing.Color.FromArgb( 32,  36,  50);
             var fntNormal   = new System.Drawing.Font("Segoe UI", 9f);
             var fntInput    = new System.Drawing.Font("Segoe UI", 10f);
 
@@ -38,8 +31,8 @@ namespace BingoHistoricoEditor {
             this.MaximizeBox     = false;
             this.MinimizeBox     = false;
             this.StartPosition   = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.BackColor       = clrFondo;
-            this.ForeColor       = clrTexto;
+            this.BackColor       = System.Drawing.SystemColors.Control;
+            this.ForeColor       = System.Drawing.SystemColors.ControlText;
             this.Font            = fntNormal;
 
             int cx = 40; int cw = 300;
@@ -47,71 +40,71 @@ namespace BingoHistoricoEditor {
             lblTitulo = new System.Windows.Forms.Label {
                 Text = "Configurar acceso", AutoSize = true,
                 Font = new System.Drawing.Font("Segoe UI", 13f, System.Drawing.FontStyle.Bold),
-                ForeColor = System.Drawing.Color.FromArgb(99, 179, 237),
+                ForeColor = System.Drawing.SystemColors.HotTrack,
                 Location = new System.Drawing.Point(cx, 24),
             };
             lblSubtitulo = new System.Windows.Forms.Label {
                 Text = "Introduce el usuario y contraseña de acceso.",
-                AutoSize = true, Font = fntNormal, ForeColor = clrSubtexto,
+                AutoSize = true, Font = fntNormal, ForeColor = System.Drawing.SystemColors.GrayText,
                 Location = new System.Drawing.Point(cx, 52),
             };
 
             lblUsuarioLabel = new System.Windows.Forms.Label {
-                Text = "Usuario", AutoSize = true, ForeColor = clrSubtexto,
+                Text = "Usuario", AutoSize = true, ForeColor = System.Drawing.SystemColors.GrayText,
                 Location = new System.Drawing.Point(cx, 90),
             };
             txtUsuario = new System.Windows.Forms.TextBox {
                 Size = new System.Drawing.Size(cw, 28), Location = new System.Drawing.Point(cx, 110),
-                BackColor = clrInput, ForeColor = clrTexto,
+                BackColor = System.Drawing.SystemColors.Window, ForeColor = System.Drawing.SystemColors.WindowText,
                 BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle, Font = fntInput,
             };
 
             lblNuevaLabel = new System.Windows.Forms.Label {
-                Text = "Nueva contraseña", AutoSize = true, ForeColor = clrSubtexto,
+                Text = "Nueva contraseña", AutoSize = true, ForeColor = System.Drawing.SystemColors.GrayText,
                 Location = new System.Drawing.Point(cx, 152),
             };
             txtNueva = new System.Windows.Forms.TextBox {
                 UseSystemPasswordChar = true,
                 Size = new System.Drawing.Size(cw, 28), Location = new System.Drawing.Point(cx, 172),
-                BackColor = clrInput, ForeColor = clrTexto,
+                BackColor = System.Drawing.SystemColors.Window, ForeColor = System.Drawing.SystemColors.WindowText,
                 BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle, Font = fntInput,
             };
 
             lblRepetirLabel = new System.Windows.Forms.Label {
-                Text = "Repite la contraseña", AutoSize = true, ForeColor = clrSubtexto,
+                Text = "Repite la contraseña", AutoSize = true, ForeColor = System.Drawing.SystemColors.GrayText,
                 Location = new System.Drawing.Point(cx, 214),
             };
             txtRepetir = new System.Windows.Forms.TextBox {
                 UseSystemPasswordChar = true,
                 Size = new System.Drawing.Size(cw, 28), Location = new System.Drawing.Point(cx, 234),
-                BackColor = clrInput, ForeColor = clrTexto,
+                BackColor = System.Drawing.SystemColors.Window, ForeColor = System.Drawing.SystemColors.WindowText,
                 BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle, Font = fntInput,
             };
 
             lblError = new System.Windows.Forms.Label {
-                Text = "", ForeColor = clrRojo, Font = fntNormal, Visible = false,
+                Text = "", ForeColor = System.Drawing.Color.Red, Font = fntNormal, Visible = false,
                 Size = new System.Drawing.Size(cw, 20), Location = new System.Drawing.Point(cx, 272),
             };
 
             btnAceptar = new System.Windows.Forms.Button {
                 Text = "Guardar", Size = new System.Drawing.Size(144, 36),
                 Location = new System.Drawing.Point(cx, 300),
-                BackColor = clrVerde, ForeColor = clrFondo,
-                FlatStyle = System.Windows.Forms.FlatStyle.Flat,
+                ForeColor = System.Drawing.SystemColors.ControlText,
+                FlatStyle = System.Windows.Forms.FlatStyle.Standard,
                 Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Bold),
                 Cursor = System.Windows.Forms.Cursors.Hand,
+                UseVisualStyleBackColor = true,
             };
-            btnAceptar.FlatAppearance.BorderSize = 0;
             btnAceptar.Click += btnAceptar_Click;
 
             btnCancelar = new System.Windows.Forms.Button {
                 Text = "Cancelar", Size = new System.Drawing.Size(100, 36),
                 Location = new System.Drawing.Point(cx + 154, 300),
-                BackColor = System.Drawing.Color.FromArgb(48, 54, 72), ForeColor = clrTexto,
-                FlatStyle = System.Windows.Forms.FlatStyle.Flat,
+                ForeColor = System.Drawing.SystemColors.ControlText,
+                FlatStyle = System.Windows.Forms.FlatStyle.Standard,
                 Font = fntNormal, Cursor = System.Windows.Forms.Cursors.Hand,
+                UseVisualStyleBackColor = true,
             };
-            btnCancelar.FlatAppearance.BorderSize = 0;
             btnCancelar.Click += btnCancelar_Click;
 
             this.Controls.AddRange(new System.Windows.Forms.Control[] {

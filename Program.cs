@@ -1,5 +1,7 @@
 using BingoHistoricoEditor.Data;
 using Microsoft.Extensions.Configuration;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace BingoHistoricoEditor {
     internal static class Program {
@@ -58,12 +60,14 @@ namespace BingoHistoricoEditor {
         /// Escribe usuario y hash en appsettings.json sin tocar el resto del fichero.
         /// </summary>
         public static void GuardarCredenciales(string usuario, string hash) {
-            string json = File.ReadAllText(AppSettingsPath);
-            json = EscribirOActualizar(json, "AppUser", usuario);
-            json = EscribirOActualizar(json, "AppPasswordHash", hash);
-            // Eliminar AppPassword en texto plano si existía
-            json = EliminarClave(json, "AppPassword");
-            File.WriteAllText(AppSettingsPath, json);
+            var root = CargarJson();
+            var settings = ObtenerSeccionBingoSettings(root);
+
+            settings["AppUser"] = usuario;
+            settings["AppPasswordHash"] = hash;
+            settings.Remove("AppPassword"); // eliminar contraseña en texto plano si existía
+
+            GuardarJson(root);
         }
 
         /// <summary>
@@ -85,65 +89,49 @@ namespace BingoHistoricoEditor {
             string? appUser = null,
             string? precioPartida = null) {
 
-            string json = File.ReadAllText(AppSettingsPath);
+            var root = CargarJson();
+            var settings = ObtenerSeccionBingoSettings(root);
 
-            if (dbModo != null) json = EscribirOActualizar(json, "DbModo", dbModo);
-            if (dbSource != null) json = EscribirOActualizar(json, "DbSource", dbSource);
-            if (dbPort != null) json = EscribirOActualizar(json, "DbPort", dbPort);
-            if (dbRelativePath != null) json = EscribirOActualizar(json, "DbRelativePath", dbRelativePath);
-            if (dbAbsolutePath != null) json = EscribirOActualizar(json, "DbAbsolutePath", dbAbsolutePath);
-            if (dbRemotePath != null) json = EscribirOActualizar(json, "DbRemotePath", dbRemotePath);
-            if (dbUser != null) json = EscribirOActualizar(json, "DbUser", dbUser);
-            if (dbPass != null) json = EscribirOActualizar(json, "DbPass", dbPass);
-            if (dbCharset != null) json = EscribirOActualizar(json, "DbCharset", dbCharset);
-            if (dbDialect != null) json = EscribirOActualizar(json, "DbDialect", dbDialect);
-            if (codSala != null) json = EscribirOActualizar(json, "CodSala", codSala, isNumber: true);
-            if (codConc != null) json = EscribirOActualizar(json, "CodConc", codConc, isNumber: true);
-            if (appUser != null) json = EscribirOActualizar(json, "AppUser", appUser);
-            if (precioPartida != null) json = EscribirOActualizar(json, "PrecioPartida", precioPartida);
+            if (dbModo != null) settings["DbModo"] = dbModo;
+            if (dbSource != null) settings["DbSource"] = dbSource;
+            if (dbPort != null) settings["DbPort"] = dbPort;
+            if (dbRelativePath != null) settings["DbRelativePath"] = dbRelativePath;
+            if (dbAbsolutePath != null) settings["DbAbsolutePath"] = dbAbsolutePath;
+            if (dbRemotePath != null) settings["DbRemotePath"] = dbRemotePath;
+            if (dbUser != null) settings["DbUser"] = dbUser;
+            if (dbPass != null) settings["DbPass"] = dbPass;
+            if (dbCharset != null) settings["DbCharset"] = dbCharset;
+            if (dbDialect != null) settings["DbDialect"] = dbDialect;
+            if (codSala != null) settings["CodSala"] = ParseEntero(codSala, "CodSala");
+            if (codConc != null) settings["CodConc"] = ParseEntero(codConc, "CodConc");
+            if (appUser != null) settings["AppUser"] = appUser;
+            if (precioPartida != null) settings["PrecioPartida"] = precioPartida;
 
-            File.WriteAllText(AppSettingsPath, json);
+            GuardarJson(root);
         }
 
-        private static string EscribirOActualizar(string json, string clave, string valor, bool isNumber = false) {
-            string buscar = $"\"{clave}\"";
-            if (json.Contains(buscar)) {
-                // Reemplazar valor existente
-                int inicio = json.IndexOf(buscar);
-                int dospuntos = json.IndexOf(':', inicio);
+        private static int ParseEntero(string valor, string campo) =>
+            int.TryParse(valor, out int n)
+                ? n
+                : throw new FormatException($"{campo} debe ser un número entero: '{valor}'.");
 
-                if (isNumber) {
-                    // Para números: buscar siguiente número/número
-                    int numInicio = dospuntos + 1;
-                    while (numInicio < json.Length && (json[numInicio] == ' ' || json[numInicio] == '\t')) numInicio++;
-                    int numFin = numInicio;
-                    while (numFin < json.Length && char.IsDigit(json[numFin])) numFin++;
-                    return json[..numInicio] + valor + json[numFin..];
-                }
-                else {
-                    // Para strings: buscar comillas
-                    int abre = json.IndexOf('"', dospuntos + 1);
-                    int cierra = json.IndexOf('"', abre + 1);
-                    return json[..(abre + 1)] + valor + json[cierra..];
-                }
+        // ── Lectura/escritura de appsettings.json como JSON real ────────────────
+
+        private static readonly JsonSerializerOptions JsonWriteOpts = new() { WriteIndented = true };
+
+        private static JsonObject CargarJson() =>
+            JsonNode.Parse(File.ReadAllText(AppSettingsPath))?.AsObject()
+                ?? throw new InvalidOperationException("appsettings.json no contiene un objeto JSON válido.");
+
+        private static JsonObject ObtenerSeccionBingoSettings(JsonObject root) {
+            if (root["BingoSettings"] is not JsonObject settings) {
+                settings = new JsonObject();
+                root["BingoSettings"] = settings;
             }
-            else {
-                // Insertar antes del último cierre de BingoSettings
-                int insertPos = json.LastIndexOf('}');
-                insertPos = json.LastIndexOf('}', insertPos - 1);
-                string valorFormato = isNumber ? valor : $"\"{valor}\"";
-                return json[..insertPos] + $",\n    \"{clave}\": {valorFormato}" + json[insertPos..];
-            }
+            return settings;
         }
 
-        private static string EliminarClave(string json, string clave) {
-            string buscar = $"\"{clave}\"";
-            if (!json.Contains(buscar)) return json;
-
-            int inicio = json.LastIndexOf('\n', json.IndexOf(buscar));
-            int fin = json.IndexOf('\n', json.IndexOf(buscar));
-            if (inicio < 0 || fin < 0) return json;
-            return json[..inicio] + json[fin..];
-        }
+        private static void GuardarJson(JsonObject root) =>
+            File.WriteAllText(AppSettingsPath, root.ToJsonString(JsonWriteOpts));
     }
 }

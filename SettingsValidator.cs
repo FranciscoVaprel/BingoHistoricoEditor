@@ -11,8 +11,11 @@ namespace BingoHistoricoEditor {
             if (string.IsNullOrWhiteSpace(dbModo)) {
                 return (false, "DbModo no puede estar vacío.");
             }
-            if (dbModo != "Local" && dbModo != "Remote") {
-                return (false, "DbModo debe ser 'Local' o 'Remote'.");
+            // Debe coincidir con los valores que reconoce FirebirdService.ResolverRuta().
+            if (!dbModo.Equals("Local", StringComparison.OrdinalIgnoreCase)
+                && !dbModo.Equals("Remoto", StringComparison.OrdinalIgnoreCase)
+                && !dbModo.Equals("Alias", StringComparison.OrdinalIgnoreCase)) {
+                return (false, "DbModo debe ser 'Local', 'Remoto' o 'Alias'.");
             }
             return (true, "");
         }

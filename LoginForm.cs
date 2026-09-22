@@ -106,41 +106,33 @@ namespace BingoHistoricoEditor {
         private Label   _lblErr  = null!;
 
         public AutenticacionPrevia() {
-            var clrFondo = Color.FromArgb(18,  20,  28);
-            var clrInput = Color.FromArgb(32,  36,  50);
-            var clrTexto = Color.FromArgb(220, 225, 240);
-            var clrSub   = Color.FromArgb(130, 140, 165);
-            var clrVerde = Color.FromArgb( 72, 187, 120);
-            var clrRojo  = Color.FromArgb(220,  80,  80);
-
             Text = "Verificar identidad"; Size = new Size(320, 270);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false; MinimizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
-            BackColor = clrFondo; ForeColor = clrTexto;
+            BackColor = SystemColors.Control; ForeColor = SystemColors.ControlText;
 
-            var lbl1 = new Label { Text = "Confirma tu usuario y contraseña", ForeColor = clrSub,
+            var lbl1 = new Label { Text = "Confirma tu usuario y contraseña", ForeColor = SystemColors.GrayText,
                 AutoSize = true, Location = new Point(24, 20) };
-            var lbl2 = new Label { Text = "Usuario",     ForeColor = clrSub, AutoSize = true, Location = new Point(24,  52) };
-            var lbl3 = new Label { Text = "Contraseña",  ForeColor = clrSub, AutoSize = true, Location = new Point(24,  98) };
+            var lbl2 = new Label { Text = "Usuario",     ForeColor = SystemColors.GrayText, AutoSize = true, Location = new Point(24,  52) };
+            var lbl3 = new Label { Text = "Contraseña",  ForeColor = SystemColors.GrayText, AutoSize = true, Location = new Point(24,  98) };
 
             _txtUser = new TextBox { Size = new Size(268, 26), Location = new Point(24, 70),
-                BackColor = clrInput, ForeColor = clrTexto, BorderStyle = BorderStyle.FixedSingle,
+                BackColor = SystemColors.Window, ForeColor = SystemColors.WindowText, BorderStyle = BorderStyle.FixedSingle,
                 Font = new Font("Segoe UI", 10f) };
             _txtPass = new TextBox { Size = new Size(268, 26), Location = new Point(24, 116),
                 UseSystemPasswordChar = true,
-                BackColor = clrInput, ForeColor = clrTexto, BorderStyle = BorderStyle.FixedSingle,
+                BackColor = SystemColors.Window, ForeColor = SystemColors.WindowText, BorderStyle = BorderStyle.FixedSingle,
                 Font = new Font("Segoe UI", 10f) };
 
-            _lblErr = new Label { Text = "Credenciales incorrectas", ForeColor = clrRojo,
+            _lblErr = new Label { Text = "Credenciales incorrectas", ForeColor = Color.Red,
                 AutoSize = true, Location = new Point(24, 150), Visible = false };
 
             var btnOk = new Button { Text = "Verificar", Size = new Size(268, 36),
                 Location = new Point(24, 172),
-                BackColor = clrVerde, ForeColor = clrFondo,
-                FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 9f, FontStyle.Bold),
-                Cursor = Cursors.Hand };
-            btnOk.FlatAppearance.BorderSize = 0;
+                ForeColor = SystemColors.ControlText,
+                FlatStyle = FlatStyle.Standard, Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                Cursor = Cursors.Hand, UseVisualStyleBackColor = true };
             btnOk.Click += (_, _) => Verificar();
 
             _txtUser.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; _txtPass.Focus(); } };
