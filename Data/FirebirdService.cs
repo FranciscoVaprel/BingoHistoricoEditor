@@ -118,6 +118,30 @@ namespace BingoHistoricoEditor.Data {
             return lista;
         }
 
+        // ── Última fecha con datos ──────────────────────────────────────────────
+
+        /// <summary>
+        /// Devuelve la fecha de sesión más reciente con partidas registradas para
+        /// la sala/concesionario indicados, o null si todavía no hay ninguna.
+        /// </summary>
+        public async Task<DateTime?> ObtenerUltimaFechaConDatosAsync(int codSala, int codConc) {
+            const string sql = @"SELECT MAX(FECHA_SESION) FROM HISTORICO
+                                   WHERE COD_SALA=@sala AND COD_CONC=@conc";
+            try {
+                using var conn = new FbConnection(_cs);
+                using var cmd  = new FbCommand(sql, conn);
+                cmd.Parameters.Add("@sala", FbDbType.Integer).Value = codSala;
+                cmd.Parameters.Add("@conc", FbDbType.Integer).Value = codConc;
+
+                await conn.OpenAsync();
+                var result = await cmd.ExecuteScalarAsync();
+                return result is DateTime fecha ? fecha : null;
+            }
+            catch (Exception ex) {
+                throw new Exception($"Error al obtener la última fecha con datos: {ex.Message}", ex);
+            }
+        }
+
         // ── Guardar (INSERT OR UPDATE) ────────────────────────────────────────
 
         public async Task GuardarAsync(HistoricoEntry e) {

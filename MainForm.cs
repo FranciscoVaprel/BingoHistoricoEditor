@@ -74,6 +74,21 @@ namespace BingoHistoricoEditor {
                     EscribirLog("SISTEMA", $"Error al crear tabla de operaciones: {ex.Message}");
                 }
 
+                // Cargar por defecto el último día con partidas registradas
+                try {
+                    DateTime? ultimaFecha = await _db.ObtenerUltimaFechaConDatosAsync(_codSala, _codConc);
+                    if (ultimaFecha.HasValue) {
+                        dtpFecha.Value = ultimaFecha.Value.Date;
+                        EscribirLog("SISTEMA", $"Último día con datos: {ultimaFecha.Value:yyyy-MM-dd}.");
+                    }
+                    else {
+                        EscribirLog("SISTEMA", "No hay partidas registradas todavía; se muestra la fecha de hoy.");
+                    }
+                }
+                catch (Exception ex) {
+                    EscribirLog("ERROR", $"No se pudo determinar el último día con datos: {ex.Message}");
+                }
+
                 await CargarPartidasAsync();
             }
         }
@@ -138,7 +153,9 @@ namespace BingoHistoricoEditor {
         }
 
         // Método de Log actualizado con el usuario
-        private void EscribirLog(string accion, string detalles, bool registrarEnArchivo = false) {
+        // 'datos' es opcional: cuando se indica, se guarda serializado en el campo
+        // DETALLES del log de fichero y de la tabla de auditoría (operacionesBGEditor).
+        private void EscribirLog(string accion, string detalles, bool registrarEnArchivo = false, object? datos = null) {
             if (txtLog.IsDisposed) return;
 
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
@@ -149,7 +166,7 @@ namespace BingoHistoricoEditor {
             txtLog.ScrollToCaret();
 
             if (registrarEnArchivo) {
-                Services.LogService.Write(linea, null);
+                Services.LogService.Write(accion, datos ?? (object)detalles);
             }
         }
 
@@ -244,7 +261,12 @@ namespace BingoHistoricoEditor {
                 EscribirLog("DB_INSERT/UPDATE", $"Iniciando guardado de Partida {entry.PartidaDia}", registrarEnArchivo: true);
                 await _db.GuardarAsync(entry);
 
-                EscribirLog("EXITO", $"Partida {entry.PartidaDia} procesada correctamente.", registrarEnArchivo: true);
+                EscribirLog("EXITO", $"Partida {entry.PartidaDia} procesada correctamente.", registrarEnArchivo: true,
+                    datos: new {
+                        entry.PartidaDia, entry.FechaSesion,
+                        entry.Precio, entry.Vendidos, entry.Venta,
+                        Linea = entry.Premio1, Bingo = entry.Premio2
+                    });
                 await CargarPartidasAsync();
             }
             catch (Exception ex) {
@@ -273,7 +295,12 @@ namespace BingoHistoricoEditor {
             if (res == DialogResult.Yes) {
                 try {
                     SetBusy(true);
-                    EscribirLog("DB_DELETE", $"Eliminando Partida {_seleccionada.PartidaDia}", registrarEnArchivo: true);
+                    EscribirLog("DB_DELETE", $"Eliminando Partida {_seleccionada.PartidaDia}", registrarEnArchivo: true,
+                        datos: new {
+                            _seleccionada.PartidaDia, _seleccionada.FechaSesion,
+                            _seleccionada.Precio, _seleccionada.Vendidos, _seleccionada.Venta,
+                            Linea = _seleccionada.Premio1, Bingo = _seleccionada.Premio2
+                        });
                     await _db.EliminarAsync(_seleccionada);
 
                     EscribirLog("EXITO", $"Partida {_seleccionada.PartidaDia} eliminada de la base de datos.", registrarEnArchivo: true);
@@ -416,7 +443,10 @@ namespace BingoHistoricoEditor {
 
             try {
                 SetBusy(true);
-                EscribirLog("INFO", $"Guardando lote {inicio}-{fin}", true);
+                EscribirLog("INFO", $"Guardando lote {inicio}-{fin}", true, datos: new {
+                    Fecha = dtpFecha.Value.Date, PartidaInicial = inicio, PartidaFinal = fin,
+                    Precio = nudLotePrecio.Value, Vendidos = nudLoteVendidos.Value
+                });
 
                 var entradas = new List<HistoricoEntry>();
                 for (int p = inicio; p <= fin; p++) {
@@ -462,7 +492,14 @@ namespace BingoHistoricoEditor {
 
             try {
                 SetBusy(true);
-                EscribirLog("DB_DELETE_LOTE", $"Eliminando rango {inicio}-{fin}", true);
+
+                var partidasExistentes = await _db.ObtenerPartidasExistentesEnRangoAsync(
+                    dtpFecha.Value, _codSala, _codConc, inicio, fin);
+
+                EscribirLog("DB_DELETE_LOTE", $"Eliminando rango {inicio}-{fin}", true, datos: new {
+                    Fecha = dtpFecha.Value.Date, PartidaInicial = inicio, PartidaFinal = fin,
+                    PartidasEliminadas = partidasExistentes.OrderBy(p => p).ToList()
+                });
 
                 await _db.EliminarRangoAsync(dtpFecha.Value.Date, _codSala, _codConc, inicio, fin);
 
