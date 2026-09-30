@@ -5,14 +5,20 @@ namespace BingoHistoricoEditor {
     /// Devuelve UsuarioGenerado y HashGenerado tras aceptar.
     /// </summary>
     public partial class SetPasswordForm : Form {
+        private readonly bool _primerArranque;
+
         public string UsuarioGenerado { get; private set; } = "";
         public string HashGenerado    { get; private set; } = "";
+        public bool   EsAdminGenerado { get; private set; }
 
         public SetPasswordForm(bool primerArranque = false) {
+            _primerArranque = primerArranque;
             InitializeComponent();
             if (primerArranque) {
                 lblTitulo.Text    = "Primera ejecución";
                 lblSubtitulo.Text = "Crea las credenciales de acceso a la aplicación.";
+                // El usuario de la configuración inicial siempre es administrador.
+                chkAdmin.Visible = false;
             }
         }
 
@@ -36,6 +42,7 @@ namespace BingoHistoricoEditor {
 
             UsuarioGenerado = usuario;
             HashGenerado    = PasswordHelper.Hash(pwd1);
+            EsAdminGenerado = _primerArranque || chkAdmin.Checked;
             DialogResult    = DialogResult.OK;
             Close();
         }

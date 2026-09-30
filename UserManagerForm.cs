@@ -86,8 +86,7 @@ namespace BingoHistoricoEditor {
             using var dlg = new SetPasswordForm(primerArranque: false);
             if (dlg.ShowDialog() != DialogResult.OK) return;
             try {
-                UserStore.AgregarUsuarioConHash(dlg.UsuarioGenerado, dlg.HashGenerado
-                );
+                UserStore.AgregarUsuarioConHash(dlg.UsuarioGenerado, dlg.HashGenerado, dlg.EsAdminGenerado);
                 RefrescarLista();
                 MostrarInfo($"Usuario '{dlg.UsuarioGenerado}' añadido correctamente.");
             }

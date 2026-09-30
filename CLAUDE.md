@@ -33,10 +33,9 @@ real (or local) Firebird database.
 
 **Startup flow** (`Program.cs`): load config → if no `AppUser`/`AppPasswordHash` is set, run
 `SetPasswordForm` first-run setup → `LoginForm` → `MainForm`. `Program` also owns the logic for
-rewriting `appsettings.json` in place (`GuardarCredenciales`, `GuardarConfiguracion`) via targeted
-string search/replace rather than full JSON re-serialization, to avoid disturbing formatting/comments
-in the file. Keep that pattern in mind if you touch config-writing code — it is *not* a generic JSON
-writer.
+rewriting `appsettings.json` in place (`GuardarCredenciales`, `GuardarConfiguracion`), parsing it as
+JSON via `System.Text.Json.Nodes.JsonNode`/`JsonObject` and writing it back with
+`ToJsonString(WriteIndented)` — not hand-rolled string search/replace.
 
 **Data access** (`Data/FirebirdService.cs`): the only class that talks to Firebird. It builds its own
 connection string from `IConfiguration` (`BuildConnectionString`/`ResolverRuta`, supporting Local,
@@ -71,12 +70,16 @@ the designer or with care; put logic in the paired non-designer `.cs` partial):
 - `MainForm` — main screen: loads `HISTORICO` rows for a selected date/sala/concesionario into a grid,
   supports single-record edit/save/delete and batch (lote) operations over a `PARTIDA_DIA` range
   (search for gaps, batch save, batch delete), backed by `nudPartidaInicial`/`nudPartidaFinal`.
-- `SettingsForm` — edits only the non-DB `BingoSettings` fields (CodSala, CodConc, AppUser,
-  PrecioPartida) at runtime; DB connection settings are read-only in the UI by design (see recent
-  commit "No se pueden editar las configuraciones de la bbdd") and must be edited directly in
-  `appsettings.json`.
-- `UserManagerForm` — add/remove app users, change passwords, via `UserStore`.
-- `ConfirmDialog` — generic Yes/No confirmation dialog.
+- `SettingsForm` — edits all `BingoSettings` fields at runtime, including the DB connection ones
+  (`DbModo`, `DbSource`, `DbPort`, `DbRelativePath`/`DbAbsolutePath`/`DbRemotePath`, `DbUser`,
+  `DbPass`, `DbCharset`, `DbDialect`); these were previously read-only by design, but that was
+  changed on request. `ToolTip`s on every field explain the mode/path precedence rules from
+  `FirebirdService.ResolverRuta`. Saving DB fields requires an app restart to take effect (the
+  connection string is built once, at `FirebirdService` construction).
+- `UserManagerForm` — add/remove app users, change passwords, via `UserStore`. Users have an
+  `IsAdmin` flag; only admins see/open `AuditoriaForm` (lists `operacionesBGEditor`) from `MainForm`.
+- `AuditoriaForm` — read-only grid over `operacionesBGEditor`, admin-only.
+- `ConfirmDialog` — generic Yes/No confirmation dialog, currently unreferenced dead code.
 
 `SettingsValidator` centralizes field validation (ranges, allowed enums like charset/dialect) used by
 `SettingsForm` before persisting.

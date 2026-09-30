@@ -18,6 +18,7 @@ namespace BingoHistoricoEditor {
         private List<HistoricoEntry> _partidas = new();
         private HistoricoEntry? _seleccionada;
         private string _usuarioActual;
+        private readonly bool _esAdmin;
 
         public MainForm(FirebirdService db, IConfiguration config, string usuario) {
             InitializeComponent();
@@ -26,6 +27,7 @@ namespace BingoHistoricoEditor {
             _codSala = GetConfigInt(config, "BingoSettings:CodSala", 1);
             _codConc = GetConfigInt(config, "BingoSettings:CodConc", 1);
             _usuarioActual = usuario;
+            _esAdmin = UserStore.EsAdmin(usuario);
             LogService.SetCurrentUser(usuario);
             LogService.SetDbService(db);  // Pasar el servicio de BD para logueo
 
@@ -34,9 +36,11 @@ namespace BingoHistoricoEditor {
             ConfigurarEstilosIndividual();
             ConfigurarEstilosLote();
 
+            // La auditoría solo la puede abrir un administrador.
+            if (btnAuditoria != null) btnAuditoria.Visible = _esAdmin;
+
             // Suscribir a eventos después de que InitializeComponent() ha creado todos los controles
             if (dtpFecha != null) dtpFecha.ValueChanged += dtpFecha_ValueChanged;
-            if (btnConfiguracion != null) btnConfiguracion.Click += btnConfiguracion_Click;
             this.FormClosed += (s, e) => BingoHistoricoEditor.Services.LogService.Close();
         }
 
@@ -66,12 +70,13 @@ namespace BingoHistoricoEditor {
             if (ok) {
                 EscribirLog("SISTEMA", "Conexión establecida correctamente.");
 
-                // Crear tabla de operaciones si no existe
+                // Crear tabla de operaciones y trigger de auditoría si no existen
                 try {
                     await _db.CrearTablaOperacionesAsync();
+                    await _db.CrearTriggerAuditoriaHistoricoAsync();
                 }
                 catch (Exception ex) {
-                    EscribirLog("SISTEMA", $"Error al crear tabla de operaciones: {ex.Message}");
+                    EscribirLog("SISTEMA", $"Error al crear tabla/trigger de auditoría: {ex.Message}");
                 }
 
                 // Cargar por defecto el último día con partidas registradas
@@ -623,6 +628,12 @@ namespace BingoHistoricoEditor {
                     }
                 }
             }
+        }
+
+        private void btnAuditoria_Click(object sender, EventArgs e) {
+            if (!_esAdmin) return; // defensa en profundidad, no debería ocurrir (botón oculto)
+            using var auditoria = new AuditoriaForm(_db);
+            auditoria.ShowDialog(this);
         }
 
         private void btnConfiguracion_Click(object sender, EventArgs e) {

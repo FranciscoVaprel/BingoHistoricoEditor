@@ -10,6 +10,7 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.TextBox txtNueva;
         private System.Windows.Forms.Label   lblRepetirLabel;
         private System.Windows.Forms.TextBox txtRepetir;
+        private System.Windows.Forms.CheckBox chkAdmin;
         private System.Windows.Forms.Label   lblError;
         private System.Windows.Forms.Button  btnAceptar;
         private System.Windows.Forms.Button  btnCancelar;
@@ -26,7 +27,7 @@ namespace BingoHistoricoEditor {
             this.SuspendLayout();
 
             this.Text            = "Configurar credenciales";
-            this.Size            = new System.Drawing.Size(380, 420);
+            this.Size            = new System.Drawing.Size(380, 452);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox     = false;
             this.MinimizeBox     = false;
@@ -81,14 +82,20 @@ namespace BingoHistoricoEditor {
                 BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle, Font = fntInput,
             };
 
+            chkAdmin = new System.Windows.Forms.CheckBox {
+                Text = "Es administrador (puede ver el registro de auditoría)",
+                AutoSize = true, ForeColor = System.Drawing.SystemColors.ControlText,
+                Font = fntNormal, Location = new System.Drawing.Point(cx, 270),
+            };
+
             lblError = new System.Windows.Forms.Label {
                 Text = "", ForeColor = System.Drawing.Color.Red, Font = fntNormal, Visible = false,
-                Size = new System.Drawing.Size(cw, 20), Location = new System.Drawing.Point(cx, 272),
+                Size = new System.Drawing.Size(cw, 20), Location = new System.Drawing.Point(cx, 304),
             };
 
             btnAceptar = new System.Windows.Forms.Button {
                 Text = "Guardar", Size = new System.Drawing.Size(144, 36),
-                Location = new System.Drawing.Point(cx, 300),
+                Location = new System.Drawing.Point(cx, 332),
                 ForeColor = System.Drawing.SystemColors.ControlText,
                 FlatStyle = System.Windows.Forms.FlatStyle.Standard,
                 Font = new System.Drawing.Font("Segoe UI", 9f, System.Drawing.FontStyle.Bold),
@@ -99,7 +106,7 @@ namespace BingoHistoricoEditor {
 
             btnCancelar = new System.Windows.Forms.Button {
                 Text = "Cancelar", Size = new System.Drawing.Size(100, 36),
-                Location = new System.Drawing.Point(cx + 154, 300),
+                Location = new System.Drawing.Point(cx + 154, 332),
                 ForeColor = System.Drawing.SystemColors.ControlText,
                 FlatStyle = System.Windows.Forms.FlatStyle.Standard,
                 Font = fntNormal, Cursor = System.Windows.Forms.Cursors.Hand,
@@ -112,6 +119,7 @@ namespace BingoHistoricoEditor {
                 lblUsuarioLabel, txtUsuario,
                 lblNuevaLabel, txtNueva,
                 lblRepetirLabel, txtRepetir,
+                chkAdmin,
                 lblError, btnAceptar, btnCancelar
             });
             this.ResumeLayout(false);

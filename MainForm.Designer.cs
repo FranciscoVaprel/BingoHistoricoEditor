@@ -27,6 +27,7 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.Label lblBingo;
         private System.Windows.Forms.DateTimePicker dtpFecha;
         private System.Windows.Forms.Button btnBuscar;
+        private System.Windows.Forms.Button btnAuditoria;
         private System.Windows.Forms.Button btnConfiguracion;
         private System.Windows.Forms.DataGridView grid;
         private System.Windows.Forms.TextBox txtLog;
@@ -79,6 +80,7 @@ namespace BingoHistoricoEditor {
             lblEstado = new Label();
             dtpFecha = new DateTimePicker();
             btnBuscar = new Button();
+            btnAuditoria = new Button();
             btnConfiguracion = new Button();
             tlpContent = new TableLayoutPanel();
             tlpIzquierda = new TableLayoutPanel();
@@ -176,15 +178,17 @@ namespace BingoHistoricoEditor {
             //
             // tlpHeader
             //
-            tlpHeader.ColumnCount = 4;
+            tlpHeader.ColumnCount = 5;
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
             tlpHeader.Controls.Add(pnlTextos, 0, 0);
             tlpHeader.Controls.Add(dtpFecha, 1, 0);
             tlpHeader.Controls.Add(btnBuscar, 2, 0);
-            tlpHeader.Controls.Add(btnConfiguracion, 3, 0);
+            tlpHeader.Controls.Add(btnAuditoria, 3, 0);
+            tlpHeader.Controls.Add(btnConfiguracion, 4, 0);
             tlpHeader.Dock = DockStyle.Fill;
             tlpHeader.Location = new Point(0, 0);
             tlpHeader.Name = "tlpHeader";
@@ -258,15 +262,30 @@ namespace BingoHistoricoEditor {
             btnBuscar.UseVisualStyleBackColor = true;
             btnBuscar.Click += btnBuscar_Click;
             //
+            // btnAuditoria
+            //
+            btnAuditoria.Anchor = AnchorStyles.None;
+            btnAuditoria.FlatStyle = FlatStyle.Standard;
+            btnAuditoria.ForeColor = SystemColors.ControlText;
+            btnAuditoria.Location = new Point(1089, 19);
+            btnAuditoria.Name = "btnAuditoria";
+            btnAuditoria.Size = new Size(120, 35);
+            btnAuditoria.TabIndex = 3;
+            btnAuditoria.Text = "🛡 AUDITORÍA";
+            toolTip.SetToolTip(btnAuditoria, "Ver el registro de auditoría (solo administradores).");
+            btnAuditoria.UseVisualStyleBackColor = true;
+            btnAuditoria.Visible = false;
+            btnAuditoria.Click += btnAuditoria_Click;
+            //
             // btnConfiguracion
             //
             btnConfiguracion.Anchor = AnchorStyles.None;
             btnConfiguracion.FlatStyle = FlatStyle.Standard;
             btnConfiguracion.ForeColor = SystemColors.ControlText;
-            btnConfiguracion.Location = new Point(1089, 19);
+            btnConfiguracion.Location = new Point(1239, 19);
             btnConfiguracion.Name = "btnConfiguracion";
             btnConfiguracion.Size = new Size(120, 35);
-            btnConfiguracion.TabIndex = 3;
+            btnConfiguracion.TabIndex = 4;
             btnConfiguracion.Text = "⚙ CONFIG";
             toolTip.SetToolTip(btnConfiguracion, "Abrir configuración de la aplicación.");
             btnConfiguracion.UseVisualStyleBackColor = true;

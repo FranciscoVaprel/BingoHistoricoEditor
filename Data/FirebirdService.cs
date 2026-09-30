@@ -387,6 +387,95 @@ namespace BingoHistoricoEditor.Data {
             }
         }
 
+        // ── Trigger de auditoría a nivel de BD sobre HISTORICO ──────────────────
+
+        /// <summary>
+        /// Crea (si no existe) un trigger AFTER INSERT/UPDATE/DELETE sobre HISTORICO
+        /// que registra cada cambio directamente en operacionesBGEditor desde el
+        /// propio motor de Firebird. A diferencia del registro que hace la
+        /// aplicación (LogService), este salta siempre que cambie la tabla,
+        /// venga el cambio de esta app o de cualquier otro cliente SQL
+        /// (IBExpert, isql, etc.), porque vive dentro de la base de datos.
+        /// Requiere que operacionesBGEditor ya exista (CrearTablaOperacionesAsync).
+        /// </summary>
+        public async Task CrearTriggerAuditoriaHistoricoAsync() {
+            const string triggerName = "TRG_HISTORICO_AUDITORIA";
+            try {
+                using var conn = new FbConnection(_cs);
+                await conn.OpenAsync();
+
+                const string sqlCheck = "SELECT COUNT(*) FROM RDB$TRIGGERS WHERE TRIM(RDB$TRIGGER_NAME) = @nombre";
+                using (var cmd = new FbCommand(sqlCheck, conn)) {
+                    cmd.Parameters.Add("@nombre", FbDbType.VarChar).Value = triggerName;
+                    var result = await cmd.ExecuteScalarAsync();
+                    int count = result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
+                    if (count > 0) {
+                        System.Diagnostics.Debug.WriteLine($"✓ Trigger '{triggerName}' ya existe.");
+                        return;
+                    }
+                }
+
+                const string sqlTrigger = @"
+                    CREATE TRIGGER TRG_HISTORICO_AUDITORIA FOR HISTORICO
+                    ACTIVE AFTER INSERT OR UPDATE OR DELETE POSITION 0
+                    AS
+                    DECLARE VARIABLE detalles VARCHAR(500);
+                    BEGIN
+                      IF (INSERTING) THEN
+                      BEGIN
+                        detalles = '{""cod_sala"":' || CAST(NEW.COD_SALA AS VARCHAR(10)) ||
+                                   ',""cod_conc"":' || CAST(NEW.COD_CONC AS VARCHAR(10)) ||
+                                   ',""fecha_sesion"":""' || CAST(NEW.FECHA_SESION AS VARCHAR(10)) || '""' ||
+                                   ',""partida_dia"":' || CAST(NEW.PARTIDA_DIA AS VARCHAR(10)) ||
+                                   ',""precio"":' || CAST(NEW.PRECIO AS VARCHAR(15)) ||
+                                   ',""vendidos"":' || CAST(NEW.VENDIDOS AS VARCHAR(10)) ||
+                                   ',""venta"":' || CAST(NEW.VENTA AS VARCHAR(15)) ||
+                                   ',""premio1"":' || CAST(NEW.PREMIO1 AS VARCHAR(15)) ||
+                                   ',""premio2"":' || CAST(NEW.PREMIO2 AS VARCHAR(15)) || '}';
+                        INSERT INTO operacionesBGEditor (USUARIO, OPERACION, DETALLES)
+                          VALUES (CURRENT_USER, 'DB_TRIGGER_INSERT', :detalles);
+                      END
+                      ELSE IF (UPDATING) THEN
+                      BEGIN
+                        detalles = '{""cod_sala"":' || CAST(NEW.COD_SALA AS VARCHAR(10)) ||
+                                   ',""cod_conc"":' || CAST(NEW.COD_CONC AS VARCHAR(10)) ||
+                                   ',""fecha_sesion"":""' || CAST(NEW.FECHA_SESION AS VARCHAR(10)) || '""' ||
+                                   ',""partida_dia"":' || CAST(NEW.PARTIDA_DIA AS VARCHAR(10)) ||
+                                   ',""precio_antes"":' || CAST(OLD.PRECIO AS VARCHAR(15)) ||
+                                   ',""precio_despues"":' || CAST(NEW.PRECIO AS VARCHAR(15)) ||
+                                   ',""vendidos_antes"":' || CAST(OLD.VENDIDOS AS VARCHAR(10)) ||
+                                   ',""vendidos_despues"":' || CAST(NEW.VENDIDOS AS VARCHAR(10)) ||
+                                   ',""premio1_antes"":' || CAST(OLD.PREMIO1 AS VARCHAR(15)) ||
+                                   ',""premio1_despues"":' || CAST(NEW.PREMIO1 AS VARCHAR(15)) ||
+                                   ',""premio2_antes"":' || CAST(OLD.PREMIO2 AS VARCHAR(15)) ||
+                                   ',""premio2_despues"":' || CAST(NEW.PREMIO2 AS VARCHAR(15)) || '}';
+                        INSERT INTO operacionesBGEditor (USUARIO, OPERACION, DETALLES)
+                          VALUES (CURRENT_USER, 'DB_TRIGGER_UPDATE', :detalles);
+                      END
+                      ELSE IF (DELETING) THEN
+                      BEGIN
+                        detalles = '{""cod_sala"":' || CAST(OLD.COD_SALA AS VARCHAR(10)) ||
+                                   ',""cod_conc"":' || CAST(OLD.COD_CONC AS VARCHAR(10)) ||
+                                   ',""fecha_sesion"":""' || CAST(OLD.FECHA_SESION AS VARCHAR(10)) || '""' ||
+                                   ',""partida_dia"":' || CAST(OLD.PARTIDA_DIA AS VARCHAR(10)) ||
+                                   ',""precio"":' || CAST(OLD.PRECIO AS VARCHAR(15)) ||
+                                   ',""vendidos"":' || CAST(OLD.VENDIDOS AS VARCHAR(10)) ||
+                                   ',""venta"":' || CAST(OLD.VENTA AS VARCHAR(15)) ||
+                                   ',""premio1"":' || CAST(OLD.PREMIO1 AS VARCHAR(15)) ||
+                                   ',""premio2"":' || CAST(OLD.PREMIO2 AS VARCHAR(15)) || '}';
+                        INSERT INTO operacionesBGEditor (USUARIO, OPERACION, DETALLES)
+                          VALUES (CURRENT_USER, 'DB_TRIGGER_DELETE', :detalles);
+                      END
+                    END";
+                using var cmdCreate = new FbCommand(sqlTrigger, conn);
+                await cmdCreate.ExecuteNonQueryAsync();
+                System.Diagnostics.Debug.WriteLine($"✓ Trigger '{triggerName}' creado.");
+            }
+            catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"✗ Error al crear el trigger de auditoría de HISTORICO: {ex.Message}");
+            }
+        }
+
         // ── Insertar operación en la tabla de log ────────────────────────────
 
         public async Task InsertarOperacionAsync(string usuario, string operacion, string detalles = null) {

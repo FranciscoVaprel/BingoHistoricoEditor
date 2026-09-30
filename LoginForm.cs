@@ -13,6 +13,9 @@ namespace BingoHistoricoEditor {
                 config["BingoSettings:AppUser"],
                 config["BingoSettings:AppPasswordHash"]);
 
+            // Instalaciones ya existentes (users.json sin roles): asegurar un admin.
+            UserStore.AsegurarAdminExiste();
+
             InitializeComponent();
         }
 
@@ -106,30 +109,31 @@ namespace BingoHistoricoEditor {
         private Label   _lblErr  = null!;
 
         public AutenticacionPrevia() {
-            Text = "Verificar identidad"; Size = new Size(320, 270);
+            Text = "Verificar identidad"; ClientSize = new Size(320, 280);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false; MinimizeBox = false;
             StartPosition = FormStartPosition.CenterParent;
             BackColor = SystemColors.Control; ForeColor = SystemColors.ControlText;
+            Font = new Font("Segoe UI", 9f);
 
             var lbl1 = new Label { Text = "Confirma tu usuario y contraseña", ForeColor = SystemColors.GrayText,
                 AutoSize = true, Location = new Point(24, 20) };
-            var lbl2 = new Label { Text = "Usuario",     ForeColor = SystemColors.GrayText, AutoSize = true, Location = new Point(24,  52) };
-            var lbl3 = new Label { Text = "Contraseña",  ForeColor = SystemColors.GrayText, AutoSize = true, Location = new Point(24,  98) };
+            var lbl2 = new Label { Text = "Usuario",     ForeColor = SystemColors.GrayText, AutoSize = true, Location = new Point(24,  56) };
+            var lbl3 = new Label { Text = "Contraseña",  ForeColor = SystemColors.GrayText, AutoSize = true, Location = new Point(24, 114) };
 
-            _txtUser = new TextBox { Size = new Size(268, 26), Location = new Point(24, 70),
+            _txtUser = new TextBox { Size = new Size(268, 26), Location = new Point(24, 76),
                 BackColor = SystemColors.Window, ForeColor = SystemColors.WindowText, BorderStyle = BorderStyle.FixedSingle,
                 Font = new Font("Segoe UI", 10f) };
-            _txtPass = new TextBox { Size = new Size(268, 26), Location = new Point(24, 116),
+            _txtPass = new TextBox { Size = new Size(268, 26), Location = new Point(24, 134),
                 UseSystemPasswordChar = true,
                 BackColor = SystemColors.Window, ForeColor = SystemColors.WindowText, BorderStyle = BorderStyle.FixedSingle,
                 Font = new Font("Segoe UI", 10f) };
 
             _lblErr = new Label { Text = "Credenciales incorrectas", ForeColor = Color.Red,
-                AutoSize = true, Location = new Point(24, 150), Visible = false };
+                AutoSize = true, Location = new Point(24, 170), Visible = false };
 
             var btnOk = new Button { Text = "Verificar", Size = new Size(268, 36),
-                Location = new Point(24, 172),
+                Location = new Point(24, 196),
                 ForeColor = SystemColors.ControlText,
                 FlatStyle = FlatStyle.Standard, Font = new Font("Segoe UI", 9f, FontStyle.Bold),
                 Cursor = Cursors.Hand, UseVisualStyleBackColor = true };

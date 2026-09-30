@@ -30,6 +30,8 @@ namespace BingoHistoricoEditor {
             txtDbRemotePath = new System.Windows.Forms.TextBox();
             lblDbRelativePath = new System.Windows.Forms.Label();
             txtDbRelativePath = new System.Windows.Forms.TextBox();
+            btnBrowseRelativePath = new System.Windows.Forms.Button();
+            btnBrowseAbsolutePath = new System.Windows.Forms.Button();
             grpCredenciales = new System.Windows.Forms.GroupBox();
             lblDbPass = new System.Windows.Forms.Label();
             txtDbPass = new System.Windows.Forms.TextBox();
@@ -52,6 +54,9 @@ namespace BingoHistoricoEditor {
             txtPrecioPartida = new System.Windows.Forms.TextBox();
 
             lblMensaje = new System.Windows.Forms.Label();
+
+            components = new System.ComponentModel.Container();
+            toolTip = new System.Windows.Forms.ToolTip(components);
 
             tabControl.SuspendLayout();
             tabBaseDatos.SuspendLayout();
@@ -136,12 +141,13 @@ namespace BingoHistoricoEditor {
 
             cmbDbModo.BackColor = System.Drawing.SystemColors.Window;
             cmbDbModo.ForeColor = System.Drawing.SystemColors.WindowText;
+            cmbDbModo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             cmbDbModo.Items.AddRange(new object[] { "Local", "Remoto", "Alias" });
             cmbDbModo.Location = new System.Drawing.Point(120, 25);
             cmbDbModo.Name = "cmbDbModo";
             cmbDbModo.Size = new System.Drawing.Size(350, 23);
             cmbDbModo.TabIndex = 1;
-            cmbDbModo.Enabled = false;
+            toolTip.SetToolTip(cmbDbModo, "Modo de conexión. 'Local': usa Ruta Absoluta si no está vacía; si no, Ruta Relativa.\n'Remoto'/'Alias': usa solo Ruta Remota, ignorando Ruta Relativa y Ruta Absoluta.");
 
             // lblDbSource
             lblDbSource.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -157,7 +163,7 @@ namespace BingoHistoricoEditor {
             txtDbSource.Name = "txtDbSource";
             txtDbSource.Size = new System.Drawing.Size(350, 23);
             txtDbSource.TabIndex = 3;
-            txtDbSource.ReadOnly = true;
+            toolTip.SetToolTip(txtDbSource, "Host o IP del servidor Firebird. Se usa siempre, sea cual sea el Modo BD.");
 
             // lblDbPort
             lblDbPort.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -173,15 +179,17 @@ namespace BingoHistoricoEditor {
             txtDbPort.Name = "txtDbPort";
             txtDbPort.Size = new System.Drawing.Size(350, 23);
             txtDbPort.TabIndex = 5;
-            txtDbPort.ReadOnly = true;
+            toolTip.SetToolTip(txtDbPort, "Puerto del servicio Firebird (por defecto 3050).");
 
             // grpRutas
             grpRutas.Controls.Add(lblDbRelativePath);
             grpRutas.Controls.Add(txtDbRelativePath);
+            grpRutas.Controls.Add(btnBrowseRelativePath);
             grpRutas.Controls.Add(lblDbRemotePath);
             grpRutas.Controls.Add(txtDbRemotePath);
             grpRutas.Controls.Add(lblDbAbsolutePath);
             grpRutas.Controls.Add(txtDbAbsolutePath);
+            grpRutas.Controls.Add(btnBrowseAbsolutePath);
             grpRutas.ForeColor = System.Drawing.SystemColors.ControlText;
             grpRutas.Location = new System.Drawing.Point(13, 140);
             grpRutas.Name = "grpRutas";
@@ -202,9 +210,20 @@ namespace BingoHistoricoEditor {
             txtDbRelativePath.ForeColor = System.Drawing.SystemColors.WindowText;
             txtDbRelativePath.Location = new System.Drawing.Point(120, 25);
             txtDbRelativePath.Name = "txtDbRelativePath";
-            txtDbRelativePath.Size = new System.Drawing.Size(350, 23);
+            txtDbRelativePath.Size = new System.Drawing.Size(320, 23);
             txtDbRelativePath.TabIndex = 1;
-            txtDbRelativePath.ReadOnly = true;
+            toolTip.SetToolTip(txtDbRelativePath, "Ruta relativa al fichero .fdb, tomada desde la carpeta de la aplicación.\nSolo se usa en modo Local, y solo si Ruta Absoluta está vacía.");
+
+            btnBrowseRelativePath.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
+            btnBrowseRelativePath.ForeColor = System.Drawing.SystemColors.ControlText;
+            btnBrowseRelativePath.Location = new System.Drawing.Point(445, 25);
+            btnBrowseRelativePath.Name = "btnBrowseRelativePath";
+            btnBrowseRelativePath.Size = new System.Drawing.Size(33, 23);
+            btnBrowseRelativePath.TabIndex = 8;
+            btnBrowseRelativePath.Text = "…";
+            btnBrowseRelativePath.UseVisualStyleBackColor = true;
+            toolTip.SetToolTip(btnBrowseRelativePath, "Buscar un fichero .fdb y calcular su ruta relativa a la carpeta de la aplicación.");
+            btnBrowseRelativePath.Click += btnBrowseRelativePath_Click;
 
             // lblDbAbsolutePath
             lblDbAbsolutePath.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -218,9 +237,20 @@ namespace BingoHistoricoEditor {
             txtDbAbsolutePath.ForeColor = System.Drawing.SystemColors.WindowText;
             txtDbAbsolutePath.Location = new System.Drawing.Point(120, 55);
             txtDbAbsolutePath.Name = "txtDbAbsolutePath";
-            txtDbAbsolutePath.Size = new System.Drawing.Size(350, 23);
+            txtDbAbsolutePath.Size = new System.Drawing.Size(320, 23);
             txtDbAbsolutePath.TabIndex = 3;
-            txtDbAbsolutePath.ReadOnly = true;
+            toolTip.SetToolTip(txtDbAbsolutePath, "Ruta absoluta al fichero .fdb. En modo Local tiene prioridad sobre la Ruta Relativa:\nsi no está vacía, se usa esta y la Ruta Relativa se ignora por completo.");
+
+            btnBrowseAbsolutePath.FlatStyle = System.Windows.Forms.FlatStyle.Standard;
+            btnBrowseAbsolutePath.ForeColor = System.Drawing.SystemColors.ControlText;
+            btnBrowseAbsolutePath.Location = new System.Drawing.Point(445, 55);
+            btnBrowseAbsolutePath.Name = "btnBrowseAbsolutePath";
+            btnBrowseAbsolutePath.Size = new System.Drawing.Size(33, 23);
+            btnBrowseAbsolutePath.TabIndex = 9;
+            btnBrowseAbsolutePath.Text = "…";
+            btnBrowseAbsolutePath.UseVisualStyleBackColor = true;
+            toolTip.SetToolTip(btnBrowseAbsolutePath, "Buscar un fichero .fdb y usar su ruta completa.");
+            btnBrowseAbsolutePath.Click += btnBrowseAbsolutePath_Click;
 
             // lblDbRemotePath
             lblDbRemotePath.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -236,7 +266,7 @@ namespace BingoHistoricoEditor {
             txtDbRemotePath.Name = "txtDbRemotePath";
             txtDbRemotePath.Size = new System.Drawing.Size(350, 23);
             txtDbRemotePath.TabIndex = 5;
-            txtDbRemotePath.ReadOnly = true;
+            toolTip.SetToolTip(txtDbRemotePath, "Ruta o alias de la base de datos remota. Solo se usa cuando el Modo BD es\n'Remoto' o 'Alias'; en ese caso se ignoran la Ruta Relativa y la Ruta Absoluta.");
 
             // grpCredenciales
             grpCredenciales.Controls.Add(lblDbDialect);
@@ -269,7 +299,7 @@ namespace BingoHistoricoEditor {
             txtDbUser.Name = "txtDbUser";
             txtDbUser.Size = new System.Drawing.Size(350, 23);
             txtDbUser.TabIndex = 1;
-            txtDbUser.ReadOnly = true;
+            toolTip.SetToolTip(txtDbUser, "Usuario de conexión a Firebird (por defecto SYSDBA).\nNo es el mismo usuario que se usa para entrar en la aplicación.");
 
             // lblDbPass
             lblDbPass.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -286,7 +316,7 @@ namespace BingoHistoricoEditor {
             txtDbPass.Size = new System.Drawing.Size(350, 23);
             txtDbPass.TabIndex = 3;
             txtDbPass.UseSystemPasswordChar = true;
-            txtDbPass.ReadOnly = true;
+            toolTip.SetToolTip(txtDbPass, "Contraseña de conexión a Firebird. Se guarda en texto plano en appsettings.json.");
 
             // lblDbCharset
             lblDbCharset.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -298,12 +328,13 @@ namespace BingoHistoricoEditor {
 
             cmbDbCharset.BackColor = System.Drawing.SystemColors.Window;
             cmbDbCharset.ForeColor = System.Drawing.SystemColors.WindowText;
+            cmbDbCharset.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             cmbDbCharset.Items.AddRange(new object[] { "UTF8", "ISO8859_1", "WIN1252" });
             cmbDbCharset.Location = new System.Drawing.Point(120, 85);
             cmbDbCharset.Name = "cmbDbCharset";
             cmbDbCharset.Size = new System.Drawing.Size(350, 23);
             cmbDbCharset.TabIndex = 5;
-            cmbDbCharset.Enabled = false;
+            toolTip.SetToolTip(cmbDbCharset, "Juego de caracteres de la conexión; debe coincidir con el de la base de datos\n(normalmente ISO8859_1).");
 
             // lblDbDialect
             lblDbDialect.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -319,7 +350,7 @@ namespace BingoHistoricoEditor {
             txtDbDialect.Name = "txtDbDialect";
             txtDbDialect.Size = new System.Drawing.Size(350, 23);
             txtDbDialect.TabIndex = 7;
-            txtDbDialect.ReadOnly = true;
+            toolTip.SetToolTip(txtDbDialect, "Dialecto SQL de Firebird: '1' (heredado) o '3' (el habitual en bases modernas).");
 
             // ─────────────────────────────────────────────────────────────
             // tabAplicacion
@@ -364,6 +395,7 @@ namespace BingoHistoricoEditor {
             txtCodSala.Name = "txtCodSala";
             txtCodSala.Size = new System.Drawing.Size(350, 23);
             txtCodSala.TabIndex = 1;
+            toolTip.SetToolTip(txtCodSala, "Código de sala (COD_SALA) usado para filtrar y guardar todas las partidas en HISTORICO.");
 
             // lblCodConc
             lblCodConc.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -379,6 +411,7 @@ namespace BingoHistoricoEditor {
             txtCodConc.Name = "txtCodConc";
             txtCodConc.Size = new System.Drawing.Size(350, 23);
             txtCodConc.TabIndex = 3;
+            toolTip.SetToolTip(txtCodConc, "Código de concesionario (COD_CONC) usado para filtrar y guardar todas las partidas en HISTORICO.");
 
             // lblAppUser
             lblAppUser.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -394,6 +427,7 @@ namespace BingoHistoricoEditor {
             txtAppUser.Name = "txtAppUser";
             txtAppUser.Size = new System.Drawing.Size(350, 23);
             txtAppUser.TabIndex = 5;
+            toolTip.SetToolTip(txtAppUser, "Usuario heredado de la configuración inicial. Ya no se usa para iniciar sesión\n(los usuarios se gestionan desde 'Gestionar usuarios' en el login); cambiarlo aquí\nno afecta a ningún usuario existente.");
 
             // lblPrecioPartida
             lblPrecioPartida.ForeColor = System.Drawing.SystemColors.ControlText;
@@ -409,6 +443,7 @@ namespace BingoHistoricoEditor {
             txtPrecioPartida.Name = "txtPrecioPartida";
             txtPrecioPartida.Size = new System.Drawing.Size(350, 23);
             txtPrecioPartida.TabIndex = 7;
+            toolTip.SetToolTip(txtPrecioPartida, "Precio de partida propuesto por defecto al crear una partida nueva o un lote;\nse puede cambiar manualmente en cada pantalla.");
 
             // lblMensaje
             lblMensaje.Anchor = System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left;
@@ -471,6 +506,8 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.TextBox txtDbPort;
         private System.Windows.Forms.Label lblDbRelativePath;
         private System.Windows.Forms.TextBox txtDbRelativePath;
+        private System.Windows.Forms.Button btnBrowseRelativePath;
+        private System.Windows.Forms.Button btnBrowseAbsolutePath;
         private System.Windows.Forms.Label lblDbAbsolutePath;
         private System.Windows.Forms.TextBox txtDbAbsolutePath;
         private System.Windows.Forms.Label lblDbRemotePath;
@@ -492,5 +529,6 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.Label lblPrecioPartida;
         private System.Windows.Forms.TextBox txtPrecioPartida;
         private System.Windows.Forms.Label lblMensaje;
+        private System.Windows.Forms.ToolTip toolTip;
     }
 }
