@@ -23,11 +23,11 @@ real (or local) Firebird database.
 
 - Requires a running **Firebird 2.5+** server (`FirebirdServerDefaultInstance` service on Windows).
 - Connects via `FirebirdSql.Data.FirebirdClient`.
-- Config lives in `appsettings.json` (copied to output dir on build) under the `BingoSettings`
-  section: DB connection mode/path/credentials, `CodSala`/`CodConc` (room/concessionaire codes used
-  to scope every query), and `PrecioPartida` (default game price).
-- `appsettings.json` currently contains a plaintext DB password (`DbPass`) — this is existing,
-  expected behavior for this local tool, not something to "fix" unprompted.
+- Local config lives in `appsettings.json` (ignored by Git); `appsettings.example.json` is the
+  tracked template copied to the output directory when no local config exists. It contains DB
+  connection mode/path/credentials, `CodSala`/`CodConc` (room/concessionaire codes used to scope
+  every query), and `PrecioPartida` (default game price). Set the local Firebird password before
+  connecting.
 
 ## Architecture
 

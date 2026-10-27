@@ -316,7 +316,7 @@ namespace BingoHistoricoEditor {
             txtDbPass.Size = new System.Drawing.Size(350, 23);
             txtDbPass.TabIndex = 3;
             txtDbPass.UseSystemPasswordChar = true;
-            toolTip.SetToolTip(txtDbPass, "Contraseña de conexión a Firebird. Se guarda en texto plano en appsettings.json.");
+            toolTip.SetToolTip(txtDbPass, "Contraseña de conexión a Firebird. Se guarda en la configuración local appsettings.json, excluida del repositorio.");
 
             // lblDbCharset
             lblDbCharset.ForeColor = System.Drawing.SystemColors.ControlText;
