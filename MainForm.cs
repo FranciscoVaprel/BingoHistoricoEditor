@@ -222,14 +222,14 @@ namespace BingoHistoricoEditor {
                 // Primera seleccionada → Partida Inicial
                 var primera = filasSeleccionadas.First().DataBoundItem as HistoricoEntry;
                 if (primera != null) {
-                    nudPartidaInicial.Value = primera.PartidaDia;
+                    AsignarAcotado(nudPartidaInicial, primera.PartidaDia);
                 }
 
                 // Última seleccionada → Partida Final (funciona con Shift + clic)
                 if (filasSeleccionadas.Count > 1) {
                     var ultima = filasSeleccionadas.Last().DataBoundItem as HistoricoEntry;
                     if (ultima != null) {
-                        nudPartidaFinal.Value = ultima.PartidaDia;
+                        AsignarAcotado(nudPartidaFinal, ultima.PartidaDia);
                     }
                 }
             }
@@ -238,13 +238,23 @@ namespace BingoHistoricoEditor {
             if (filasSeleccionadas.Count == 1) {
                 _seleccionada = filasSeleccionadas[0].DataBoundItem as HistoricoEntry;
                 if (_seleccionada != null) {
-                    nudPartida.Value = _seleccionada.PartidaDia;
-                    nudPrecio.Value = _seleccionada.Precio;
-                    nudVendidos.Value = _seleccionada.Vendidos;
-                    nudLinea.Value = _seleccionada.Premio1;
-                    nudBingo.Value = _seleccionada.Premio2;
+                    AsignarAcotado(nudPartida, _seleccionada.PartidaDia);
+                    AsignarAcotado(nudPrecio, _seleccionada.Precio);
+                    AsignarAcotado(nudVendidos, _seleccionada.Vendidos);
+                    AsignarAcotado(nudLinea, _seleccionada.Premio1);
+                    AsignarAcotado(nudBingo, _seleccionada.Premio2);
                 }
             }
+        }
+
+        /// <summary>
+        /// Asigna un valor a un NumericUpDown acotándolo a su [Minimum, Maximum].
+        /// Evita que un registro de la BD fuera de los límites habituales de la UI
+        /// (p. ej. una PARTIDA_DIA = 0 insertada por otra vía) haga lanzar
+        /// ArgumentOutOfRangeException al seleccionarlo en la rejilla.
+        /// </summary>
+        private static void AsignarAcotado(NumericUpDown control, decimal valor) {
+            control.Value = Math.Max(control.Minimum, Math.Min(control.Maximum, valor));
         }
 
         private async void btnGuardar_Click(object sender, EventArgs e) {

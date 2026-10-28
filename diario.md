@@ -4,6 +4,13 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ---
 
+## 2026-10-28
+
+- **Corregido crash al seleccionar una partida fuera de los límites habituales de la UI** (p. ej. `PARTIDA_DIA = 0`, o un precio/premio superior al máximo del control): `MainForm.grid_SelectionChanged` asignaba `_seleccionada.PartidaDia`/`Precio`/`Vendidos`/`Premio1`/`Premio2` directamente a los `NumericUpDown` (`nudPartida`, `nudPrecio`, `nudVendidos`, `nudLinea`, `nudBingo`, `nudPartidaInicial`, `nudPartidaFinal`) sin comprobar límites. Como `nudPartida.Minimum = 1`, si ya existiera en la BD una partida con `PARTIDA_DIA = 0` (insertada por otra vía, p. ej. SQL directo, ya que la UI no deja crear una así) al seleccionarla en la rejilla `NumericUpDown.Value` lanzaba `ArgumentOutOfRangeException` y la app se caía. Añadido `AsignarAcotado(control, valor)`, que acota el valor a `[Minimum, Maximum]` antes de asignarlo, usado en los siete controles de ese método.
+  - Nota: sigue sin ser posible **crear** una partida 0 desde la UI (`nudPartida.Minimum = 1` se mantiene); este arreglo cubre el caso de que ya exista una así por otra vía.
+
+---
+
 ## 2026-09-30
 
 - **Selector de fichero .fdb para Ruta Relativa/Absoluta**: en `SettingsForm`, junto a esos dos campos hay ahora un botón "…" que abre un `OpenFileDialog` filtrado a `*.fdb`. Al elegir un fichero: para Ruta Absoluta se usa la ruta completa tal cual; para Ruta Relativa se calcula con `Path.GetRelativePath` respecto a la carpeta de la aplicación. El diálogo permite seleccionar una ruta que todavía no exista (`CheckFileExists = false`), porque Firebird crea el `.fdb` la primera vez que se conecta si no está ya creado.
