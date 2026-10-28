@@ -244,6 +244,10 @@ ClientBin/
 *.publishsettings
 orleans.codegen.cs
 
+# Instalador compilado (Inno Setup): el .exe generado vive en los Releases de
+# GitHub, no en el repositorio. El script fuente (installer/*.iss) sí se versiona.
+installer/Output/
+
 # Including strong name files can present a security risk
 # (https://github.com/github/gitignore/pull/2483#issue-259490424)
 #*.snk

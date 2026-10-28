@@ -19,6 +19,31 @@ dotnet run --project BingoHistoricoEditor.csproj
 There is no test project in this repo — verification is done by running the WinForms app against a
 real (or local) Firebird database.
 
+## Installer
+
+`installer/BingoHistoricoEditor.iss` is an Inno Setup script that builds a Windows installer from the
+self-contained win-x64 publish output (`FolderProfile.pubxml`). Build order:
+
+```powershell
+dotnet publish BingoHistoricoEditor.csproj -c Release -p:PublishProfile=FolderProfile
+# Inspect bin\Release\net10.0-windows\publish\win-x64\ by hand before compiling — see warning below.
+& "$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe" installer\BingoHistoricoEditor.iss
+```
+
+The compiled setup (`installer/Output/*.exe`, gitignored — ships as a GitHub Release asset, not
+committed) doubles as the updater: it uses a fixed `AppId`, so running it again over an existing
+install upgrades the binaries in place. `appsettings.json` is installed with `Flags: onlyifdoesntexist
+uninsneveruninstall`, so a real config already on the venue PC is never touched by an update or an
+uninstall; `users.json`/`logs/`/`BBDD/` are never part of the installer payload at all (the app creates
+them at runtime), so they're untouched for the same reason.
+
+**Before every publish, manually verify `bin/.../publish/win-x64/` has no real secrets** — the csproj's
+`Content Include="appsettings.json"` condition means your own local `appsettings.json` (with its real
+DB password) gets copied into the publish output if it's newer than what's already there, and a prior
+app run in that same output folder can leave a real `users.json`/`logs/` behind too. Check with
+`grep -rl "pbkdf2\$" bin/.../publish/win-x64/` (and inspect `appsettings.json` itself) before compiling
+or zipping anything meant for distribution.
+
 ## Runtime dependencies
 
 - Requires a running **Firebird 2.5+** server (`FirebirdServerDefaultInstance` service on Windows).
