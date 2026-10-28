@@ -6,6 +6,13 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ## 2026-10-28
 
+- **Repositorio subido a GitHub y primer Release publicado**: el remoto `origin` apuntaba a `fralurbe/BingoHistoricoEditor`, que no existía ni era accesible con la cuenta autenticada (`gh auth login` → `FranciscoVaprel`). Se creó el repositorio público `github.com/FranciscoVaprel/BingoHistoricoEditor`, se actualizó el remoto y se subieron los 25 commits que había en local.
+  - Añadido `<Version>1.0.0</Version>` al `.csproj` (no tenía ninguno antes).
+  - Generado un build de publicación self-contained win-x64 con el `FolderProfile.pubxml` ya existente, empaquetado como `BingoHistoricoEditor-v1.0.0-win-x64.zip` y publicado como asset del tag/Release `v1.0.0` (no se versiona en git, solo vive en la pestaña Releases).
+  - **Importante, revisado antes de subir nada**: el build de publicación copió por defecto el `appsettings.json` real de desarrollo (con la contraseña de Firebird y el hash de usuario reales) y también un `users.json` y una carpeta `logs/` con datos reales de pruebas, todos generados/presentes localmente. Se sustituyeron/eliminaron a mano en la carpeta de publicación antes de empaquetar el zip, dejando solo la plantilla `appsettings.example.json` sin credenciales. Si se vuelve a publicar en el futuro, revisar siempre el contenido de `bin/.../publish/.../` antes de comprimir y subir nada.
+
+
+
 - **Corregido crash al seleccionar una partida fuera de los límites habituales de la UI** (p. ej. `PARTIDA_DIA = 0`, o un precio/premio superior al máximo del control): `MainForm.grid_SelectionChanged` asignaba `_seleccionada.PartidaDia`/`Precio`/`Vendidos`/`Premio1`/`Premio2` directamente a los `NumericUpDown` (`nudPartida`, `nudPrecio`, `nudVendidos`, `nudLinea`, `nudBingo`, `nudPartidaInicial`, `nudPartidaFinal`) sin comprobar límites. Como `nudPartida.Minimum = 1`, si ya existiera en la BD una partida con `PARTIDA_DIA = 0` (insertada por otra vía, p. ej. SQL directo, ya que la UI no deja crear una así) al seleccionarla en la rejilla `NumericUpDown.Value` lanzaba `ArgumentOutOfRangeException` y la app se caía. Añadido `AsignarAcotado(control, valor)`, que acota el valor a `[Minimum, Maximum]` antes de asignarlo, usado en los siete controles de ese método.
   - Nota: sigue sin ser posible **crear** una partida 0 desde la UI (`nudPartida.Minimum = 1` se mantiene); este arreglo cubre el caso de que ya exista una así por otra vía.
 
