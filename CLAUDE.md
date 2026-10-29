@@ -91,7 +91,13 @@ Passwords (both app users and — historically — the legacy `AppUser`) are has
 the designer or with care; put logic in the paired non-designer `.cs` partial):
 - `SetPasswordForm` — first-run credential setup.
 - `LoginForm` — login + entry point to `UserManagerForm` (also hosts `AutenticacionPrevia`, an inline
-  re-auth dialog).
+  re-auth dialog). Also hosts the lost-access recovery link (`lnkRestablecer` →
+  `ConfirmarRestablecerForm`, type-to-confirm dialog): wipes `users.json` (backed up to
+  `users.json.bak-<timestamp>`) and clears `AppUser`/`AppPasswordHash` from `appsettings.json`
+  (`UserStore.EliminarTodosLosUsuarios` + `Program.LimpiarCredencialesIniciales`), then
+  `Application.Restart()`s so the first-run wizard (`SetPasswordForm`) runs again. Deliberately *not*
+  a hidden/hardcoded bypass credential — requires physical file-system access to the machine plus
+  explicit confirmation in the UI; was requested as a "backdoor" and pushed back on for that reason.
 - `MainForm` — main screen: loads `HISTORICO` rows for a selected date/sala/concesionario into a grid,
   supports single-record edit/save/delete and batch (lote) operations over a `PARTIDA_DIA` range
   (search for gaps, batch save, batch delete), backed by `nudPartidaInicial`/`nudPartidaFinal`.

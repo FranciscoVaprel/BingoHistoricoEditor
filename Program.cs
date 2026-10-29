@@ -71,6 +71,22 @@ namespace BingoHistoricoEditor {
         }
 
         /// <summary>
+        /// Recuperación de acceso perdido: borra AppUser/AppPasswordHash de
+        /// appsettings.json. Combinado con UserStore.EliminarTodosLosUsuarios(),
+        /// fuerza que el próximo arranque muestre otra vez el asistente de
+        /// primera configuración (ver el chequeo al inicio de Main()).
+        /// </summary>
+        public static void LimpiarCredencialesIniciales() {
+            var root = CargarJson();
+            var settings = ObtenerSeccionBingoSettings(root);
+
+            settings.Remove("AppUser");
+            settings.Remove("AppPasswordHash");
+
+            GuardarJson(root);
+        }
+
+        /// <summary>
         /// Guarda todos los parámetros de configuración en appsettings.json
         /// </summary>
         public static void GuardarConfiguracion(

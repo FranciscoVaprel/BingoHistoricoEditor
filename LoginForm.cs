@@ -29,6 +29,7 @@ namespace BingoHistoricoEditor {
         private void btnEntrar_Click(object sender, EventArgs e)    => IntentarLogin();
         private void btnGestionar_Click(object sender, EventArgs e) => AbrirGestionUsuarios();
         private void btnCerrar_Click(object sender, EventArgs e)    => CerrarAplicacion();
+        private void lnkRestablecer_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) => RestablecerAdministrador();
 
         private void txtUsuario_KeyDown(object sender, KeyEventArgs e) {
             if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; txtPassword.Focus(); }
@@ -86,6 +87,38 @@ namespace BingoHistoricoEditor {
         private void CerrarAplicacion() {
             DialogResult = DialogResult.Cancel;
             Close();
+        }
+
+        // ── Recuperación de acceso perdido ───────────────────────────────────
+
+        /// <summary>
+        /// Elimina TODOS los usuarios (con copia de seguridad de users.json) y
+        /// limpia las credenciales iniciales de appsettings.json, para forzar
+        /// que el próximo arranque muestre el asistente de primera configuración.
+        /// No es una puerta trasera: requiere confirmación explícita y acceso
+        /// físico al ordenador; no hay ningún usuario/contraseña oculto.
+        /// </summary>
+        private void RestablecerAdministrador() {
+            using var confirmar = new ConfirmarRestablecerForm();
+            if (confirmar.ShowDialog(this) != DialogResult.OK) return;
+
+            try {
+                UserStore.EliminarTodosLosUsuarios();
+                Program.LimpiarCredencialesIniciales();
+                LogService.Sistema("RESET ADMINISTRADOR: se eliminaron todos los usuarios desde la pantalla de login.");
+
+                MessageBox.Show(
+                    "Se han eliminado todos los usuarios (se guardó una copia de seguridad de users.json " +
+                    "en la carpeta de la aplicación).\n\nLa aplicación se va a reiniciar para crear un " +
+                    "administrador nuevo.",
+                    "Restablecimiento completado", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                Application.Restart();
+            }
+            catch (Exception ex) {
+                MessageBox.Show($"No se pudo restablecer el acceso:\n{ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private async void AnimarError() {
@@ -153,6 +186,69 @@ namespace BingoHistoricoEditor {
                 _lblErr.Visible = true;
                 _txtPass.Clear(); _txtPass.Focus();
             }
+        }
+    }
+
+    // ── Diálogo de confirmación de restablecimiento de administrador ──────────
+
+    /// <summary>
+    /// Exige escribir la palabra "ELIMINAR" para confirmar el borrado de todos
+    /// los usuarios. Un simple Sí/No sería demasiado fácil de pulsar sin querer
+    /// para una acción tan destructiva.
+    /// </summary>
+    internal class ConfirmarRestablecerForm : Form {
+        private TextBox _txtConfirmar = null!;
+        private Button  _btnConfirmar = null!;
+
+        public ConfirmarRestablecerForm() {
+            Text = "Restablecer administrador"; ClientSize = new Size(380, 300);
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false; MinimizeBox = false;
+            StartPosition = FormStartPosition.CenterParent;
+            BackColor = SystemColors.Control; ForeColor = SystemColors.ControlText;
+            Font = new Font("Segoe UI", 9f);
+
+            var lblAviso = new Label {
+                Text = "Esto eliminará TODOS los usuarios de la aplicación (no solo los " +
+                       "administradores). Se guardará una copia de seguridad de users.json, " +
+                       "pero tendrás que crear un administrador nuevo al reiniciar.\n\n" +
+                       "Usa esto solo si no hay ninguna otra forma de entrar.",
+                ForeColor = Color.Red, AutoSize = false,
+                Location = new Point(24, 16), Size = new Size(332, 130),
+            };
+
+            var lblInstruccion = new Label {
+                Text = "Escribe ELIMINAR para confirmar:",
+                ForeColor = SystemColors.GrayText, AutoSize = true,
+                Location = new Point(24, 154),
+            };
+
+            _txtConfirmar = new TextBox {
+                Size = new Size(332, 26), Location = new Point(24, 174),
+                BackColor = SystemColors.Window, ForeColor = SystemColors.WindowText,
+                BorderStyle = BorderStyle.FixedSingle, Font = new Font("Segoe UI", 10f),
+            };
+            _txtConfirmar.TextChanged += (_, _) => _btnConfirmar.Enabled =
+                _txtConfirmar.Text.Trim().Equals("ELIMINAR", StringComparison.OrdinalIgnoreCase);
+
+            _btnConfirmar = new Button {
+                Text = "Eliminar todos los usuarios", Size = new Size(332, 36),
+                Location = new Point(24, 210), Enabled = false,
+                ForeColor = SystemColors.ControlText, FlatStyle = FlatStyle.Standard,
+                Font = new Font("Segoe UI", 9f, FontStyle.Bold),
+                Cursor = Cursors.Hand, UseVisualStyleBackColor = true,
+            };
+            _btnConfirmar.Click += (_, _) => { DialogResult = DialogResult.OK; Close(); };
+
+            var btnCancelar = new Button {
+                Text = "Cancelar", Size = new Size(332, 30),
+                Location = new Point(24, 252),
+                ForeColor = SystemColors.ControlText, FlatStyle = FlatStyle.Standard,
+                Cursor = Cursors.Hand, UseVisualStyleBackColor = true,
+            };
+            btnCancelar.Click += (_, _) => { DialogResult = DialogResult.Cancel; Close(); };
+
+            Controls.AddRange(new Control[] { lblAviso, lblInstruccion, _txtConfirmar, _btnConfirmar, btnCancelar });
         }
     }
 }

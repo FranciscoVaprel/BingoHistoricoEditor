@@ -13,6 +13,7 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.Button btnGestionar;
         private System.Windows.Forms.Button btnCerrar;
         private System.Windows.Forms.Label  lblError;
+        private System.Windows.Forms.LinkLabel lnkRestablecer;
 
         protected override void Dispose(bool disposing) {
             if (disposing && components != null) components.Dispose();
@@ -24,7 +25,7 @@ namespace BingoHistoricoEditor {
 
             // ── Formulario ────────────────────────────────────────────────────
             this.Text            = "Acceso — Histórico Bingo";
-            this.ClientSize      = new System.Drawing.Size(360, 440);
+            this.ClientSize      = new System.Drawing.Size(360, 474);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox     = false;
             this.MinimizeBox     = false;
@@ -33,7 +34,7 @@ namespace BingoHistoricoEditor {
 
             // ── Panel central ─────────────────────────────────────────────────
             this.pnlCentro = new System.Windows.Forms.Panel {
-                Size        = new System.Drawing.Size(300, 380),
+                Size        = new System.Drawing.Size(300, 414),
                 Location    = new System.Drawing.Point(30, 30),
                 BackColor   = System.Drawing.SystemColors.Control,
                 BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle,
@@ -145,6 +146,21 @@ namespace BingoHistoricoEditor {
             };
             this.btnCerrar.Click += this.btnCerrar_Click;
 
+            // Enlace discreto de recuperación de acceso (NO es una puerta trasera:
+            // requiere acceso físico al PC y confirmación explícita; borra todos
+            // los usuarios y fuerza crear un admin nuevo en el próximo arranque).
+            this.lnkRestablecer = new System.Windows.Forms.LinkLabel {
+                Text      = "¿Olvidaste el acceso? Restablecer administrador",
+                Font      = new System.Drawing.Font("Segoe UI", 8f),
+                LinkColor = System.Drawing.SystemColors.GrayText,
+                ActiveLinkColor = System.Drawing.SystemColors.HotTrack,
+                LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline,
+                AutoSize  = true,
+                Location  = new System.Drawing.Point(24, 366),
+                TabIndex  = 5,
+            };
+            this.lnkRestablecer.LinkClicked += this.lnkRestablecer_LinkClicked;
+
             this.pnlCentro.Controls.AddRange(new System.Windows.Forms.Control[] {
                 this.lblTitulo, this.lblSubtitulo,
                 this.lblUserLabel, this.txtUsuario,
@@ -153,6 +169,7 @@ namespace BingoHistoricoEditor {
                 this.btnEntrar,
                 this.btnGestionar,
                 this.btnCerrar,
+                this.lnkRestablecer,
             });
 
             this.Controls.Add(this.pnlCentro);

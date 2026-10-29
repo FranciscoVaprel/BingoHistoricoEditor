@@ -4,6 +4,16 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ---
 
+## 2026-10-29
+
+- **Pedida y rechazada una puerta trasera**: se pidió explícitamente un login/contraseña oculto que funcionase "sin configurar" para administradores, en todas las instalaciones. Rechazado — motivos: (1) el repo ya es público en GitHub, cualquier credencial en el código quedaría expuesta; (2) aunque no estuviera en el código fuente visible, un binario .NET se descompila trivialmente, así que "oculto en el .exe" no es seguro; (3) socavaría todo el trabajo de auditoría ya hecho (roles, trigger de BD, registro de quién hizo qué); (4) al ser "sin configurar", la misma puerta serviría para todas las instalaciones, no solo esta — justo el patrón que hace que una sola filtración comprometa a todos los clientes a la vez.
+- **Alternativa implementada: recuperación de acceso sin puerta trasera.** Nuevo enlace discreto "¿Olvidaste el acceso? Restablecer administrador" en `LoginForm`:
+  - Pide escribir la palabra `ELIMINAR` para confirmar (`ConfirmarRestablecerForm`) — un simple Sí/No sería demasiado fácil de pulsar sin querer para algo tan destructivo.
+  - `UserStore.EliminarTodosLosUsuarios()` hace una copia de seguridad de `users.json` (como `users.json.bak-<fecha-hora>`) y lo borra; `Program.LimpiarCredencialesIniciales()` borra `AppUser`/`AppPasswordHash` de `appsettings.json`.
+  - La app se reinicia (`Application.Restart()`) y, como ya no hay credenciales, el chequeo de "primer arranque" que ya existía en `Program.Main()` vuelve a mostrar `SetPasswordForm` para crear un administrador nuevo.
+  - Por qué esto SÍ es seguro y la puerta trasera no: requiere acceso físico al ordenador concreto (no es remoto ni universal) y una confirmación explícita y destructiva — es el mismo nivel de confianza que ya hacía falta para editar `appsettings.json` a mano, solo que con una UI más cómoda y con copia de seguridad.
+  - Se registra en el log de fichero (`LogService.Sistema`) que ocurrió un reset, aunque no en la tabla de auditoría de la BD (en este punto del flujo `LogService` todavía no tiene asignado el `FirebirdService`, igual que pasa con los intentos de login).
+
 ## 2026-10-28
 
 - **Ahora sí se puede asignar la partida 0**: hasta ahora `nudPartida.Minimum`/`nudPartidaInicial.Minimum` estaban fijados a 1, así que ni a mano ni con las flechas del control se podía bajar de ahí (esto era by design, no el bug del mismo día que evitaba el crash si una partida 0 ya existía por otra vía). A petición explícita, cambiado a `Minimum = 0` en `MainForm.ConfigurarLimitesNumericos` para los campos "Partida" (edición individual) y "Partida Inicial" (lote) — para por ejemplo, salas que numeran la primera partida del día como 0.

@@ -81,6 +81,23 @@ namespace BingoHistoricoEditor {
             Guardar(usuarios);
         }
 
+        /// <summary>
+        /// Recuperación de acceso perdido: hace una copia de seguridad de users.json
+        /// (si existe) y lo elimina, dejando la app sin usuarios. Combinado con
+        /// Program.LimpiarCredencialesIniciales(), fuerza que el próximo arranque
+        /// muestre otra vez el asistente de primera configuración para crear un
+        /// administrador nuevo. No es una puerta trasera: requiere acceso al
+        /// sistema de archivos del propio ordenador y confirmación explícita en la UI.
+        /// </summary>
+        public static void EliminarTodosLosUsuarios() {
+            if (!File.Exists(UsersPath)) return;
+
+            string backup = Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                $"users.json.bak-{DateTime.Now:yyyyMMdd-HHmmss}");
+            File.Move(UsersPath, backup, overwrite: true);
+        }
+
         public static void MigrarDesdeAppSettings(string? appUser, string? appPasswordHash) {
             if (!HayUsuarios()
                 && !string.IsNullOrWhiteSpace(appUser)
