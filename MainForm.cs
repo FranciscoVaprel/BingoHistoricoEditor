@@ -115,7 +115,7 @@ namespace BingoHistoricoEditor {
         }
 
         private void ConfigurarLimitesNumericos() {
-            nudPartida.Minimum = 1;
+            nudPartida.Minimum = 0;
             nudPartida.Maximum = 99999;
             nudPrecio.Minimum = 0;
             nudPrecio.Maximum = 9999;
@@ -129,7 +129,7 @@ namespace BingoHistoricoEditor {
             nudLotePrecio.Value = precioPartida;
 
             // Límites para los rangos de lote
-            nudPartidaInicial.Minimum = 1;
+            nudPartidaInicial.Minimum = 0;
             nudPartidaInicial.Maximum = 99999;
             nudPartidaFinal.Maximum = 99999;
         }

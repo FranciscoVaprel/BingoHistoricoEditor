@@ -6,6 +6,8 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ## 2026-10-28
 
+- **Ahora sí se puede asignar la partida 0**: hasta ahora `nudPartida.Minimum`/`nudPartidaInicial.Minimum` estaban fijados a 1, así que ni a mano ni con las flechas del control se podía bajar de ahí (esto era by design, no el bug del mismo día que evitaba el crash si una partida 0 ya existía por otra vía). A petición explícita, cambiado a `Minimum = 0` en `MainForm.ConfigurarLimitesNumericos` para los campos "Partida" (edición individual) y "Partida Inicial" (lote) — para por ejemplo, salas que numeran la primera partida del día como 0.
+
 - **Instalador/actualizador con Inno Setup que no sobreescribe la configuración**: pedido explícitamente porque un instalador normal sobreescribiría `appsettings.json` del ordenador de la sala en cada actualización. Nuevo `installer/BingoHistoricoEditor.iss`:
   - Usa un `AppId` fijo (GUID), lo que permite que el mismo `setup.exe` sirva tanto para instalar como para actualizar: si detecta una instalación previa con ese `AppId`, actualiza en el mismo sitio en vez de instalar una copia en paralelo.
   - `appsettings.json` se instala con `Flags: onlyifdoesntexist uninsneveruninstall` — solo se copia la plantilla si el fichero no existe ya; en una actualización (o al desinstalar) la configuración real del operador se queda intacta. El resto de binarios se sobrescriben siempre (`ignoreversion`).
