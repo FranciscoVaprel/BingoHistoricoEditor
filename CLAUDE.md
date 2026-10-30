@@ -104,7 +104,17 @@ the designer or with care; put logic in the paired non-designer `.cs` partial):
   `Application.Restart()`s so the first-run wizard (`SetPasswordForm`) runs again. Deliberately *not*
   a hidden/hardcoded bypass credential — requires physical file-system access to the machine plus
   explicit confirmation in the UI; was requested as a "backdoor" and pushed back on for that reason.
-- `MainForm` — main screen: loads `HISTORICO` rows for a selected date/sala/concesionario into a grid,
+- `MainForm` — two tabs above the grid (`tabTablas`): "HISTORICO" and the import table
+  (`BingoSettings:TablaImportacionLog`, default `HISTORICO_LOG`). `_tablaActual` decides what
+  `CargarPartidasAsync` loads; the log tab is **read-only**: the editing/lote panel
+  (`tabControlEdicion`) is disabled because all of it writes `HISTORICO`, double-click opens
+  `FichaPartidaForm` with `soloConsultaDe`, and `btnPasarVista` opens `PasarLogAHistoricoForm`.
+  After an import the screen jumps to that tab and day (`ImportarLogForm.UltimaSesionImportada`).
+  The grid is bound once to a fixed `BindingSource` (`_bsPartidas`) and loads are serialized
+  (`_cargando`/`_recargarAlTerminar`): rebinding with `DataSource = null` while another load (startup,
+  BUSCAR, tab change) was in flight threw "Index was out of range" / "auto-filled column is being
+  resized" and left blank rows — don't go back to that pattern.
+- `MainForm` (cont.) — loads `HISTORICO` rows for a selected date/sala/concesionario into a grid,
   supports single-record edit/save/delete and batch (lote) operations over a `PARTIDA_DIA` range
   (search for gaps, batch save, batch delete), backed by `nudPartidaInicial`/`nudPartidaFinal`.
 - `FichaPartidaForm` — "edit every column" window for one `HISTORICO` row, opened from `MainForm`

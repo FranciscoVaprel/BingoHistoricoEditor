@@ -20,6 +20,12 @@ namespace BingoHistoricoEditor {
         private string _usuarioActual;
         private readonly bool _esAdmin;
 
+        // Tabla que muestra la rejilla: HISTORICO, o la de importación del log
+        // (pestaña tabPageLog), que es solo de consulta: todo lo que edita
+        // (panel individual, lote, ficha) escribe en HISTORICO.
+        private string _tablaActual = "HISTORICO";
+        private bool EnVistaLog => _tablaActual != "HISTORICO";
+
         public MainForm(FirebirdService db, IConfiguration config, string usuario) {
             InitializeComponent();
             _db = db;
@@ -35,6 +41,7 @@ namespace BingoHistoricoEditor {
             ConfigurarLimitesNumericos();
             ConfigurarEstilosIndividual();
             ConfigurarEstilosLote();
+            tabPageLog.Text = $"{TablaImportacionLog.ToUpperInvariant()} (importado del log)";
 
             // La auditoría solo la puede abrir un administrador.
             if (btnAuditoria != null) btnAuditoria.Visible = _esAdmin;
@@ -98,8 +105,16 @@ namespace BingoHistoricoEditor {
             }
         }
 
+        // Fuente fija de la rejilla: al recargar solo cambia la lista, no se
+        // borran y regeneran las columnas (lo que hacía DataSource = null y
+        // volver a asignar). Con las dos pestañas, una recarga podía pillar a
+        // la rejilla a medio ajustar sus columnas de relleno automático y fallar
+        // (filas que se quedaban en blanco, "Index was out of range").
+        private readonly BindingSource _bsPartidas = new() { DataSource = typeof(HistoricoEntry) };
+
         private void ConfigurarGrid() {
             grid.AutoGenerateColumns = true;
+            grid.DataSource = _bsPartidas;
             grid.ReadOnly = true;
             grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             grid.MultiSelect = true;                    // ← Importante para rango con Shift
@@ -177,14 +192,45 @@ namespace BingoHistoricoEditor {
 
         private async void btnBuscar_Click(object sender, EventArgs e) => await CargarPartidasAsync();
 
+        // Una sola carga a la vez: la del arranque, BUSCAR, el cambio de pestaña
+        // o el final de una importación pueden coincidir. Si llega una petición
+        // con otra en curso, se repite la carga al acabar (con la fecha y la
+        // tabla de ese momento) en vez de llenar la rejilla dos veces a la vez.
+        private bool _cargando;
+        private bool _recargarAlTerminar;
+
         private async Task CargarPartidasAsync() {
+            if (_cargando) { _recargarAlTerminar = true; return; }
+            _cargando = true;
+            try {
+                do {
+                    _recargarAlTerminar = false;
+                    await CargarPartidasUnaVezAsync();
+                } while (_recargarAlTerminar);
+            }
+            finally {
+                _cargando = false;
+            }
+        }
+
+        private async Task CargarPartidasUnaVezAsync() {
             try {
                 SetBusy(true);
 
-                _partidas = await _db.CargarPorFechaAsync(dtpFecha.Value, _codSala, _codConc);
+                _partidas = await _db.CargarPorFechaAsync(dtpFecha.Value, _codSala, _codConc, _tablaActual);
 
-                grid.DataSource = null;
-                grid.DataSource = _partidas;
+                grid.CurrentCell = null;
+                _bsPartidas.DataSource = _partidas;
+
+                if (EnVistaLog && _partidas.Count == 0) {
+                    // Decir qué días sí hay, para no buscar a ciegas.
+                    var sesiones = await _db.ObtenerSesionesAsync(_tablaActual, _codSala, _codConc);
+                    EscribirLog("INFO", sesiones.Count == 0
+                        ? $"{_tablaActual} está vacía para esta sala: importa antes un log de Gregal (⇩ LOG DE GREGAL)."
+                        : $"{_tablaActual} no tiene partidas del {dtpFecha.Value:dd/MM/yyyy}. Días importados: " +
+                          string.Join(", ", sesiones.Take(10).Select(s => $"{s.Fecha:dd/MM/yyyy} ({s.Partidas})")) +
+                          (sesiones.Count > 10 ? ", …" : "") + ".");
+                }
 
                 // === NUEVA LÓGICA: Asignar automáticamente Partida Final ===
                 if (_partidas != null && _partidas.Count > 0) {
@@ -318,7 +364,7 @@ namespace BingoHistoricoEditor {
             try {
                 SetBusy(true);
                 columnas = await _db.ObtenerColumnasHistoricoAsync();
-                fila = await _db.CargarFilaCompletaAsync(clave);
+                fila = await _db.CargarFilaCompletaAsync(clave, _tablaActual);
             }
             catch (Exception ex) {
                 EscribirLog("ERROR", ex.Message, registrarEnArchivo: true);
@@ -332,6 +378,12 @@ namespace BingoHistoricoEditor {
             if (fila == null) {
                 EscribirLog("ADVERTENCIA", $"La {clave} ya no existe en la base de datos; se recarga la tabla.");
                 await CargarPartidasAsync();
+                return;
+            }
+
+            if (EnVistaLog) {
+                using var consulta = new FichaPartidaForm(_db, columnas, clave, fila, soloConsultaDe: _tablaActual);
+                consulta.ShowDialog(this);
                 return;
             }
 
@@ -418,6 +470,7 @@ namespace BingoHistoricoEditor {
             this.Cursor = busy ? Cursors.WaitCursor : Cursors.Default;
 
             btnBuscar.Enabled = !busy;
+            tabTablas.Enabled = !busy;
             btnGuardar.Enabled = !busy;
             btnEditarFicha.Enabled = !busy;
             btnEliminar.Enabled = !busy;
@@ -737,11 +790,38 @@ namespace BingoHistoricoEditor {
             _menuLogGregal.Show(btnImportarLog, new Point(0, btnImportarLog.Height));
         }
 
-        private void AbrirImportarLog() {
-            using var importar = new ImportarLogForm(_db, TablaImportacionLog, _codSala, _codConc, _config["BingoSettings:FabricanteLog"],
-                (detalle, datos) => EscribirLog("IMPORTAR_LOG_GREGAL", detalle, registrarEnArchivo: true, datos: datos));
-            importar.ShowDialog(this);
+        private async void AbrirImportarLog() {
+            DateTime? importada;
+            using (var importar = new ImportarLogForm(_db, TablaImportacionLog, _codSala, _codConc, _config["BingoSettings:FabricanteLog"],
+                       (detalle, datos) => EscribirLog("IMPORTAR_LOG_GREGAL", detalle, registrarEnArchivo: true, datos: datos))) {
+                importar.ShowDialog(this);
+                importada = importar.UltimaSesionImportada;
+            }
+            if (importada == null) return;
+
+            // Enseñar lo importado: pestaña del log, en el último día importado.
+            dtpFecha.Value = importada.Value;
+            if (tabTablas.SelectedTab == tabPageLog) await CargarPartidasAsync();
+            else tabTablas.SelectedTab = tabPageLog;   // tabTablas_SelectedIndexChanged recarga
         }
+
+        private async void tabTablas_SelectedIndexChanged(object? sender, EventArgs e) {
+            _tablaActual = tabTablas.SelectedTab == tabPageLog ? TablaImportacionLog.ToUpperInvariant() : "HISTORICO";
+
+            // En la vista del log no se edita nada: el panel de edición y el de
+            // lote escriben en HISTORICO.
+            tabControlEdicion.Enabled = !EnVistaLog;
+            flpModoLog.Visible = EnVistaLog;
+            lblModoLog.Text = "Solo consulta · doble clic: todos los campos";
+            var fondo = EnVistaLog ? Color.FromArgb(255, 250, 232) : SystemColors.Window;
+            grid.DefaultCellStyle.BackColor = fondo;
+            grid.AlternatingRowsDefaultCellStyle.BackColor = EnVistaLog ? Color.FromArgb(246, 240, 218) : SystemColors.ControlLight;
+
+            _seleccionada = null;
+            await CargarPartidasAsync();
+        }
+
+        private async void btnPasarVista_Click(object? sender, EventArgs e) => await AbrirPasarAHistoricoAsync();
 
         private async Task AbrirPasarAHistoricoAsync() {
             bool huboCambios;

@@ -7,6 +7,13 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.TableLayoutPanel tlpHeader;
         private System.Windows.Forms.TableLayoutPanel tlpContent;
         private System.Windows.Forms.TableLayoutPanel tlpIzquierda;
+        private System.Windows.Forms.Panel pnlTablas;
+        private System.Windows.Forms.TabControl tabTablas;
+        private System.Windows.Forms.TabPage tabPageHistorico;
+        private System.Windows.Forms.TabPage tabPageLog;
+        private System.Windows.Forms.FlowLayoutPanel flpModoLog;
+        private System.Windows.Forms.Label lblModoLog;
+        private System.Windows.Forms.Button btnPasarVista;
         private System.Windows.Forms.Panel pnlRight;
 
         private System.Windows.Forms.TabControl tabControlEdicion;
@@ -87,6 +94,13 @@ namespace BingoHistoricoEditor {
             btnConfiguracion = new Button();
             tlpContent = new TableLayoutPanel();
             tlpIzquierda = new TableLayoutPanel();
+            pnlTablas = new Panel();
+            tabTablas = new TabControl();
+            tabPageHistorico = new TabPage();
+            tabPageLog = new TabPage();
+            flpModoLog = new FlowLayoutPanel();
+            lblModoLog = new Label();
+            btnPasarVista = new Button();
             grid = new DataGridView();
             pnlLog = new Panel();
             txtLog = new TextBox();
@@ -132,6 +146,9 @@ namespace BingoHistoricoEditor {
             pnlTextos.SuspendLayout();
             tlpContent.SuspendLayout();
             tlpIzquierda.SuspendLayout();
+            pnlTablas.SuspendLayout();
+            tabTablas.SuspendLayout();
+            flpModoLog.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)grid).BeginInit();
             pnlLog.SuspendLayout();
             pnlRight.SuspendLayout();
@@ -329,16 +346,85 @@ namespace BingoHistoricoEditor {
             //
             tlpIzquierda.ColumnCount = 1;
             tlpIzquierda.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
-            tlpIzquierda.Controls.Add(grid, 0, 0);
-            tlpIzquierda.Controls.Add(pnlLog, 0, 1);
+            tlpIzquierda.Controls.Add(pnlTablas, 0, 0);
+            tlpIzquierda.Controls.Add(grid, 0, 1);
+            tlpIzquierda.Controls.Add(pnlLog, 0, 2);
             tlpIzquierda.Dock = DockStyle.Fill;
             tlpIzquierda.Location = new Point(3, 3);
             tlpIzquierda.Name = "tlpIzquierda";
-            tlpIzquierda.RowCount = 2;
+            tlpIzquierda.RowCount = 3;
+            tlpIzquierda.RowStyles.Add(new RowStyle(SizeType.Absolute, 32F));
             tlpIzquierda.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tlpIzquierda.RowStyles.Add(new RowStyle(SizeType.Absolute, 130F));
             tlpIzquierda.Size = new Size(878, 658);
             tlpIzquierda.TabIndex = 0;
+            //
+            // pnlTablas: pestañas HISTORICO / tabla de importación del log, encima de la rejilla
+            //
+            pnlTablas.Controls.Add(flpModoLog);
+            pnlTablas.Controls.Add(tabTablas);
+            pnlTablas.Dock = DockStyle.Fill;
+            pnlTablas.Margin = new Padding(3, 3, 3, 0);
+            pnlTablas.Name = "pnlTablas";
+            pnlTablas.TabIndex = 2;
+            //
+            // tabTablas
+            //
+            tabTablas.Controls.Add(tabPageHistorico);
+            tabTablas.Controls.Add(tabPageLog);
+            tabTablas.Dock = DockStyle.Left;
+            tabTablas.Name = "tabTablas";
+            tabTablas.SelectedIndex = 0;
+            tabTablas.Size = new Size(430, 29);
+            tabTablas.TabIndex = 0;
+            toolTip.SetToolTip(tabTablas, "HISTORICO: las partidas reales. La otra pestaña: las importadas de un log de Gregal (solo consulta).");
+            tabTablas.SelectedIndexChanged += tabTablas_SelectedIndexChanged;
+            //
+            // tabPageHistorico
+            //
+            tabPageHistorico.Name = "tabPageHistorico";
+            tabPageHistorico.TabIndex = 0;
+            tabPageHistorico.Text = "HISTORICO";
+            tabPageHistorico.UseVisualStyleBackColor = true;
+            //
+            // tabPageLog (el texto con el nombre de la tabla se pone en MainForm)
+            //
+            tabPageLog.Name = "tabPageLog";
+            tabPageLog.TabIndex = 1;
+            tabPageLog.Text = "HISTORICO_LOG";
+            tabPageLog.UseVisualStyleBackColor = true;
+            //
+            // flpModoLog: aviso y botón que solo se ven en la pestaña del log
+            //
+            flpModoLog.Controls.Add(btnPasarVista);
+            flpModoLog.Controls.Add(lblModoLog);
+            flpModoLog.Dock = DockStyle.Fill;
+            flpModoLog.FlowDirection = FlowDirection.RightToLeft;
+            flpModoLog.Name = "flpModoLog";
+            flpModoLog.TabIndex = 1;
+            flpModoLog.Visible = false;
+            flpModoLog.WrapContents = false;
+            //
+            // lblModoLog
+            //
+            lblModoLog.AutoSize = true;
+            lblModoLog.ForeColor = Color.DarkRed;
+            lblModoLog.Margin = new Padding(3, 7, 3, 0);
+            lblModoLog.Name = "lblModoLog";
+            lblModoLog.Text = "Solo consulta";
+            //
+            // btnPasarVista
+            //
+            btnPasarVista.AutoSize = true;
+            btnPasarVista.FlatStyle = FlatStyle.Standard;
+            btnPasarVista.ForeColor = SystemColors.ControlText;
+            btnPasarVista.Margin = new Padding(3, 0, 0, 0);
+            btnPasarVista.Name = "btnPasarVista";
+            btnPasarVista.TabIndex = 0;
+            btnPasarVista.Text = "⇧ Pasar a HISTORICO…";
+            toolTip.SetToolTip(btnPasarVista, "Comparar este día con HISTORICO y pasar las partidas que se elijan.");
+            btnPasarVista.UseVisualStyleBackColor = true;
+            btnPasarVista.Click += btnPasarVista_Click;
             //
             // grid
             //
@@ -808,6 +894,10 @@ namespace BingoHistoricoEditor {
             pnlTextos.PerformLayout();
             tlpContent.ResumeLayout(false);
             tlpIzquierda.ResumeLayout(false);
+            pnlTablas.ResumeLayout(false);
+            tabTablas.ResumeLayout(false);
+            flpModoLog.ResumeLayout(false);
+            flpModoLog.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)grid).EndInit();
             pnlLog.ResumeLayout(false);
             pnlLog.PerformLayout();

@@ -79,15 +79,19 @@ namespace BingoHistoricoEditor.Data {
 
         // ── Cargar partidas de una fecha ──────────────────────────────────────
 
+        /// <param name="tabla">HISTORICO, o la tabla de importación del log (misma estructura).
+        /// Si esa tabla todavía no existe, devuelve una lista vacía.</param>
         public async Task<List<HistoricoEntry>> CargarPorFechaAsync(
-                DateTime fecha, int codSala, int codConc) {
+                DateTime fecha, int codSala, int codConc, string tabla = "HISTORICO") {
             var lista = new List<HistoricoEntry>();
-            const string sql = @"SELECT COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA,
-                                        FECHA, PRECIO, VENDIDOS, VENTA, PREMIO1, PREMIO2
-                                   FROM HISTORICO
-                                  WHERE COD_SALA=@sala AND COD_CONC=@conc
-                                    AND FECHA_SESION=@fecha
-                                  ORDER BY PARTIDA_DIA";
+            tabla = Gregal.Data.FilaHistorico.ValidarNombreTabla(tabla).ToUpperInvariant();
+            if (tabla != "HISTORICO" && (await ObtenerColumnasAsync(tabla)).Count == 0) return lista;
+            string sql = $@"SELECT COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA,
+                                   FECHA, PRECIO, VENDIDOS, VENTA, PREMIO1, PREMIO2
+                              FROM {tabla}
+                             WHERE COD_SALA=@sala AND COD_CONC=@conc
+                               AND FECHA_SESION=@fecha
+                             ORDER BY PARTIDA_DIA";
             try {
                 using var conn = new FbConnection(_cs);
                 using var cmd  = new FbCommand(sql, conn);
@@ -447,12 +451,15 @@ namespace BingoHistoricoEditor.Data {
         /// cual los da el proveedor de Firebird (int, decimal, string con los
         /// espacios de relleno de CHAR, DateTime, TimeSpan...) y null para NULL.
         /// </summary>
-        public async Task<Dictionary<string, object?>?> CargarFilaCompletaAsync(ClaveHistorico clave) {
+        public async Task<Dictionary<string, object?>?> CargarFilaCompletaAsync(ClaveHistorico clave, string tabla = "HISTORICO") {
+            tabla = Gregal.Data.FilaHistorico.ValidarNombreTabla(tabla).ToUpperInvariant();
+            // Columnas de HISTORICO que también tenga la tabla (la de importación es una copia).
+            var enTabla = (await ObtenerColumnasAsync(tabla)).Select(c => c.Nombre).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var columnas = await ObtenerColumnasHistoricoAsync();
-            var legibles = columnas.Where(c => IdentificadorSimple.IsMatch(c.Nombre)).ToList();
+            var legibles = columnas.Where(c => IdentificadorSimple.IsMatch(c.Nombre) && enTabla.Contains(c.Nombre)).ToList();
 
             string sql = $@"SELECT {string.Join(", ", legibles.Select(c => c.Nombre))}
-                              FROM HISTORICO
+                              FROM {tabla}
                              WHERE COD_SALA=@sala AND COD_CONC=@conc
                                AND FECHA_SESION=@sesion AND PARTIDA_DIA=@pdia";
             try {

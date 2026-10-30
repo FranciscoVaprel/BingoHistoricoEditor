@@ -47,13 +47,29 @@ namespace BingoHistoricoEditor {
         /// <summary>Clave de la partida tras guardar (distinta de la original si se cambió).</summary>
         public ClaveHistorico ClaveFinal { get; private set; }
 
+        /// <param name="soloConsultaDe">Si se indica (nombre de la tabla, p. ej. HISTORICO_LOG), la
+        /// ficha solo muestra los datos: nada se puede editar ni guardar.</param>
         public FichaPartidaForm(FirebirdService db, IReadOnlyList<ColumnaHistorico> columnas,
-                                ClaveHistorico clave, IReadOnlyDictionary<string, object?> fila) {
+                                ClaveHistorico clave, IReadOnlyDictionary<string, object?> fila,
+                                string? soloConsultaDe = null) {
             _db = db;
             _clave = clave;
             ClaveFinal = clave;
-            BuildUI(columnas, fila);
+            BuildUI(columnas.Where(c => fila.ContainsKey(c.Nombre)).ToList(), fila);
             ActualizarEstado();
+            if (soloConsultaDe != null) PonerSoloConsulta(soloConsultaDe);
+        }
+
+        private void PonerSoloConsulta(string tabla) {
+            Text += $"  ·  {tabla} (solo consulta)";
+            foreach (var ed in _editoresClave.Concat(_paginas.SelectMany(p => p.Editores))) {
+                ed.Entrada.Enabled = false;
+                if (ed.Nulo != null) ed.Nulo.Enabled = false;
+            }
+            if (_gridPremios != null) _gridPremios.ReadOnly = true;
+            _btnGuardar.Visible = false;
+            _btnDeshacer.Visible = false;
+            _lblCambios.Text = $"Solo consulta: datos de {tabla}.";
         }
 
         private IEnumerable<ICampoFicha> TodosLosCampos =>

@@ -24,6 +24,12 @@ namespace BingoHistoricoEditor {
         private readonly int _codConc;
         private readonly Action<string, object> _registrar;
 
+        /// <summary>
+        /// Día de sesión más reciente entre las partidas importadas (null si no
+        /// se ha importado nada): MainForm salta a él en la pestaña del log.
+        /// </summary>
+        public DateTime? UltimaSesionImportada { get; private set; }
+
         // appsettings.json se lee una vez al arrancar: el último fabricante
         // elegido en esta ejecución se recuerda también aquí.
         private static string? _ultimoFabricante;
@@ -161,7 +167,11 @@ namespace BingoHistoricoEditor {
                 _txtResultado.Text = $"{r.Partidas.Count} partidas reconstruidas; guardando en {_tabla}…";
                 bool creada = await _db.CrearTablaComoHistoricoAsync(_tabla);
                 var res = await _db.ImportarPartidasAsync(_tabla, r.Partidas.Select(p => p.Partida).ToList());
-                _txtResultado.Text = Resumen(ruta, fabricante, r, res, creada);
+                _txtResultado.Text = Resumen(ruta, fabricante, r, res, creada) +
+                    "\r\nAl cerrar esta ventana se mostrarán en la pestaña " + _tabla + " de la pantalla principal.";
+                UltimaSesionImportada = r.Partidas
+                    .Select(p => DateTime.ParseExact(p.Partida.FechaSesion, "yyyy-MM-dd", CultureInfo.InvariantCulture))
+                    .Max();
 
                 _registrar(
                     $"Log {Path.GetFileName(ruta)} importado a {_tabla}: {r.Partidas.Count} partidas " +
