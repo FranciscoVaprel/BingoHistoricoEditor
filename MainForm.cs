@@ -721,6 +721,13 @@ namespace BingoHistoricoEditor {
             }
         }
 
+        private void btnImportarLog_Click(object sender, EventArgs e) {
+            string tabla = _config["BingoSettings:TablaImportacionLog"] is { Length: > 0 } t ? t : FirebirdService.TablaImportacionPorDefecto;
+            using var importar = new ImportarLogForm(_db, tabla, _codSala, _codConc, _config["BingoSettings:FabricanteLog"],
+                (detalle, datos) => EscribirLog("IMPORTAR_LOG_GREGAL", detalle, registrarEnArchivo: true, datos: datos));
+            importar.ShowDialog(this);
+        }
+
         private void btnAuditoria_Click(object sender, EventArgs e) {
             if (!_esAdmin) return; // defensa en profundidad, no debería ocurrir (botón oculto)
             using var auditoria = new AuditoriaForm(_db);

@@ -27,6 +27,7 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.Label lblBingo;
         private System.Windows.Forms.DateTimePicker dtpFecha;
         private System.Windows.Forms.Button btnBuscar;
+        private System.Windows.Forms.Button btnImportarLog;
         private System.Windows.Forms.Button btnAuditoria;
         private System.Windows.Forms.Button btnConfiguracion;
         private System.Windows.Forms.DataGridView grid;
@@ -81,6 +82,7 @@ namespace BingoHistoricoEditor {
             lblEstado = new Label();
             dtpFecha = new DateTimePicker();
             btnBuscar = new Button();
+            btnImportarLog = new Button();
             btnAuditoria = new Button();
             btnConfiguracion = new Button();
             tlpContent = new TableLayoutPanel();
@@ -180,17 +182,19 @@ namespace BingoHistoricoEditor {
             //
             // tlpHeader
             //
-            tlpHeader.ColumnCount = 5;
+            tlpHeader.ColumnCount = 6;
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 170F));
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
             tlpHeader.Controls.Add(pnlTextos, 0, 0);
             tlpHeader.Controls.Add(dtpFecha, 1, 0);
             tlpHeader.Controls.Add(btnBuscar, 2, 0);
-            tlpHeader.Controls.Add(btnAuditoria, 3, 0);
-            tlpHeader.Controls.Add(btnConfiguracion, 4, 0);
+            tlpHeader.Controls.Add(btnImportarLog, 3, 0);
+            tlpHeader.Controls.Add(btnAuditoria, 4, 0);
+            tlpHeader.Controls.Add(btnConfiguracion, 5, 0);
             tlpHeader.Dock = DockStyle.Fill;
             tlpHeader.Location = new Point(0, 0);
             tlpHeader.Name = "tlpHeader";
@@ -263,6 +267,20 @@ namespace BingoHistoricoEditor {
             toolTip.SetToolTip(btnBuscar, "Buscar partidas por la fecha seleccionada.");
             btnBuscar.UseVisualStyleBackColor = true;
             btnBuscar.Click += btnBuscar_Click;
+            //
+            // btnImportarLog
+            //
+            btnImportarLog.Anchor = AnchorStyles.None;
+            btnImportarLog.FlatStyle = FlatStyle.Standard;
+            btnImportarLog.ForeColor = SystemColors.ControlText;
+            btnImportarLog.Location = new Point(1069, 19);
+            btnImportarLog.Name = "btnImportarLog";
+            btnImportarLog.Size = new Size(150, 35);
+            btnImportarLog.TabIndex = 3;
+            btnImportarLog.Text = "⇩ IMPORTAR LOG";
+            toolTip.SetToolTip(btnImportarLog, "Reconstruir las partidas de un log de Gregal y guardarlas en una tabla aparte (no en HISTORICO).");
+            btnImportarLog.UseVisualStyleBackColor = true;
+            btnImportarLog.Click += btnImportarLog_Click;
             //
             // btnAuditoria
             //

@@ -315,16 +315,20 @@ namespace BingoHistoricoEditor.Data {
         // Las columnas se leen de la propia BD (RDB$RELATION_FIELDS) y no de una
         // lista fija: cada sala puede tener alguna columna más o menos, y así la
         // ficha muestra exactamente las que tiene. Se leen una sola vez por
-        // ejecución (el esquema no cambia con la aplicación abierta).
-        private List<ColumnaHistorico>? _columnasHistorico;
+        // ejecución y tabla (el esquema no cambia con la aplicación abierta;
+        // salvo al crear la tabla de importación, que borra su entrada).
+        private readonly Dictionary<string, List<ColumnaHistorico>> _columnas = new(StringComparer.OrdinalIgnoreCase);
 
         // Los nombres se meten tal cual en el SQL (no se pueden parametrizar), así
         // que solo se aceptan identificadores simples sin comillas.
         private static readonly System.Text.RegularExpressions.Regex IdentificadorSimple =
             new(@"^[A-Z][A-Z0-9_$]*$", System.Text.RegularExpressions.RegexOptions.Compiled);
 
-        public async Task<IReadOnlyList<ColumnaHistorico>> ObtenerColumnasHistoricoAsync() {
-            if (_columnasHistorico != null) return _columnasHistorico;
+        public Task<IReadOnlyList<ColumnaHistorico>> ObtenerColumnasHistoricoAsync() => ObtenerColumnasAsync("HISTORICO");
+
+        /// <summary>Columnas de una tabla; lista vacía si la tabla no existe.</summary>
+        public async Task<IReadOnlyList<ColumnaHistorico>> ObtenerColumnasAsync(string tabla) {
+            if (_columnas.TryGetValue(tabla, out var enCache)) return enCache;
 
             const string sql = @"SELECT TRIM(rf.RDB$FIELD_NAME), f.RDB$FIELD_TYPE, f.RDB$FIELD_SUB_TYPE,
                                         f.RDB$FIELD_SCALE, f.RDB$FIELD_PRECISION, f.RDB$CHARACTER_LENGTH,
@@ -332,12 +336,13 @@ namespace BingoHistoricoEditor.Data {
                                         CASE WHEN f.RDB$COMPUTED_SOURCE IS NULL THEN 0 ELSE 1 END
                                    FROM RDB$RELATION_FIELDS rf
                                    JOIN RDB$FIELDS f ON f.RDB$FIELD_NAME = rf.RDB$FIELD_SOURCE
-                                  WHERE rf.RDB$RELATION_NAME = 'HISTORICO'
+                                  WHERE rf.RDB$RELATION_NAME = @tabla
                                   ORDER BY rf.RDB$FIELD_POSITION";
             var columnas = new List<ColumnaHistorico>();
             try {
                 using var conn = new FbConnection(_cs);
                 using var cmd  = new FbCommand(sql, conn);
+                cmd.Parameters.Add("@tabla", FbDbType.VarChar).Value = tabla.ToUpperInvariant();
                 await conn.OpenAsync();
                 using var rd = await cmd.ExecuteReaderAsync();
                 while (await rd.ReadAsync()) {
@@ -353,13 +358,16 @@ namespace BingoHistoricoEditor.Data {
                 }
             }
             catch (Exception ex) {
-                throw new Exception($"Error al leer las columnas de HISTORICO: {ex.Message}", ex);
+                throw new Exception($"Error al leer las columnas de {tabla}: {ex.Message}", ex);
             }
 
-            if (columnas.Count == 0)
-                throw new Exception("No se encuentra la tabla HISTORICO en la base de datos.");
+            if (columnas.Count == 0) {
+                if (tabla.Equals("HISTORICO", StringComparison.OrdinalIgnoreCase))
+                    throw new Exception("No se encuentra la tabla HISTORICO en la base de datos.");
+                return columnas;   // no existe: no se guarda en caché, puede crearse después
+            }
 
-            _columnasHistorico = columnas;
+            _columnas[tabla] = columnas;
             return columnas;
         }
 
@@ -392,6 +400,7 @@ namespace BingoHistoricoEditor.Data {
                     Nombre = nombre, Tipo = !editable ? TipoColumna.NoEditable : escala > 0 ? TipoColumna.Decimal : TipoColumna.Entero,
                     Escala = escala, Minimo = -maximo, Maximo = maximo, AdmiteNulo = !noNulo, EsCalculada = calculada,
                     DescripcionTipo = calculada ? declarado + " (calculada)" : declarado,
+                    TipoSql = calculada ? null : declarado.Replace("NUMERIC(?,", "NUMERIC(18,"),
                 };
             }
 
@@ -404,7 +413,7 @@ namespace BingoHistoricoEditor.Data {
                 FbChar      => (TipoColumna.Texto, $"CHAR({longitud})"),
                 FbVarchar   => (TipoColumna.Texto, $"VARCHAR({longitud})"),
                 FbBlob when subTipo == 1 => (TipoColumna.Texto, "BLOB SUB_TYPE TEXT"),
-                FbBlob      => (TipoColumna.NoEditable, "BLOB"),
+                FbBlob      => (TipoColumna.NoEditable, "BLOB SUB_TYPE 0"),
                 FbBoolean   => (TipoColumna.NoEditable, "BOOLEAN"),
                 _           => (TipoColumna.NoEditable, $"tipo {tipo}"),
             };
@@ -422,6 +431,7 @@ namespace BingoHistoricoEditor.Data {
                 AdmiteNulo = !noNulo,
                 EsCalculada = calculada,
                 DescripcionTipo = calculada ? declarada + " (calculada)" : declarada,
+                TipoSql = calculada || declarada.StartsWith("tipo ") ? null : declarada,
             };
         }
 
@@ -635,6 +645,107 @@ namespace BingoHistoricoEditor.Data {
             DateTime d => d.TimeOfDay,
             _ => TimeSpan.Parse(Convert.ToString(valor, CultureInfo.InvariantCulture) ?? "", CultureInfo.InvariantCulture),
         };
+
+        // ── Importar partidas de un log de Gregal a una tabla aparte ───────────
+
+        public const string TablaImportacionPorDefecto = "HISTORICO_LOG";
+
+        /// <summary>
+        /// Crea la tabla de importación (si no existe) con las mismas columnas,
+        /// tipos y clave primaria que HISTORICO, leídos de la propia BD. Sin
+        /// triggers: lo importado no debe entrar en la replicación de la sala
+        /// (LOGREPLICACION) ni en la auditoría de HISTORICO. Devuelve true si la
+        /// ha creado.
+        /// </summary>
+        public async Task<bool> CrearTablaComoHistoricoAsync(string tabla) {
+            tabla = Gregal.Data.FilaHistorico.ValidarNombreTabla(tabla).ToUpperInvariant();
+            if (tabla == "HISTORICO") throw new InvalidOperationException("La tabla de importación no puede ser HISTORICO.");
+            if (tabla.Length > 31) throw new InvalidOperationException($"El nombre de tabla '{tabla}' es demasiado largo (Firebird 2.5 admite 31 caracteres).");
+            if ((await ObtenerColumnasAsync(tabla)).Count > 0) return false;
+
+            var origen = (await ObtenerColumnasHistoricoAsync()).Where(c => !c.EsCalculada).ToList();
+            var raras = origen.Where(c => c.TipoSql == null || !IdentificadorSimple.IsMatch(c.Nombre)).Select(c => c.Nombre).ToList();
+            if (raras.Count > 0)
+                throw new InvalidOperationException($"No se sabe crear una copia de estas columnas de HISTORICO: {string.Join(", ", raras)}.");
+
+            string pk = "PK_" + tabla;
+            string ddl = $"CREATE TABLE {tabla} (\n  " +
+                string.Join(",\n  ", origen.Select(c => $"{c.Nombre} {c.TipoSql}{(c.AdmiteNulo && !c.EsClave ? "" : " NOT NULL")}")) +
+                $",\n  {(pk.Length <= 31 ? $"CONSTRAINT {pk} " : "")}PRIMARY KEY (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA))";
+            try {
+                using var conn = new FbConnection(_cs);
+                await conn.OpenAsync();
+                using var cmd = new FbCommand(ddl, conn);
+                await cmd.ExecuteNonQueryAsync();
+            }
+            catch (Exception ex) {
+                throw new Exception($"Error al crear la tabla {tabla}: {ex.Message}", ex);
+            }
+            _columnas.Remove(tabla);
+            return true;
+        }
+
+        public sealed record ResultadoImportacion(int Nuevas, int Sobrescritas, int RepetidasEnElLog, int ConBolasRecortadas);
+
+        /// <summary>
+        /// Guarda las partidas en la tabla de importación con el mismo UPDATE OR
+        /// INSERT y los mismos valores que usa Gregal (Gregal.Data.FilaHistorico):
+        /// una partida que ya existe con esa clave se sobrescribe. Todo en una
+        /// transacción: o se guardan todas o ninguna.
+        /// </summary>
+        public async Task<ResultadoImportacion> ImportarPartidasAsync(string tabla, IReadOnlyList<Gregal.Models.HistoricoDTO> partidas) {
+            tabla = Gregal.Data.FilaHistorico.ValidarNombreTabla(tabla).ToUpperInvariant();
+            var columnas = await ObtenerColumnasAsync(tabla);
+            if (columnas.Count == 0) throw new InvalidOperationException($"No existe la tabla {tabla}.");
+
+            var nombres = columnas.Select(c => c.Nombre).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var faltan = Gregal.Data.FilaHistorico.Columnas.Where(c => !nombres.Contains(c)).ToList();
+            if (faltan.Count > 0)
+                throw new InvalidOperationException($"A la tabla {tabla} le faltan columnas que escribe Gregal: {string.Join(", ", faltan)}.");
+            int maxBolas = columnas.First(c => c.Nombre.Equals("BOLAS", StringComparison.OrdinalIgnoreCase)).LongitudMaxima ?? 0;
+
+            string sqlGuardar = Gregal.Data.FilaHistorico.SqlUpdateOrInsert(tabla);
+            string sqlExiste  = $@"SELECT COUNT(*) FROM {tabla}
+                                    WHERE COD_SALA=@sala AND COD_CONC=@conc AND FECHA_SESION=@sesion AND PARTIDA_DIA=@pdia";
+
+            int nuevas = 0, sobrescritas = 0, repetidas = 0, recortadas = 0;
+            var vistas = new HashSet<ClaveHistorico>();
+
+            using var conn = new FbConnection(_cs);
+            await conn.OpenAsync();
+            using var tx = conn.BeginTransaction();
+            try {
+                foreach (var dto in partidas) {
+                    var clave = new ClaveHistorico(dto.CodSala, dto.CodConc,
+                        DateTime.ParseExact(dto.FechaSesion, "yyyy-MM-dd", CultureInfo.InvariantCulture), dto.PartidaDia);
+
+                    if (!vistas.Add(clave)) {
+                        repetidas++;
+                    }
+                    else {
+                        using var existe = new FbCommand(sqlExiste, conn, tx);
+                        AñadirParametrosClave(existe, clave);
+                        if (Convert.ToInt32(await existe.ExecuteScalarAsync()) > 0) sobrescritas++;
+                        else nuevas++;
+                    }
+
+                    var (valores, descartadas) = Gregal.Data.FilaHistorico.Valores(dto, DateTime.Now, maxBolas);
+                    if (descartadas > 0) recortadas++;
+
+                    using var guardar = new FbCommand(sqlGuardar, conn, tx);
+                    for (int i = 0; i < Gregal.Data.FilaHistorico.Columnas.Count; i++) {
+                        guardar.Parameters.Add("@" + Gregal.Data.FilaHistorico.Columnas[i], valores[i]);
+                    }
+                    await guardar.ExecuteNonQueryAsync();
+                }
+                await tx.CommitAsync();
+            }
+            catch (Exception ex) {
+                await tx.RollbackAsync();
+                throw new Exception($"Error al guardar las partidas en {tabla} (no se ha guardado ninguna): {ex.Message}", ex);
+            }
+            return new ResultadoImportacion(nuevas, sobrescritas, repetidas, recortadas);
+        }
 
         // ── Crear tabla de operaciones si no existe ────────────────────────────
 

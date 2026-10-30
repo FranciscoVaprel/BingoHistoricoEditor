@@ -19,6 +19,12 @@ dotnet run --project BingoHistoricoEditor.csproj
 There is no test project in this repo — verification is done by running the WinForms app against a
 real (or local) Firebird database.
 
+**The build needs the Gregal repo next to this one** (`C:\CSHARP\Gregal`): the csproj has a
+`ProjectReference` to `..\Gregal\Gregal\Gregal.Protocolo\Gregal.Protocolo.csproj`, the class library
+with Gregal's tag-protocol parser (used by `ImportarLogForm`). Its tests live in Gregal
+(`Gregal.Tests/ReproductorLogGregalTests.cs`). Its `Gregal.Protocolo.dll` is copied into the publish
+output like any other dependency.
+
 ## Installer
 
 `installer/BingoHistoricoEditor.iss` is an Inno Setup script that builds a Windows installer from the
@@ -122,6 +128,21 @@ the designer or with care; put logic in the paired non-designer `.cs` partial):
     log the old key as gone. The target key is checked first (also inside the transaction).
   - The form doesn't log; `MainForm.AbrirFichaAsync` logs `DB_UPDATE_FICHA` with every field's
     before/after from `CambiosGuardados`.
+- `ImportarLogForm` — header button "⇩ IMPORTAR LOG": rebuilds **all** the games in a Gregal log
+  (`gregal<AAAAMMDD>.log`) and saves them to a separate table, never `HISTORICO`:
+  `BingoSettings:TablaImportacionLog`, default `HISTORICO_LOG` (`FirebirdService.TablaImportacionPorDefecto`).
+  Games are rebuilt by Gregal's own code (`Gregal.Parsing.ReproductorLogGregal`, replaying the
+  `Fragmento tag recibido` lines through `PartidaAccumulator` with each line's timestamp as the clock),
+  and written with Gregal's own `Gregal.Data.FilaHistorico` (same columns, same 0/NULL defaults, same
+  `UPDATE OR INSERT`) — don't reimplement either here; change them in Gregal. Sala/concesionario come
+  from this app's `CodSala`/`CodConc`; the manufacturer (`MCB`/`Metronia`, changes how `A`/`M`/`p`/`z`/`y`
+  are read) is chosen in the form, starts unselected, and is remembered in `BingoSettings:FabricanteLog`.
+  `FirebirdService.CrearTablaComoHistoricoAsync` creates the target table from `HISTORICO`'s own
+  metadata (`ColumnaHistorico.TipoSql`, same NOT NULLs and primary key) **without triggers**, so imported
+  rows never reach the venue's replication (`LOGREPLICACION`) or `HISTORICO`'s audit trigger.
+  `ImportarPartidasAsync` writes all games in one transaction; a key already in the table is
+  overwritten, and a number repeated within the log keeps the last one (as Gregal did). Each import is
+  logged as `IMPORTAR_LOG_GREGAL` via `MainForm.EscribirLog`.
 - `SettingsForm` — edits all `BingoSettings` fields at runtime, including the DB connection ones
   (`DbModo`, `DbSource`, `DbPort`, `DbRelativePath`/`DbAbsolutePath`/`DbRemotePath`, `DbUser`,
   `DbPass`, `DbCharset`, `DbDialect`); these were previously read-only by design, but that was

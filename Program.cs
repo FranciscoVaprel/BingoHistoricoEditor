@@ -126,6 +126,16 @@ namespace BingoHistoricoEditor {
             GuardarJson(root);
         }
 
+        /// <summary>
+        /// Recuerda en appsettings.json el último fabricante elegido al importar
+        /// un log de Gregal (BingoSettings:FabricanteLog).
+        /// </summary>
+        public static void GuardarFabricanteLog(string fabricante) {
+            var root = CargarJson();
+            ObtenerSeccionBingoSettings(root)["FabricanteLog"] = fabricante;
+            GuardarJson(root);
+        }
+
         private static int ParseEntero(string valor, string campo) =>
             int.TryParse(valor, out int n)
                 ? n

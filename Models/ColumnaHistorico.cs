@@ -46,6 +46,12 @@ namespace BingoHistoricoEditor.Models {
         /// <summary>Tipo tal como se declaró en la BD, para mostrarlo en la ayuda (p. ej. "NUMERIC(15,5)").</summary>
         public string DescripcionTipo { get; init; } = "";
 
+        /// <summary>
+        /// Tipo en SQL para crear una columna igual (p. ej. "NUMERIC(15,5)"), o
+        /// null si no se sabe recrear (tipo raro o columna calculada).
+        /// </summary>
+        public string? TipoSql { get; init; }
+
         public bool EsClave => ColumnasClave.Contains(Nombre, StringComparer.OrdinalIgnoreCase);
         public bool Editable => Tipo != TipoColumna.NoEditable;
         public bool EsNumerica => Tipo is TipoColumna.Entero or TipoColumna.Decimal or TipoColumna.Real;

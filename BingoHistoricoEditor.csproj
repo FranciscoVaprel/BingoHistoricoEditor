@@ -24,6 +24,13 @@
     <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
   </ItemGroup>
 
+  <!-- Parser del protocolo tag de Gregal, para importar sus logs (ImportarLogForm).
+       Librería compartida con Gregal: hace falta el repo de Gregal al lado
+       (C:\CSHARP\Gregal) para compilar. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Gregal\Gregal\Gregal.Protocolo\Gregal.Protocolo.csproj" />
+  </ItemGroup>
+
   <ItemGroup Condition="Exists('appsettings.json')">
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
