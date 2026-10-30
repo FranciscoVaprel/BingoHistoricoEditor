@@ -292,6 +292,86 @@ namespace BingoHistoricoEditor {
             }
         }
 
+        // ── Ficha completa (todas las columnas de HISTORICO) ─────────────────
+
+        private async void btnEditarFicha_Click(object sender, EventArgs e) {
+            if (_seleccionada == null) {
+                MessageBox.Show("Selecciona una partida en la tabla (o haz doble clic sobre ella).",
+                    "Editar todos los campos", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+            await AbrirFichaAsync(_seleccionada);
+        }
+
+        private async void grid_CellDoubleClick(object? sender, DataGridViewCellEventArgs e) {
+            if (e.RowIndex < 0) return;   // doble clic en la cabecera
+            if (grid.Rows[e.RowIndex].DataBoundItem is HistoricoEntry partida) {
+                await AbrirFichaAsync(partida);
+            }
+        }
+
+        private async Task AbrirFichaAsync(HistoricoEntry partida) {
+            var clave = new ClaveHistorico(partida.CodSala, partida.CodConc, partida.FechaSesion, partida.PartidaDia);
+
+            IReadOnlyList<ColumnaHistorico> columnas;
+            Dictionary<string, object?>? fila;
+            try {
+                SetBusy(true);
+                columnas = await _db.ObtenerColumnasHistoricoAsync();
+                fila = await _db.CargarFilaCompletaAsync(clave);
+            }
+            catch (Exception ex) {
+                EscribirLog("ERROR", ex.Message, registrarEnArchivo: true);
+                MessageBox.Show($"No se pudo abrir la ficha:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            finally {
+                SetBusy(false);
+            }
+
+            if (fila == null) {
+                EscribirLog("ADVERTENCIA", $"La {clave} ya no existe en la base de datos; se recarga la tabla.");
+                await CargarPartidasAsync();
+                return;
+            }
+
+            using var ficha = new FichaPartidaForm(_db, columnas, clave, fila);
+            if (ficha.ShowDialog(this) != DialogResult.OK) return;
+
+            bool cambiaClave = ficha.ClaveFinal != clave;
+            int n = ficha.CambiosGuardados.Count;
+            EscribirLog("DB_UPDATE_FICHA",
+                $"Partida {clave.PartidaDia}: {(n == 1 ? "1 campo modificado" : $"{n} campos modificados")} en la ficha" +
+                (cambiaClave ? $"; ahora es la {ficha.ClaveFinal}" : "") + ".",
+                registrarEnArchivo: true,
+                datos: new {
+                    Partida = clave.ToString(),
+                    PartidaNueva = cambiaClave ? ficha.ClaveFinal.ToString() : null,
+                    Cambios = ficha.CambiosGuardados.Select(c => new {
+                        Campo = c.Columna.Nombre,
+                        Antes = FichaPartidaCampos.Formatear(c.Columna, c.Antes),
+                        Despues = FichaPartidaCampos.Formatear(c.Columna, c.Despues),
+                    }).ToList(),
+                });
+
+            await CargarPartidasAsync();
+            SeleccionarPartida(ficha.ClaveFinal);
+        }
+
+        /// <summary>Selecciona en la rejilla la partida indicada, si está entre las cargadas.</summary>
+        private void SeleccionarPartida(ClaveHistorico clave) {
+            foreach (DataGridViewRow fila in grid.Rows) {
+                if (fila.DataBoundItem is HistoricoEntry p
+                    && p.CodSala == clave.CodSala && p.CodConc == clave.CodConc
+                    && p.FechaSesion.Date == clave.FechaSesion && p.PartidaDia == clave.PartidaDia) {
+                    grid.ClearSelection();
+                    grid.CurrentCell = fila.Cells[0];
+                    fila.Selected = true;
+                    return;
+                }
+            }
+        }
+
         private void btnNueva_Click(object sender, EventArgs e) {
             _seleccionada = null;
             grid.ClearSelection();
@@ -339,6 +419,7 @@ namespace BingoHistoricoEditor {
 
             btnBuscar.Enabled = !busy;
             btnGuardar.Enabled = !busy;
+            btnEditarFicha.Enabled = !busy;
             btnEliminar.Enabled = !busy;
             btnBuscarFaltante.Enabled = !busy;
             btnGuardarLote.Enabled = !busy;

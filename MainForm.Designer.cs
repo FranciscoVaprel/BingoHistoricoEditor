@@ -38,6 +38,7 @@ namespace BingoHistoricoEditor {
         private System.Windows.Forms.NumericUpDown nudBingo;
         private System.Windows.Forms.Button btnNuevaPartida;
         private System.Windows.Forms.Button btnGuardar;
+        private System.Windows.Forms.Button btnEditarFicha;
         private System.Windows.Forms.Button btnEliminar;
 
         // DECLARACIONES DE LOS NUEVOS CONTROLES DE LOTE
@@ -94,6 +95,7 @@ namespace BingoHistoricoEditor {
             flpBotones = new FlowLayoutPanel();
             btnNuevaPartida = new Button();
             btnGuardar = new Button();
+            btnEditarFicha = new Button();
             btnEliminar = new Button();
             tlpEdicion = new TableLayoutPanel();
             lblPartida = new Label();
@@ -331,6 +333,7 @@ namespace BingoHistoricoEditor {
             grid.Size = new Size(872, 522);
             grid.TabIndex = 0;
             grid.SelectionChanged += grid_SelectionChanged;
+            grid.CellDoubleClick += grid_CellDoubleClick;
             //
             // pnlLog
             //
@@ -404,13 +407,14 @@ namespace BingoHistoricoEditor {
             //
             flpBotones.Controls.Add(btnNuevaPartida);
             flpBotones.Controls.Add(btnGuardar);
+            flpBotones.Controls.Add(btnEditarFicha);
             flpBotones.Controls.Add(btnEliminar);
             flpBotones.Dock = DockStyle.Bottom;
             flpBotones.FlowDirection = FlowDirection.TopDown;
-            flpBotones.Location = new Point(3, 453);
+            flpBotones.Location = new Point(3, 412);
             flpBotones.Name = "flpBotones";
             flpBotones.Padding = new Padding(10, 5, 10, 5);
-            flpBotones.Size = new Size(330, 160);
+            flpBotones.Size = new Size(330, 201);
             flpBotones.TabIndex = 0;
             //
             // btnNuevaPartida
@@ -439,14 +443,27 @@ namespace BingoHistoricoEditor {
             btnGuardar.UseVisualStyleBackColor = true;
             btnGuardar.Click += btnGuardar_Click;
             //
+            // btnEditarFicha
+            //
+            btnEditarFicha.FlatStyle = FlatStyle.Standard;
+            btnEditarFicha.ForeColor = SystemColors.ControlText;
+            btnEditarFicha.Location = new Point(13, 90);
+            btnEditarFicha.Name = "btnEditarFicha";
+            btnEditarFicha.Size = new Size(310, 35);
+            btnEditarFicha.TabIndex = 2;
+            btnEditarFicha.Text = "📝 EDITAR TODOS LOS CAMPOS";
+            toolTip.SetToolTip(btnEditarFicha, "Abre la ficha completa de la partida seleccionada, con todos sus campos (también con doble clic en la tabla).");
+            btnEditarFicha.UseVisualStyleBackColor = true;
+            btnEditarFicha.Click += btnEditarFicha_Click;
+            //
             // btnEliminar
             //
             btnEliminar.FlatStyle = FlatStyle.Standard;
             btnEliminar.ForeColor = SystemColors.ControlText;
-            btnEliminar.Location = new Point(13, 90);
+            btnEliminar.Location = new Point(13, 131);
             btnEliminar.Name = "btnEliminar";
             btnEliminar.Size = new Size(310, 35);
-            btnEliminar.TabIndex = 2;
+            btnEliminar.TabIndex = 3;
             btnEliminar.Text = "🗑 ELIMINAR";
             toolTip.SetToolTip(btnEliminar, "Eliminar la partida seleccionada de la base de datos.");
             btnEliminar.UseVisualStyleBackColor = true;

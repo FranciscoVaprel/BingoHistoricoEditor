@@ -310,6 +310,332 @@ namespace BingoHistoricoEditor.Data {
             }
         }
 
+        // ── Ficha completa de una partida (todas las columnas de HISTORICO) ────
+
+        // Las columnas se leen de la propia BD (RDB$RELATION_FIELDS) y no de una
+        // lista fija: cada sala puede tener alguna columna más o menos, y así la
+        // ficha muestra exactamente las que tiene. Se leen una sola vez por
+        // ejecución (el esquema no cambia con la aplicación abierta).
+        private List<ColumnaHistorico>? _columnasHistorico;
+
+        // Los nombres se meten tal cual en el SQL (no se pueden parametrizar), así
+        // que solo se aceptan identificadores simples sin comillas.
+        private static readonly System.Text.RegularExpressions.Regex IdentificadorSimple =
+            new(@"^[A-Z][A-Z0-9_$]*$", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+        public async Task<IReadOnlyList<ColumnaHistorico>> ObtenerColumnasHistoricoAsync() {
+            if (_columnasHistorico != null) return _columnasHistorico;
+
+            const string sql = @"SELECT TRIM(rf.RDB$FIELD_NAME), f.RDB$FIELD_TYPE, f.RDB$FIELD_SUB_TYPE,
+                                        f.RDB$FIELD_SCALE, f.RDB$FIELD_PRECISION, f.RDB$CHARACTER_LENGTH,
+                                        COALESCE(rf.RDB$NULL_FLAG, f.RDB$NULL_FLAG, 0),
+                                        CASE WHEN f.RDB$COMPUTED_SOURCE IS NULL THEN 0 ELSE 1 END
+                                   FROM RDB$RELATION_FIELDS rf
+                                   JOIN RDB$FIELDS f ON f.RDB$FIELD_NAME = rf.RDB$FIELD_SOURCE
+                                  WHERE rf.RDB$RELATION_NAME = 'HISTORICO'
+                                  ORDER BY rf.RDB$FIELD_POSITION";
+            var columnas = new List<ColumnaHistorico>();
+            try {
+                using var conn = new FbConnection(_cs);
+                using var cmd  = new FbCommand(sql, conn);
+                await conn.OpenAsync();
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync()) {
+                    columnas.Add(CrearColumna(
+                        nombre:     rd.GetString(0),
+                        tipo:       EnteroONulo(rd, 1) ?? 0,
+                        subTipo:    EnteroONulo(rd, 2) ?? 0,
+                        escala:     -(EnteroONulo(rd, 3) ?? 0),   // Firebird la guarda en negativo
+                        precision:  EnteroONulo(rd, 4) ?? 0,
+                        longitud:   EnteroONulo(rd, 5),
+                        noNulo:     (EnteroONulo(rd, 6) ?? 0) == 1,
+                        calculada:  (EnteroONulo(rd, 7) ?? 0) == 1));
+                }
+            }
+            catch (Exception ex) {
+                throw new Exception($"Error al leer las columnas de HISTORICO: {ex.Message}", ex);
+            }
+
+            if (columnas.Count == 0)
+                throw new Exception("No se encuentra la tabla HISTORICO en la base de datos.");
+
+            _columnasHistorico = columnas;
+            return columnas;
+        }
+
+        private static int? EnteroONulo(FbDataReader rd, int i) =>
+            rd.IsDBNull(i) ? null : Convert.ToInt32(rd.GetValue(i), CultureInfo.InvariantCulture);
+
+        // Códigos de RDB$FIELDS.RDB$FIELD_TYPE.
+        private const int FbSmallint = 7, FbInteger = 8, FbFloat = 10, FbDate = 12, FbTime = 13,
+                          FbChar = 14, FbBigint = 16, FbBoolean = 23, FbDouble = 27, FbTimestamp = 35,
+                          FbVarchar = 37, FbBlob = 261;
+
+        private static ColumnaHistorico CrearColumna(string nombre, int tipo, int subTipo, int escala,
+                                                     int precision, int? longitud, bool noNulo, bool calculada) {
+            // Una columna calculada o con un nombre raro se muestra, pero no se edita.
+            bool editable = !calculada && IdentificadorSimple.IsMatch(nombre);
+
+            if (tipo is FbSmallint or FbInteger or FbBigint) {
+                // Máximo del tipo entero que guarda el valor; con escala (NUMERIC)
+                // y precisión declarada, el de la precisión: NUMERIC(15,5) → 10 cifras
+                // enteras y 5 decimales.
+                decimal maxBase = tipo switch { FbSmallint => short.MaxValue, FbInteger => int.MaxValue, _ => long.MaxValue };
+                decimal factor  = Potencia10(escala);
+                decimal maximo  = precision > 0 && precision < 28
+                    ? Math.Min(maxBase, Potencia10(precision) - 1) / factor
+                    : maxBase / factor;
+                string declarado = escala > 0
+                    ? $"NUMERIC({(precision > 0 ? precision : "?")},{escala})"
+                    : tipo switch { FbSmallint => "SMALLINT", FbInteger => "INTEGER", _ => "BIGINT" };
+                return new ColumnaHistorico {
+                    Nombre = nombre, Tipo = !editable ? TipoColumna.NoEditable : escala > 0 ? TipoColumna.Decimal : TipoColumna.Entero,
+                    Escala = escala, Minimo = -maximo, Maximo = maximo, AdmiteNulo = !noNulo, EsCalculada = calculada,
+                    DescripcionTipo = calculada ? declarado + " (calculada)" : declarado,
+                };
+            }
+
+            var (tipoColumna, declarada) = tipo switch {
+                FbFloat     => (TipoColumna.Real, "FLOAT"),
+                FbDouble    => (TipoColumna.Real, "DOUBLE PRECISION"),
+                FbDate      => (TipoColumna.Fecha, "DATE"),
+                FbTime      => (TipoColumna.Hora, "TIME"),
+                FbTimestamp => (TipoColumna.FechaHora, "TIMESTAMP"),
+                FbChar      => (TipoColumna.Texto, $"CHAR({longitud})"),
+                FbVarchar   => (TipoColumna.Texto, $"VARCHAR({longitud})"),
+                FbBlob when subTipo == 1 => (TipoColumna.Texto, "BLOB SUB_TYPE TEXT"),
+                FbBlob      => (TipoColumna.NoEditable, "BLOB"),
+                FbBoolean   => (TipoColumna.NoEditable, "BOOLEAN"),
+                _           => (TipoColumna.NoEditable, $"tipo {tipo}"),
+            };
+            return new ColumnaHistorico {
+                Nombre = nombre,
+                Tipo = editable ? tipoColumna : TipoColumna.NoEditable,
+                // ±1e15 para FLOAT/DOUBLE: de sobra para cualquier importe y dentro
+                // del rango de un NumericUpDown.
+                Minimo = tipoColumna == TipoColumna.Real ? -1_000_000_000_000_000m : 0,
+                Maximo = tipoColumna == TipoColumna.Real ?  1_000_000_000_000_000m : 0,
+                Escala = tipoColumna == TipoColumna.Real ? 4 : 0,
+                LongitudMaxima = tipo is FbChar or FbVarchar ? longitud : null,
+                EsChar = tipo == FbChar,
+                EsBlob = tipo == FbBlob,
+                AdmiteNulo = !noNulo,
+                EsCalculada = calculada,
+                DescripcionTipo = calculada ? declarada + " (calculada)" : declarada,
+            };
+        }
+
+        private static decimal Potencia10(int n) {
+            decimal r = 1;
+            for (int i = 0; i < n; i++) r *= 10;
+            return r;
+        }
+
+        /// <summary>
+        /// Lee todas las columnas de una partida. Devuelve null si ya no existe
+        /// (la han borrado desde que se cargó la rejilla). Los valores vienen tal
+        /// cual los da el proveedor de Firebird (int, decimal, string con los
+        /// espacios de relleno de CHAR, DateTime, TimeSpan...) y null para NULL.
+        /// </summary>
+        public async Task<Dictionary<string, object?>?> CargarFilaCompletaAsync(ClaveHistorico clave) {
+            var columnas = await ObtenerColumnasHistoricoAsync();
+            var legibles = columnas.Where(c => IdentificadorSimple.IsMatch(c.Nombre)).ToList();
+
+            string sql = $@"SELECT {string.Join(", ", legibles.Select(c => c.Nombre))}
+                              FROM HISTORICO
+                             WHERE COD_SALA=@sala AND COD_CONC=@conc
+                               AND FECHA_SESION=@sesion AND PARTIDA_DIA=@pdia";
+            try {
+                using var conn = new FbConnection(_cs);
+                using var cmd  = new FbCommand(sql, conn);
+                AñadirParametrosClave(cmd, clave);
+
+                await conn.OpenAsync();
+                using var rd = await cmd.ExecuteReaderAsync();
+                if (!await rd.ReadAsync()) return null;
+
+                var fila = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                for (int i = 0; i < legibles.Count; i++) {
+                    fila[legibles[i].Nombre] = rd.IsDBNull(i) ? null : rd.GetValue(i);
+                }
+                return fila;
+            }
+            catch (Exception ex) {
+                throw new Exception($"Error al cargar la {clave}: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<bool> ExistePartidaAsync(ClaveHistorico clave) {
+            using var conn = new FbConnection(_cs);
+            await conn.OpenAsync();
+            return await ExistePartidaAsync(conn, null, clave);
+        }
+
+        private static async Task<bool> ExistePartidaAsync(FbConnection conn, FbTransaction? tx, ClaveHistorico clave) {
+            const string sql = @"SELECT COUNT(*) FROM HISTORICO
+                                  WHERE COD_SALA=@sala AND COD_CONC=@conc
+                                    AND FECHA_SESION=@sesion AND PARTIDA_DIA=@pdia";
+            using var cmd = new FbCommand(sql, conn, tx);
+            AñadirParametrosClave(cmd, clave);
+            var result = await cmd.ExecuteScalarAsync();
+            return result != null && result != DBNull.Value && Convert.ToInt32(result) > 0;
+        }
+
+        private static void AñadirParametrosClave(FbCommand cmd, ClaveHistorico clave) {
+            cmd.Parameters.Add("@sala",   FbDbType.Integer).Value = clave.CodSala;
+            cmd.Parameters.Add("@conc",   FbDbType.Integer).Value = clave.CodConc;
+            cmd.Parameters.Add("@sesion", FbDbType.Date).Value    = clave.FechaSesion.Date;
+            cmd.Parameters.Add("@pdia",   FbDbType.Integer).Value = clave.PartidaDia;
+        }
+
+        private const string MensajePartidaCambiada =
+            "La partida ha cambiado en la base de datos desde que se abrió la ficha (o ya no existe). " +
+            "No se ha guardado nada: cierra la ficha y vuelve a abrirla para ver los datos actuales.";
+
+        /// <summary>
+        /// Guarda los campos modificados en la ficha, todo en una transacción.
+        ///
+        /// Los campos normales van en un UPDATE que solo toca esas columnas y
+        /// cuyo WHERE exige que cada una siga teniendo el valor que se leyó al
+        /// abrir la ficha: si otro programa (o Gregal) la ha cambiado mientras
+        /// tanto, no se pisa su cambio y se avisa.
+        ///
+        /// Si cambia algún campo de la clave, la partida se mueve copiando la
+        /// fila con la clave nueva y borrando la original, en vez de con un UPDATE
+        /// de la clave. Los triggers de la sala (HISTORICO_AI / HISTORICO_AD)
+        /// apuntan en LOGREPLICACION cada clave insertada/modificada o borrada para
+        /// la replicación: con un UPDATE solo quedaría apuntada la clave nueva y la
+        /// antigua no se borraría nunca en el destino. Antes se comprueba, en la
+        /// misma transacción, que no haya ya otra partida con la clave nueva.
+        /// </summary>
+        public async Task ActualizarCamposAsync(ClaveHistorico claveOriginal, IReadOnlyList<CambioCampo> cambios) {
+            if (cambios.Count == 0) return;
+            if (cambios.Any(c => !c.Columna.Editable))
+                throw new InvalidOperationException("Hay campos que no se pueden modificar desde aquí.");
+
+            var claveNueva   = AplicarCambiosDeClave(claveOriginal, cambios);
+            var normales     = cambios.Where(c => !c.Columna.EsClave).ToList();
+
+            using var conn = new FbConnection(_cs);
+            await conn.OpenAsync();
+            using var tx = conn.BeginTransaction();
+            try {
+                if (claveNueva != claveOriginal && await ExistePartidaAsync(conn, tx, claveNueva)) {
+                    throw new InvalidOperationException($"Ya existe la {claveNueva}. No se ha guardado nada.");
+                }
+
+                if (normales.Count > 0) {
+                    using var cmd = new FbCommand("", conn, tx);
+                    AñadirParametrosClave(cmd, claveOriginal);
+                    var sets  = new List<string>();
+                    var where = new List<string> { "COD_SALA=@sala", "COD_CONC=@conc", "FECHA_SESION=@sesion", "PARTIDA_DIA=@pdia" };
+                    for (int i = 0; i < normales.Count; i++) {
+                        var col = normales[i].Columna;
+                        sets.Add($"{col.Nombre}=@v{i}");
+                        AñadirParametro(cmd, $"@v{i}", col, normales[i].Despues);
+                        if (!col.EsBlob) {   // un BLOB no se puede comparar así
+                            where.Add($"{col.Nombre} IS NOT DISTINCT FROM @o{i}");
+                            AñadirParametro(cmd, $"@o{i}", col, normales[i].Antes);
+                        }
+                    }
+                    cmd.CommandText = $"UPDATE HISTORICO SET {string.Join(", ", sets)} WHERE {string.Join(" AND ", where)}";
+                    if (await cmd.ExecuteNonQueryAsync() != 1) throw new InvalidOperationException(MensajePartidaCambiada);
+                }
+                else if (!await ExistePartidaAsync(conn, tx, claveOriginal)) {
+                    throw new InvalidOperationException(MensajePartidaCambiada);
+                }
+
+                if (claveNueva != claveOriginal) {
+                    await MoverPartidaAsync(conn, tx, claveOriginal, claveNueva);
+                }
+                await tx.CommitAsync();
+            }
+            catch (Exception ex) {
+                await tx.RollbackAsync();
+                if (ex is InvalidOperationException) throw;
+                throw new Exception($"Error al guardar la {claveOriginal}: {ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// Copia la fila con la clave nueva (todas las columnas que se pueden
+        /// escribir, tal cual) y borra la original. Ver ActualizarCamposAsync.
+        /// </summary>
+        private async Task MoverPartidaAsync(FbConnection conn, FbTransaction tx, ClaveHistorico origen, ClaveHistorico destino) {
+            var columnas = (await ObtenerColumnasHistoricoAsync())
+                .Where(c => !c.EsCalculada && IdentificadorSimple.IsMatch(c.Nombre))
+                .ToList();
+            var valores = columnas.Select(c => c.Nombre.ToUpperInvariant() switch {
+                "COD_SALA"     => "@nsala",
+                "COD_CONC"     => "@nconc",
+                "FECHA_SESION" => "@nsesion",
+                "PARTIDA_DIA"  => "@npdia",
+                _ => c.Nombre,
+            });
+
+            using (var copiar = new FbCommand(
+                $@"INSERT INTO HISTORICO ({string.Join(", ", columnas.Select(c => c.Nombre))})
+                   SELECT {string.Join(", ", valores)} FROM HISTORICO
+                    WHERE COD_SALA=@sala AND COD_CONC=@conc AND FECHA_SESION=@sesion AND PARTIDA_DIA=@pdia", conn, tx)) {
+                AñadirParametrosClave(copiar, origen);
+                copiar.Parameters.Add("@nsala",   FbDbType.Integer).Value = destino.CodSala;
+                copiar.Parameters.Add("@nconc",   FbDbType.Integer).Value = destino.CodConc;
+                copiar.Parameters.Add("@nsesion", FbDbType.Date).Value    = destino.FechaSesion.Date;
+                copiar.Parameters.Add("@npdia",   FbDbType.Integer).Value = destino.PartidaDia;
+                if (await copiar.ExecuteNonQueryAsync() != 1) throw new InvalidOperationException(MensajePartidaCambiada);
+            }
+
+            using var borrar = new FbCommand(
+                @"DELETE FROM HISTORICO
+                   WHERE COD_SALA=@sala AND COD_CONC=@conc AND FECHA_SESION=@sesion AND PARTIDA_DIA=@pdia", conn, tx);
+            AñadirParametrosClave(borrar, origen);
+            if (await borrar.ExecuteNonQueryAsync() != 1) throw new InvalidOperationException(MensajePartidaCambiada);
+        }
+
+        /// <summary>Clave que tendrá la partida después de aplicar los cambios.</summary>
+        public static ClaveHistorico AplicarCambiosDeClave(ClaveHistorico clave, IEnumerable<CambioCampo> cambios) {
+            foreach (var c in cambios.Where(c => c.Columna.EsClave && c.Despues != null)) {
+                clave = c.Columna.Nombre.ToUpperInvariant() switch {
+                    "COD_SALA"     => clave with { CodSala = Convert.ToInt32(c.Despues, CultureInfo.InvariantCulture) },
+                    "COD_CONC"     => clave with { CodConc = Convert.ToInt32(c.Despues, CultureInfo.InvariantCulture) },
+                    "FECHA_SESION" => clave with { FechaSesion = Convert.ToDateTime(c.Despues, CultureInfo.InvariantCulture).Date },
+                    "PARTIDA_DIA"  => clave with { PartidaDia = Convert.ToInt32(c.Despues, CultureInfo.InvariantCulture) },
+                    _ => clave,
+                };
+            }
+            return clave;
+        }
+
+        private static void AñadirParametro(FbCommand cmd, string nombre, ColumnaHistorico col, object? valor) {
+            var tipo = col.Tipo switch {
+                TipoColumna.Entero    => FbDbType.BigInt,
+                TipoColumna.Decimal   => FbDbType.Decimal,
+                TipoColumna.Real      => FbDbType.Double,
+                TipoColumna.Texto     => col.EsBlob ? FbDbType.Text : FbDbType.VarChar,
+                TipoColumna.Fecha     => FbDbType.Date,
+                TipoColumna.Hora      => FbDbType.Time,
+                TipoColumna.FechaHora => FbDbType.TimeStamp,
+                _ => throw new InvalidOperationException($"La columna {col.Nombre} no se puede modificar."),
+            };
+            cmd.Parameters.Add(nombre, tipo).Value = valor is null ? DBNull.Value : col.Tipo switch {
+                TipoColumna.Entero    => Convert.ToInt64(valor, CultureInfo.InvariantCulture),
+                TipoColumna.Decimal   => Convert.ToDecimal(valor, CultureInfo.InvariantCulture),
+                TipoColumna.Real      => Convert.ToDouble(valor, CultureInfo.InvariantCulture),
+                TipoColumna.Texto     => Convert.ToString(valor, CultureInfo.InvariantCulture) ?? "",
+                TipoColumna.Fecha     => Convert.ToDateTime(valor, CultureInfo.InvariantCulture).Date,
+                TipoColumna.Hora      => AHora(valor),
+                _                     => Convert.ToDateTime(valor, CultureInfo.InvariantCulture),
+            };
+        }
+
+        /// <summary>Un valor de una columna TIME, venga como venga del proveedor o de la ficha.</summary>
+        public static TimeSpan AHora(object valor) => valor switch {
+            TimeSpan t => t,
+            TimeOnly t => t.ToTimeSpan(),
+            DateTime d => d.TimeOfDay,
+            _ => TimeSpan.Parse(Convert.ToString(valor, CultureInfo.InvariantCulture) ?? "", CultureInfo.InvariantCulture),
+        };
+
         // ── Crear tabla de operaciones si no existe ────────────────────────────
 
         public async Task CrearTablaOperacionesAsync() {

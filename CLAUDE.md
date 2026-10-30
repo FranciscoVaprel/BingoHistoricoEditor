@@ -101,6 +101,27 @@ the designer or with care; put logic in the paired non-designer `.cs` partial):
 - `MainForm` — main screen: loads `HISTORICO` rows for a selected date/sala/concesionario into a grid,
   supports single-record edit/save/delete and batch (lote) operations over a `PARTIDA_DIA` range
   (search for gaps, batch save, batch delete), backed by `nudPartidaInicial`/`nudPartidaFinal`.
+- `FichaPartidaForm` — "edit every column" window for one `HISTORICO` row, opened from `MainForm`
+  (`btnEditarFicha` or double-click on a grid row). Built in code, not with the designer, because its
+  fields come from the database: `FirebirdService.ObtenerColumnasHistoricoAsync` reads
+  `RDB$RELATION_FIELDS`/`RDB$FIELDS` once and maps each column to a `ColumnaHistorico`
+  (`TipoColumna`, scale, limits, max length, nullable, `CHAR` padding). One `EditorCampo` per column
+  (label + control by type + "vacío" checkbox for NULL); the 99 `PREMIOn` go in a grid instead
+  (`FilaPremio`). Tab assignment and the known column descriptions live in `FichaPartidaCampos` — an
+  unknown column still works, in "Otros". The four key columns sit above the tabs and **are editable**
+  (user's decision). Things to preserve:
+  - "Modificado" compares against what the control showed on open (`FichaPartidaCampos.Normalizar`:
+    numbers as `decimal`, `CHAR` trimmed, times to the second), not the raw DB value — otherwise
+    trailing spaces or sub-second times would show as edits nobody made. Amounts are `NUMERIC(15,5)`
+    in the venues' databases but are shown with 2 decimals unless they really have more.
+  - `ActualizarCamposAsync` writes only the changed columns, with `col IS NOT DISTINCT FROM @original`
+    in the `WHERE` (optimistic concurrency: 0 rows → "la partida ha cambiado", nothing saved).
+  - A key change is **copy-with-new-key + delete-original** in one transaction (`MoverPartidaAsync`),
+    never an `UPDATE` of the key: the venue's `HISTORICO_AI`/`HISTORICO_AD` triggers log each
+    inserted/updated or deleted key to `LOGREPLICACION` for replication, and an `UPDATE` would never
+    log the old key as gone. The target key is checked first (also inside the transaction).
+  - The form doesn't log; `MainForm.AbrirFichaAsync` logs `DB_UPDATE_FICHA` with every field's
+    before/after from `CambiosGuardados`.
 - `SettingsForm` — edits all `BingoSettings` fields at runtime, including the DB connection ones
   (`DbModo`, `DbSource`, `DbPort`, `DbRelativePath`/`DbAbsolutePath`/`DbRemotePath`, `DbUser`,
   `DbPass`, `DbCharset`, `DbDialect`); these were previously read-only by design, but that was
