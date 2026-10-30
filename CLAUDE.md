@@ -128,7 +128,18 @@ the designer or with care; put logic in the paired non-designer `.cs` partial):
     log the old key as gone. The target key is checked first (also inside the transaction).
   - The form doesn't log; `MainForm.AbrirFichaAsync` logs `DB_UPDATE_FICHA` with every field's
     before/after from `CambiosGuardados`.
-- `ImportarLogForm` — header button "⇩ IMPORTAR LOG": rebuilds **all** the games in a Gregal log
+- `PasarLogAHistoricoForm` — second entry of the "⇩ LOG DE GREGAL ▾" menu: compares one session day of
+  the import table with `HISTORICO` (`FirebirdService.CompararConHistoricoAsync`: same columns, normalized
+  like the ficha) and copies the ticked games into `HISTORICO` (`PasarAHistoricoAsync`, one transaction).
+  Missing games are ticked by default except "dudosas" (`RECLAMACION` "PARTIDA A MEDIAS…" or 0 sold).
+  For ticked games that already exist with different data, it **asks** (TaskDialog) whether to replace
+  the whole row or only fill the gaps (hueco = NULL/0/empty in `HISTORICO` and a value in the log) —
+  the user's choice. Updates go through `ActualizarSiNoHaCambiadoAsync` (same optimistic
+  `IS NOT DISTINCT FROM` check as the ficha) and inserts re-check the key, because Gregal may be writing
+  that day live. Writes do fire `HISTORICO`'s triggers (replication, audit) on purpose: this is real
+  data now. The import table is never modified. Available to every user (user's choice). Logged as
+  `DB_LOG_A_HISTORICO` with each field's before/after.
+- `ImportarLogForm` — first entry of the header menu "⇩ LOG DE GREGAL ▾": rebuilds **all** the games in a Gregal log
   (`gregal<AAAAMMDD>.log`) and saves them to a separate table, never `HISTORICO`:
   `BingoSettings:TablaImportacionLog`, default `HISTORICO_LOG` (`FirebirdService.TablaImportacionPorDefecto`).
   Games are rebuilt by Gregal's own code (`Gregal.Parsing.ReproductorLogGregal`, replaying the

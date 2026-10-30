@@ -277,8 +277,8 @@ namespace BingoHistoricoEditor {
             btnImportarLog.Name = "btnImportarLog";
             btnImportarLog.Size = new Size(150, 35);
             btnImportarLog.TabIndex = 3;
-            btnImportarLog.Text = "⇩ IMPORTAR LOG";
-            toolTip.SetToolTip(btnImportarLog, "Reconstruir las partidas de un log de Gregal y guardarlas en una tabla aparte (no en HISTORICO).");
+            btnImportarLog.Text = "⇩ LOG DE GREGAL ▾";
+            toolTip.SetToolTip(btnImportarLog, "Importar un log de Gregal a una tabla aparte, o pasar de esa tabla a HISTORICO.");
             btnImportarLog.UseVisualStyleBackColor = true;
             btnImportarLog.Click += btnImportarLog_Click;
             //

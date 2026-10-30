@@ -721,11 +721,36 @@ namespace BingoHistoricoEditor {
             }
         }
 
+        // ── Log de Gregal: importar a la tabla aparte y pasar de ella a HISTORICO ──
+
+        private ContextMenuStrip? _menuLogGregal;
+
+        private string TablaImportacionLog =>
+            _config["BingoSettings:TablaImportacionLog"] is { Length: > 0 } t ? t : FirebirdService.TablaImportacionPorDefecto;
+
         private void btnImportarLog_Click(object sender, EventArgs e) {
-            string tabla = _config["BingoSettings:TablaImportacionLog"] is { Length: > 0 } t ? t : FirebirdService.TablaImportacionPorDefecto;
-            using var importar = new ImportarLogForm(_db, tabla, _codSala, _codConc, _config["BingoSettings:FabricanteLog"],
+            if (_menuLogGregal == null) {
+                _menuLogGregal = new ContextMenuStrip();
+                _menuLogGregal.Items.Add($"Importar un log de Gregal a {TablaImportacionLog}…", null, (_, _) => AbrirImportarLog());
+                _menuLogGregal.Items.Add($"Pasar partidas de {TablaImportacionLog} a HISTORICO…", null, async (_, _) => await AbrirPasarAHistoricoAsync());
+            }
+            _menuLogGregal.Show(btnImportarLog, new Point(0, btnImportarLog.Height));
+        }
+
+        private void AbrirImportarLog() {
+            using var importar = new ImportarLogForm(_db, TablaImportacionLog, _codSala, _codConc, _config["BingoSettings:FabricanteLog"],
                 (detalle, datos) => EscribirLog("IMPORTAR_LOG_GREGAL", detalle, registrarEnArchivo: true, datos: datos));
             importar.ShowDialog(this);
+        }
+
+        private async Task AbrirPasarAHistoricoAsync() {
+            bool huboCambios;
+            using (var pasar = new PasarLogAHistoricoForm(_db, TablaImportacionLog, _codSala, _codConc, dtpFecha.Value,
+                       (detalle, datos) => EscribirLog("DB_LOG_A_HISTORICO", detalle, registrarEnArchivo: true, datos: datos))) {
+                pasar.ShowDialog(this);
+                huboCambios = pasar.HuboCambios;
+            }
+            if (huboCambios) await CargarPartidasAsync();
         }
 
         private void btnAuditoria_Click(object sender, EventArgs e) {

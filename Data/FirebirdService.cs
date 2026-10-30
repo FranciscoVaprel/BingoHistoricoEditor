@@ -535,21 +535,7 @@ namespace BingoHistoricoEditor.Data {
                 }
 
                 if (normales.Count > 0) {
-                    using var cmd = new FbCommand("", conn, tx);
-                    AñadirParametrosClave(cmd, claveOriginal);
-                    var sets  = new List<string>();
-                    var where = new List<string> { "COD_SALA=@sala", "COD_CONC=@conc", "FECHA_SESION=@sesion", "PARTIDA_DIA=@pdia" };
-                    for (int i = 0; i < normales.Count; i++) {
-                        var col = normales[i].Columna;
-                        sets.Add($"{col.Nombre}=@v{i}");
-                        AñadirParametro(cmd, $"@v{i}", col, normales[i].Despues);
-                        if (!col.EsBlob) {   // un BLOB no se puede comparar así
-                            where.Add($"{col.Nombre} IS NOT DISTINCT FROM @o{i}");
-                            AñadirParametro(cmd, $"@o{i}", col, normales[i].Antes);
-                        }
-                    }
-                    cmd.CommandText = $"UPDATE HISTORICO SET {string.Join(", ", sets)} WHERE {string.Join(" AND ", where)}";
-                    if (await cmd.ExecuteNonQueryAsync() != 1) throw new InvalidOperationException(MensajePartidaCambiada);
+                    await ActualizarSiNoHaCambiadoAsync(conn, tx, claveOriginal, normales, MensajePartidaCambiada);
                 }
                 else if (!await ExistePartidaAsync(conn, tx, claveOriginal)) {
                     throw new InvalidOperationException(MensajePartidaCambiada);
@@ -565,6 +551,31 @@ namespace BingoHistoricoEditor.Data {
                 if (ex is InvalidOperationException) throw;
                 throw new Exception($"Error al guardar la {claveOriginal}: {ex.Message}", ex);
             }
+        }
+
+        /// <summary>
+        /// UPDATE de HISTORICO que solo toca las columnas de <paramref name="cambios"/>
+        /// (ninguna de la clave) y solo si cada una sigue teniendo su valor
+        /// <see cref="CambioCampo.Antes"/>; si no (o la partida ya no existe),
+        /// lanza InvalidOperationException con <paramref name="siHaCambiado"/>.
+        /// </summary>
+        private static async Task ActualizarSiNoHaCambiadoAsync(FbConnection conn, FbTransaction tx, ClaveHistorico clave,
+                                                                IReadOnlyList<CambioCampo> cambios, string siHaCambiado) {
+            using var cmd = new FbCommand("", conn, tx);
+            AñadirParametrosClave(cmd, clave);
+            var sets  = new List<string>();
+            var where = new List<string> { "COD_SALA=@sala", "COD_CONC=@conc", "FECHA_SESION=@sesion", "PARTIDA_DIA=@pdia" };
+            for (int i = 0; i < cambios.Count; i++) {
+                var col = cambios[i].Columna;
+                sets.Add($"{col.Nombre}=@v{i}");
+                AñadirParametro(cmd, $"@v{i}", col, cambios[i].Despues);
+                if (!col.EsBlob) {   // un BLOB no se puede comparar así
+                    where.Add($"{col.Nombre} IS NOT DISTINCT FROM @o{i}");
+                    AñadirParametro(cmd, $"@o{i}", col, cambios[i].Antes);
+                }
+            }
+            cmd.CommandText = $"UPDATE HISTORICO SET {string.Join(", ", sets)} WHERE {string.Join(" AND ", where)}";
+            if (await cmd.ExecuteNonQueryAsync() != 1) throw new InvalidOperationException(siHaCambiado);
         }
 
         /// <summary>
@@ -745,6 +756,159 @@ namespace BingoHistoricoEditor.Data {
                 throw new Exception($"Error al guardar las partidas en {tabla} (no se ha guardado ninguna): {ex.Message}", ex);
             }
             return new ResultadoImportacion(nuevas, sobrescritas, repetidas, recortadas);
+        }
+
+        // ── Pasar partidas de la tabla de importación a HISTORICO ──────────────
+
+        public enum EstadoComparacion { FaltaEnHistorico, Distinta, Igual }
+
+        /// <summary>
+        /// Un campo que no coincide. Hueco: en HISTORICO está vacío (NULL, 0 o
+        /// texto vacío) y en la tabla del log tiene valor. Los valores son los
+        /// crudos de la BD (EnHistorico sirve para comprobar al guardar que nadie
+        /// lo ha cambiado desde la comparación).
+        /// </summary>
+        public sealed record DiferenciaCampo(ColumnaHistorico Columna, object? EnHistorico, object? EnLog, bool EsHueco);
+
+        public sealed record ComparacionPartida(
+            ClaveHistorico Clave, EstadoComparacion Estado,
+            IReadOnlyDictionary<string, object?> FilaLog,
+            IReadOnlyList<DiferenciaCampo> Diferencias) {
+            public int Huecos => Diferencias.Count(d => d.EsHueco);
+        }
+
+        /// <summary>Días (FECHA_SESION) que hay en la tabla para la sala/concesionario, del más reciente al más antiguo.</summary>
+        public async Task<List<(DateTime Fecha, int Partidas)>> ObtenerSesionesAsync(string tabla, int codSala, int codConc) {
+            tabla = Gregal.Data.FilaHistorico.ValidarNombreTabla(tabla).ToUpperInvariant();
+            var sesiones = new List<(DateTime, int)>();
+            if ((await ObtenerColumnasAsync(tabla)).Count == 0) return sesiones;
+
+            using var conn = new FbConnection(_cs);
+            using var cmd  = new FbCommand($@"SELECT FECHA_SESION, COUNT(*) FROM {tabla}
+                                               WHERE COD_SALA=@sala AND COD_CONC=@conc
+                                               GROUP BY FECHA_SESION ORDER BY FECHA_SESION DESC", conn);
+            cmd.Parameters.Add("@sala", FbDbType.Integer).Value = codSala;
+            cmd.Parameters.Add("@conc", FbDbType.Integer).Value = codConc;
+            await conn.OpenAsync();
+            using var rd = await cmd.ExecuteReaderAsync();
+            while (await rd.ReadAsync()) sesiones.Add((rd.GetDateTime(0), Convert.ToInt32(rd.GetValue(1))));
+            return sesiones;
+        }
+
+        /// <summary>
+        /// Compara, partida a partida, las de un día en la tabla del log con las
+        /// de HISTORICO, en las columnas que tienen las dos (sin la clave). Las
+        /// fechas y horas se comparan al segundo y los CHAR sin el relleno, igual
+        /// que en la ficha (FichaPartidaCampos.Normalizar).
+        /// </summary>
+        public async Task<List<ComparacionPartida>> CompararConHistoricoAsync(string tablaLog, int codSala, int codConc, DateTime fecha) {
+            tablaLog = Gregal.Data.FilaHistorico.ValidarNombreTabla(tablaLog).ToUpperInvariant();
+            var enLog = (await ObtenerColumnasAsync(tablaLog)).Select(c => c.Nombre).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            if (enLog.Count == 0) throw new InvalidOperationException($"No existe la tabla {tablaLog}: importa antes un log de Gregal.");
+            var columnas = (await ObtenerColumnasHistoricoAsync())
+                .Where(c => c.Editable && !c.EsCalculada && enLog.Contains(c.Nombre))
+                .ToList();
+
+            using var conn = new FbConnection(_cs);
+            await conn.OpenAsync();
+            var filasLog  = await LeerFilasDelDiaAsync(conn, tablaLog, columnas, codSala, codConc, fecha);
+            var filasHist = (await LeerFilasDelDiaAsync(conn, "HISTORICO", columnas, codSala, codConc, fecha))
+                .ToDictionary(f => Convert.ToInt32(f["PARTIDA_DIA"], CultureInfo.InvariantCulture));
+
+            var resultado = new List<ComparacionPartida>();
+            foreach (var log in filasLog) {
+                int partida = Convert.ToInt32(log["PARTIDA_DIA"], CultureInfo.InvariantCulture);
+                var clave = new ClaveHistorico(codSala, codConc, fecha, partida);
+                if (!filasHist.TryGetValue(partida, out var hist)) {
+                    resultado.Add(new ComparacionPartida(clave, EstadoComparacion.FaltaEnHistorico, log, Array.Empty<DiferenciaCampo>()));
+                    continue;
+                }
+                var difs = new List<DiferenciaCampo>();
+                foreach (var col in columnas.Where(c => !c.EsClave)) {
+                    var h = FichaPartidaCampos.Normalizar(col, hist[col.Nombre]);
+                    var l = FichaPartidaCampos.Normalizar(col, log[col.Nombre]);
+                    if (FichaPartidaCampos.Iguales(h, l)) continue;
+                    difs.Add(new DiferenciaCampo(col, hist[col.Nombre], log[col.Nombre], EstaVacio(h) && !EstaVacio(l)));
+                }
+                resultado.Add(new ComparacionPartida(clave, difs.Count == 0 ? EstadoComparacion.Igual : EstadoComparacion.Distinta, log, difs));
+            }
+            return resultado;
+        }
+
+        private static bool EstaVacio(object? normalizado) =>
+            normalizado is null || normalizado is decimal d && d == 0 || normalizado is string s && s.Length == 0;
+
+        private static async Task<List<Dictionary<string, object?>>> LeerFilasDelDiaAsync(
+                FbConnection conn, string tabla, IReadOnlyList<ColumnaHistorico> columnas, int codSala, int codConc, DateTime fecha) {
+            using var cmd = new FbCommand($@"SELECT {string.Join(", ", columnas.Select(c => c.Nombre))} FROM {tabla}
+                                              WHERE COD_SALA=@sala AND COD_CONC=@conc AND FECHA_SESION=@sesion
+                                              ORDER BY PARTIDA_DIA", conn);
+            cmd.Parameters.Add("@sala",   FbDbType.Integer).Value = codSala;
+            cmd.Parameters.Add("@conc",   FbDbType.Integer).Value = codConc;
+            cmd.Parameters.Add("@sesion", FbDbType.Date).Value    = fecha.Date;
+            var filas = new List<Dictionary<string, object?>>();
+            using var rd = await cmd.ExecuteReaderAsync();
+            while (await rd.ReadAsync()) {
+                var fila = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+                for (int i = 0; i < columnas.Count; i++) fila[columnas[i].Nombre] = rd.IsDBNull(i) ? null : rd.GetValue(i);
+                filas.Add(fila);
+            }
+            return filas;
+        }
+
+        public sealed record PasoAHistorico(ComparacionPartida Partida, bool SoloHuecos);
+        public sealed record ResultadoPaso(int Añadidas, int Sustituidas, int ConHuecosRellenados, int SinHuecos);
+
+        /// <summary>
+        /// Escribe en HISTORICO lo que se comparó, todo en una transacción (o
+        /// todas o ninguna). Una partida que faltaba se inserta con los valores
+        /// de la tabla del log; una distinta se actualiza en sus campos distintos
+        /// (o solo en los huecos), y solo si en HISTORICO siguen como estaban al
+        /// comparar: Gregal puede estar guardando partidas de ese día. Pasa por
+        /// los triggers de HISTORICO (replicación de la sala y auditoría), como
+        /// cualquier otro cambio. La tabla del log no se toca.
+        /// </summary>
+        public async Task<ResultadoPaso> PasarAHistoricoAsync(IReadOnlyList<PasoAHistorico> pasos) {
+            var tipos = (await ObtenerColumnasHistoricoAsync()).ToDictionary(c => c.Nombre, StringComparer.OrdinalIgnoreCase);
+            int añadidas = 0, sustituidas = 0, huecos = 0, sinHuecos = 0;
+
+            using var conn = new FbConnection(_cs);
+            await conn.OpenAsync();
+            using var tx = conn.BeginTransaction();
+            try {
+                foreach (var (p, soloHuecos) in pasos) {
+                    string haCambiado = $"La {p.Clave} ha cambiado en HISTORICO desde que se comparó. " +
+                                        "No se ha pasado nada: vuelve a comparar.";
+                    switch (p.Estado) {
+                        case EstadoComparacion.FaltaEnHistorico: {
+                            if (await ExistePartidaAsync(conn, tx, p.Clave)) throw new InvalidOperationException(haCambiado);
+                            var cols = p.FilaLog.Keys.Select(n => tipos[n]).ToList();
+                            using var cmd = new FbCommand(
+                                $"INSERT INTO HISTORICO ({string.Join(", ", cols.Select(c => c.Nombre))}) " +
+                                $"VALUES ({string.Join(", ", cols.Select((_, i) => $"@p{i}"))})", conn, tx);
+                            for (int i = 0; i < cols.Count; i++) AñadirParametro(cmd, $"@p{i}", cols[i], p.FilaLog[cols[i].Nombre]);
+                            await cmd.ExecuteNonQueryAsync();
+                            añadidas++;
+                            break;
+                        }
+                        case EstadoComparacion.Distinta: {
+                            var cambios = p.Diferencias.Where(d => !soloHuecos || d.EsHueco)
+                                .Select(d => new CambioCampo(d.Columna, d.EnHistorico, d.EnLog)).ToList();
+                            if (cambios.Count == 0) { sinHuecos++; break; }
+                            await ActualizarSiNoHaCambiadoAsync(conn, tx, p.Clave, cambios, haCambiado);
+                            if (soloHuecos) huecos++; else sustituidas++;
+                            break;
+                        }
+                    }
+                }
+                await tx.CommitAsync();
+            }
+            catch (Exception ex) {
+                await tx.RollbackAsync();
+                if (ex is InvalidOperationException) throw;
+                throw new Exception($"Error al pasar las partidas a HISTORICO (no se ha pasado ninguna): {ex.Message}", ex);
+            }
+            return new ResultadoPaso(añadidas, sustituidas, huecos, sinHuecos);
         }
 
         // ── Crear tabla de operaciones si no existe ────────────────────────────
