@@ -5,7 +5,9 @@ using System.Text.Json.Nodes;
 
 namespace BingoHistoricoEditor {
     internal static class Program {
-        public static IConfiguration Configuration { get; private set; } = null!;
+        // Una sola instancia para toda la aplicación: al guardar appsettings.json
+        // se recarga (GuardarJson), y todos los que la tienen ven los valores nuevos.
+        public static IConfigurationRoot Configuration { get; private set; } = null!;
 
         private static readonly string AppSettingsPath =
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json");
@@ -39,7 +41,7 @@ namespace BingoHistoricoEditor {
 
         // ── Helpers ───────────────────────────────────────────────────────────
 
-        private static IConfiguration CargarConfig() =>
+        private static IConfigurationRoot CargarConfig() =>
             new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
@@ -157,7 +159,9 @@ namespace BingoHistoricoEditor {
             return settings;
         }
 
-        private static void GuardarJson(JsonObject root) =>
+        private static void GuardarJson(JsonObject root) {
             File.WriteAllText(AppSettingsPath, root.ToJsonString(JsonWriteOpts));
+            Configuration?.Reload();
+        }
     }
 }

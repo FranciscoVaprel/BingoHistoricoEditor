@@ -4,6 +4,11 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ---
 
+## 2026-11-02
+
+- **La configuración se aplica sin reiniciar**: al guardar en ⚙ Configuración, la app se reconecta a la BD con los datos nuevos (modo, servidor, puerto, ruta, usuario, contraseña, charset, dialecto), actualiza sala/concesionario y el precio por defecto de los paneles, y vuelve a cargar el último día con partidas, igual que al arrancar. Si la conexión nueva falla, la tabla se vacía para no dejar a la vista las partidas de la BD anterior. Antes había que reiniciar porque la cadena de conexión se construía una sola vez al crear `FirebirdService`.
+  - Corregido de paso: al volver a abrir ⚙ Configuración sin reiniciar se veían los valores antiguos, porque la configuración en memoria no se recargaba al guardar `appsettings.json`. Ahora `Program.GuardarJson` la recarga después de cada escritura.
+
 ## 2026-10-30
 
 - **Ver `HISTORICO_LOG` en la pantalla principal**: dos pestañas encima de la tabla de partidas, "HISTORICO" y "HISTORICO_LOG (importado del log)". Misma fecha y mismo BUSCAR; en la del log la vista es **solo de consulta** (el panel de edición y el de lote se desactivan, porque escriben en `HISTORICO`), el doble clic abre la ficha completa en modo consulta y hay un botón "⇧ Pasar a HISTORICO…". Si el día elegido no tiene partidas en el log, se dice qué días sí hay. Al terminar una importación la pantalla salta sola a esa pestaña y al día importado.

@@ -13,8 +13,8 @@ namespace BingoHistoricoEditor {
     public partial class MainForm : Form {
         private readonly FirebirdService _db;
         private readonly IConfiguration _config;
-        private readonly int _codSala;
-        private readonly int _codConc;
+        private int _codSala;
+        private int _codConc;
         private List<HistoricoEntry> _partidas = new();
         private HistoricoEntry? _seleccionada;
         private string _usuarioActual;
@@ -55,6 +55,12 @@ namespace BingoHistoricoEditor {
             base.OnLoad(e);
 
             dtpFecha.Value = DateTime.Today;
+            await ConectarAsync();
+        }
+
+        // Al arrancar y tras guardar la configuración: comprueba la conexión,
+        // prepara la auditoría y carga el último día con partidas.
+        private async Task ConectarAsync() {
             lblSalaConc.Text = $"SALA: {_codSala} | CONCESIONARIO: {_codConc}";
 
             // Verificar si la BD existe
@@ -102,6 +108,13 @@ namespace BingoHistoricoEditor {
                 }
 
                 await CargarPartidasAsync();
+            }
+            else {
+                // Sin conexión no se dejan a la vista las partidas de la BD anterior.
+                _partidas = new();
+                grid.CurrentCell = null;
+                _bsPartidas.DataSource = _partidas;
+                EscribirLog("ERROR", "No se pudo conectar a la base de datos. Revisa la configuración (⚙).");
             }
         }
 
@@ -839,14 +852,23 @@ namespace BingoHistoricoEditor {
             auditoria.ShowDialog(this);
         }
 
-        private void btnConfiguracion_Click(object sender, EventArgs e) {
+        private async void btnConfiguracion_Click(object sender, EventArgs e) {
             using (var settingsForm = new SettingsForm(_config)) {
-                if (settingsForm.ShowDialog(this) == DialogResult.OK) {
-                    // Recargar la configuración actualizada
-                    MessageBox.Show("Configuración guardada correctamente.\n\nPor favor, reinicia la aplicación para aplicar los cambios de base de datos.",
-                        "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                if (settingsForm.ShowDialog(this) != DialogResult.OK) return;
             }
+
+            // _config es Program.Configuration, ya recargada al guardar: se
+            // aplica sin reiniciar (conexión, sala/concesionario y precio).
+            _codSala = GetConfigInt(_config, "BingoSettings:CodSala", 1);
+            _codConc = GetConfigInt(_config, "BingoSettings:CodConc", 1);
+            _db.AplicarConfiguracion(_config);
+            decimal precioPartida = Program.ObtenerPrecioPartida();
+            nudPrecio.Value = precioPartida;
+            nudLotePrecio.Value = precioPartida;
+            _seleccionada = null;
+
+            EscribirLog("SISTEMA", "Configuración guardada. Aplicando sin reiniciar...");
+            await ConectarAsync();
         }
 
         /// <summary>

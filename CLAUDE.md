@@ -168,8 +168,11 @@ the designer or with care; put logic in the paired non-designer `.cs` partial):
   (`DbModo`, `DbSource`, `DbPort`, `DbRelativePath`/`DbAbsolutePath`/`DbRemotePath`, `DbUser`,
   `DbPass`, `DbCharset`, `DbDialect`); these were previously read-only by design, but that was
   changed on request. `ToolTip`s on every field explain the mode/path precedence rules from
-  `FirebirdService.ResolverRuta`. Saving DB fields requires an app restart to take effect (the
-  connection string is built once, at `FirebirdService` construction).
+  `FirebirdService.ResolverRuta`. Changes apply without restarting: `Program.Configuration` is a
+  single `IConfigurationRoot` that `GuardarJson` reloads after every write, and
+  `MainForm.btnConfiguracion_Click` then re-reads sala/conc and precio, calls
+  `FirebirdService.AplicarConfiguracion` (rebuilds the connection string, clears the column cache)
+  and reruns `ConectarAsync` (the same connection check/load as startup).
 - `UserManagerForm` — add/remove app users, change passwords, via `UserStore`. Users have an
   `IsAdmin` flag; only admins see/open `AuditoriaForm` (lists `operacionesBGEditor`) from `MainForm`.
 - `AuditoriaForm` — read-only grid over `operacionesBGEditor`, admin-only.

@@ -5,11 +5,20 @@ using System.Globalization;
 
 namespace BingoHistoricoEditor.Data {
     public class FirebirdService {
-        private readonly string _cs;
+        private string _cs;
 
         public FirebirdService(IConfiguration config) {
             _cs = BuildConnectionString(config);
+        }
 
+        /// <summary>
+        /// Cambia a la conexión de la configuración actual (tras guardar la
+        /// configuración, sin reiniciar). Olvida las columnas leídas: la nueva BD
+        /// puede tener otras.
+        /// </summary>
+        public void AplicarConfiguracion(IConfiguration config) {
+            _cs = BuildConnectionString(config);
+            _columnas.Clear();
         }
 
         // ── Resolución de connection string (igual que en el servicio) ────────
@@ -320,7 +329,8 @@ namespace BingoHistoricoEditor.Data {
         // lista fija: cada sala puede tener alguna columna más o menos, y así la
         // ficha muestra exactamente las que tiene. Se leen una sola vez por
         // ejecución y tabla (el esquema no cambia con la aplicación abierta;
-        // salvo al crear la tabla de importación, que borra su entrada).
+        // salvo al crear la tabla de importación, que borra su entrada, o al
+        // cambiar de BD en la configuración, que las borra todas).
         private readonly Dictionary<string, List<ColumnaHistorico>> _columnas = new(StringComparer.OrdinalIgnoreCase);
 
         // Los nombres se meten tal cual en el SQL (no se pueden parametrizar), así

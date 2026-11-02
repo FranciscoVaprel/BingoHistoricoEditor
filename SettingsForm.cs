@@ -163,8 +163,6 @@ namespace BingoHistoricoEditor {
                     precioPartida: txtPrecioPartida.Text
                 );
 
-                MessageBox.Show("Configuración guardada correctamente.\n\nLos cambios de base de datos requieren reiniciar la aplicación.",
-                    "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 DialogResult = DialogResult.OK;
                 Close();
             }
