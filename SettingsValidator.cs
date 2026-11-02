@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 
 namespace BingoHistoricoEditor {
@@ -44,11 +45,21 @@ namespace BingoHistoricoEditor {
             if (string.IsNullOrWhiteSpace(value)) {
                 return (false, $"{fieldName} no puede estar vacío.");
             }
-            if (!decimal.TryParse(value, out decimal decValue) || decValue < min || decValue > max) {
+            if (!TryParseDecimal(value, out decimal decValue) || decValue < min || decValue > max) {
                 return (false, $"{fieldName} debe ser un número decimal entre {min} y {max}.");
             }
             return (true, "");
         }
+
+        /// <summary>
+        /// Decimal de appsettings.json: acepta punto o coma como separador decimal y
+        /// no admite separador de miles. Con la cultura española, "0.50" se leía
+        /// como 50 (el punto es el separador de miles).
+        /// </summary>
+        public static bool TryParseDecimal(string? value, out decimal result) =>
+            decimal.TryParse((value ?? "").Trim().Replace(',', '.'),
+                NumberStyles.AllowDecimalPoint | NumberStyles.AllowLeadingSign,
+                CultureInfo.InvariantCulture, out result);
 
         public static (bool isValid, string errorMessage) ValidateFilePath(string path) {
             if (string.IsNullOrWhiteSpace(path)) {

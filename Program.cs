@@ -52,7 +52,7 @@ namespace BingoHistoricoEditor {
         /// </summary>
         public static decimal ObtenerPrecioPartida() {
             string valorStr = Configuration["BingoSettings:PrecioPartida"] ?? "0.50";
-            if (decimal.TryParse(valorStr, out decimal valor)) {
+            if (SettingsValidator.TryParseDecimal(valorStr, out decimal valor)) {
                 return valor;
             }
             return 0.50m;

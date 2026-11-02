@@ -8,6 +8,9 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 - **La configuración se aplica sin reiniciar**: al guardar en ⚙ Configuración, la app se reconecta a la BD con los datos nuevos (modo, servidor, puerto, ruta, usuario, contraseña, charset, dialecto), actualiza sala/concesionario y el precio por defecto de los paneles, y vuelve a cargar el último día con partidas, igual que al arrancar. Si la conexión nueva falla, la tabla se vacía para no dejar a la vista las partidas de la BD anterior. Antes había que reiniciar porque la cadena de conexión se construía una sola vez al crear `FirebirdService`.
   - Corregido de paso: al volver a abrir ⚙ Configuración sin reiniciar se veían los valores antiguos, porque la configuración en memoria no se recargaba al guardar `appsettings.json`. Ahora `Program.GuardarJson` la recarga después de cada escritura.
+  - Corregido (encontrado al probarlo): si se guardaba la configuración con una carga de partidas en marcha, esa carga acababa después y llenaba la tabla con datos de la BD anterior. Ahora `MainForm._conexion` sube con cada cambio de configuración y una carga empezada antes se descarta.
+  - Corregido (ya existía antes): el precio por defecto (`PrecioPartida`) se leía con la cultura del sistema, y en español el punto es separador de miles, así que el `"0.50"` de `appsettings.json` se leía como **50**. Ahora `SettingsValidator.TryParseDecimal` acepta punto o coma como decimal (sin miles), y `SettingsForm` lo guarda siempre con punto.
+  - Probado con un programa de prueba que abre la `MainForm` real sobre copias de la BD y rellena y guarda la ventana de Configuración: BD inexistente (estado en rojo, tabla vacía), vuelta a otra BD válida, precio con coma, cambio de sala.
 
 ## 2026-10-30
 

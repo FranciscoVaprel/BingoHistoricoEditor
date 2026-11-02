@@ -160,7 +160,8 @@ namespace BingoHistoricoEditor {
                     codSala: txtCodSala.Text,
                     codConc: txtCodConc.Text,
                     appUser: txtAppUser.Text,
-                    precioPartida: txtPrecioPartida.Text
+                    // Siempre con punto en el fichero, se escriba con punto o con coma.
+                    precioPartida: txtPrecioPartida.Text.Trim().Replace(',', '.')
                 );
 
                 DialogResult = DialogResult.OK;

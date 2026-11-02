@@ -226,11 +226,18 @@ namespace BingoHistoricoEditor {
             }
         }
 
+        // Sube cada vez que se cambia de configuración: una carga que empezó con
+        // la BD anterior y acaba después no debe llenar la rejilla con sus datos.
+        private int _conexion;
+
         private async Task CargarPartidasUnaVezAsync() {
             try {
                 SetBusy(true);
 
-                _partidas = await _db.CargarPorFechaAsync(dtpFecha.Value, _codSala, _codConc, _tablaActual);
+                int conexion = _conexion;
+                var partidas = await _db.CargarPorFechaAsync(dtpFecha.Value, _codSala, _codConc, _tablaActual);
+                if (conexion != _conexion) return;
+                _partidas = partidas;
 
                 grid.CurrentCell = null;
                 _bsPartidas.DataSource = _partidas;
@@ -861,6 +868,7 @@ namespace BingoHistoricoEditor {
             // aplica sin reiniciar (conexión, sala/concesionario y precio).
             _codSala = GetConfigInt(_config, "BingoSettings:CodSala", 1);
             _codConc = GetConfigInt(_config, "BingoSettings:CodConc", 1);
+            _conexion++;
             _db.AplicarConfiguracion(_config);
             decimal precioPartida = Program.ObtenerPrecioPartida();
             nudPrecio.Value = precioPartida;
