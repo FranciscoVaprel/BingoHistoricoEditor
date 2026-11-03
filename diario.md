@@ -4,6 +4,12 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ---
 
+## 2026-11-03
+
+- **El instalador instala en `C:\BingoHistoricoEditor`** (como Gregal en `C:\Gregal`) en vez de en `%LOCALAPPDATA%\Programs\BingoHistoricoEditor`. Sigue sin pedir administrador: en la raíz de `C:\` cualquier usuario puede crear carpetas y Windows da permiso de modificación en ellas a todos los usuarios, así que la app puede escribir su configuración, usuarios, logs y BD local.
+  - Al actualizar un PC que la tenía en la carpeta de usuario, el instalador mueve `appsettings.json`, `users.json` (y sus copias `.bak-*`), `logs\` y `BBDD\` a la carpeta nueva y desinstala la copia vieja (programa, accesos directos y entrada de "Aplicaciones"). Si la app está abierta, o no se puede mover algo (p. ej. Firebird tiene abierta la BD de `BBDD\`), se para y pide cerrarla, sin mover nada a medias del programa.
+  - Probado con instaladores de prueba (otro GUID, otro nombre y carpetas temporales, sin tocar la instalación real del PC): instalación vieja con datos → actualización con la app "abierta" (se para) → con la app cerrada (mueve todo, conserva la configuración, borra la vieja) → otra actualización en el sitio nuevo (no mueve nada) → desinstalación. La prueba destapó que faltaba una llave en `AppId={{{#MyAppGuid}}`: la clave de registro salía sin `}` y el siguiente instalador no habría reconocido la instalación.
+
 ## 2026-11-02
 
 - **La configuración se aplica sin reiniciar**: al guardar en ⚙ Configuración, la app se reconecta a la BD con los datos nuevos (modo, servidor, puerto, ruta, usuario, contraseña, charset, dialecto), actualiza sala/concesionario y el precio por defecto de los paneles, y vuelve a cargar el último día con partidas, igual que al arrancar. Si la conexión nueva falla, la tabla se vacía para no dejar a la vista las partidas de la BD anterior. Antes había que reiniciar porque la cadena de conexión se construía una sola vez al crear `FirebirdService`.

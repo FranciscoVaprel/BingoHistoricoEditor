@@ -43,6 +43,16 @@ uninsneveruninstall`, so a real config already on the venue PC is never touched 
 uninstall; `users.json`/`logs/`/`BBDD/` are never part of the installer payload at all (the app creates
 them at runtime), so they're untouched for the same reason.
 
+It installs per-user (`PrivilegesRequired=lowest`, no UAC) into `C:\BingoHistoricoEditor`
+(`{sd}\...`): any user may create folders in the root of `C:\`, and Windows grants all authenticated
+users Modify on them, so the app can write its own files there. Up to 1.6.1 the default was
+`%LOCALAPPDATA%\Programs\BingoHistoricoEditor`; with `UsePreviousAppDir=no`, `PrepareToInstall` (in
+`[Code]`) detects such an install via its HKCU uninstall key, moves `appsettings.json`, `users.json`
+(+ `.bak-*`), `logs\` and `BBDD\` to the new folder (refusing if the old exe is in use or a move
+fails, e.g. Firebird holding the `.FDB`), then runs the old `unins000.exe` silently. `MyAppName`,
+`MyAppGuid` and `DirPorDefecto` can be overridden with `/D` to test the installer with a throwaway
+GUID without touching the real install on the PC.
+
 **Before every publish, manually verify `bin/.../publish/win-x64/` has no real secrets** — the csproj's
 `Content Include="appsettings.json"` condition means your own local `appsettings.json` (with its real
 DB password) gets copied into the publish output if it's newer than what's already there, and a prior
