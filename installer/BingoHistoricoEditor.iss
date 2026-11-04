@@ -80,10 +80,17 @@ Source: "{#MyPublishDir}\*"; DestDir: "{app}"; Excludes: "appsettings.json,users
 ; código de sala, etc.) se queda exactamente como estaba.
 Source: "{#MyPublishDir}\appsettings.json"; DestDir: "{app}"; Flags: onlyifdoesntexist uninsneveruninstall
 
+; Lo usa el acceso directo "Actualizar": busca una versión nueva en GitHub y
+; la instala con este mismo setup en silencio.
+Source: "Buscar-Actualizacion.ps1"; DestDir: "{app}"; Flags: ignoreversion
+
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\Desinstalar {#MyAppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+; Siempre, también al actualizar: así una sala ya instalada lo tiene tras su
+; próxima actualización.
+Name: "{autodesktop}\Actualizar {#MyAppName}"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\Buscar-Actualizacion.ps1"""; WorkingDir: "{app}"; IconFilename: "{app}\{#MyAppExeName}"; Comment: "Buscar e instalar una versión nueva"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "Ejecutar {#MyAppName}"; Flags: nowait postinstall skipifsilent

@@ -4,6 +4,12 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ---
 
+## 2026-11-04
+
+- **Actualizar con un clic**: el instalador deja en el escritorio "Actualizar Bingo Histórico Editor". Mira en GitHub si hay una versión más nueva que la instalada, enseña sus cambios y, si se acepta, cierra la aplicación (como con la X, así que avisa si hay cambios sin guardar), descarga el instalador, lo ejecuta en silencio y vuelve a abrirla. Conserva la configuración, los usuarios, los logs y la BD local, como cualquier actualización. No pide administrador. Antes había que entrar en GitHub desde cada PC, descargar y ejecutar el instalador a mano.
+  - Una sala con una versión anterior lo tendrá después de actualizarla una vez a mano.
+  - Probado contra GitHub de verdad: con la versión al día dice que no hay nada; simulando una versión vieja enseña los cambios, descarga el instalador entero (comprobando el tamaño) y lo borra al terminar. La instalación en silencio no se ejecutó en la prueba, para no tocar la instalación real de este PC.
+
 ## 2026-11-03
 
 - **El instalador instala en `C:\BingoHistoricoEditor`** (como Gregal en `C:\Gregal`) en vez de en `%LOCALAPPDATA%\Programs\BingoHistoricoEditor`. Sigue sin pedir administrador: en la raíz de `C:\` cualquier usuario puede crear carpetas y Windows da permiso de modificación en ellas a todos los usuarios, así que la app puede escribir su configuración, usuarios, logs y BD local.

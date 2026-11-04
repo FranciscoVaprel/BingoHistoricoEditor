@@ -53,6 +53,18 @@ fails, e.g. Firebird holding the `.FDB`), then runs the old `unins000.exe` silen
 `MyAppGuid` and `DirPorDefecto` can be overridden with `/D` to test the installer with a throwaway
 GUID without touching the real install on the PC.
 
+**One-click update** (2026-11-04): the installer copies `installer/Buscar-Actualizacion.ps1` (UTF-8 BOM,
+for Windows PowerShell 5.1) into `{app}` and always creates a desktop shortcut "Actualizar Bingo
+Histórico Editor" to it. The script reads `releases/latest` from the GitHub API (repo is public, no
+token), compares `tag_name` with the exe's `ProductVersion`, shows the notes up to the first `##
+Descargas`/`Instalación`/`Requisitos` heading, asks the app to close (`CloseMainWindow`, so
+unsaved-changes prompts still appear; gives up after 60 s), downloads the
+`BingoHistoricoEditor-Setup-*.exe` asset (size-checked), runs it with `/VERYSILENT /SUPPRESSMSGBOXES
+/NORESTART /LOG=` (no elevation: per-user install) and relaunches the app from the HKCU
+`InstallLocation` (the setup may have moved it from the old AppData folder). `-SoloComprobar` only
+reports. **So every release must be tagged `v<version>` and attach `BingoHistoricoEditor-Setup-<version>.exe`**.
+Gregal has the same script (`Gregal/Deploy/Buscar-Actualizacion.ps1`).
+
 **Before every publish, manually verify `bin/.../publish/win-x64/` has no real secrets** — the csproj's
 `Content Include="appsettings.json"` condition means your own local `appsettings.json` (with its real
 DB password) gets copied into the publish output if it's newer than what's already there, and a prior
