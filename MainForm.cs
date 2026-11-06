@@ -50,9 +50,78 @@ namespace BingoHistoricoEditor {
             if (dtpFecha != null) {
                 dtpFecha.ValueChanged += dtpFecha_ValueChanged;
                 dtpFecha.DropDown += dtpFecha_DropDown;
-                dtpFecha.CloseUp += dtpFecha_CloseUp;
             }
             this.FormClosed += (s, e) => BingoHistoricoEditor.Services.LogService.Close();
+            CrearSelectorSala();
+        }
+
+        // ── Selector de sala ──────────────────────────────────────────────────
+        // Donde estaba el texto "SALA: x | CONCESIONARIO: y": lista las salas con
+        // partidas en HISTORICO o en la tabla del log (más la configurada, aunque
+        // no tenga). Elegir otra vale para esta sesión: no se guarda en
+        // appsettings.json, y al guardar la Configuración se vuelve a la suya.
+        // Todo lo que se haga (cargar, editar, lote, importar el log) es sobre
+        // la sala elegida.
+        private sealed record SalaItem(int Sala, int Conc, bool Configurada) {
+            public override string ToString() => $"SALA {Sala} · CONC. {Conc}{(Configurada ? "  (configurada)" : "")}";
+        }
+
+        private ComboBox cmbSala = null!;
+        private bool _rellenandoSalas;
+
+        private void CrearSelectorSala() {
+            cmbSala = new ComboBox {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Location = new Point(0, lblSalaConc.Top - 4),
+                Width = 215,
+                TabIndex = lblSalaConc.TabIndex,
+            };
+            toolTip.SetToolTip(cmbSala, "Sala y concesionario que se ven. Las de la lista tienen partidas en la base de datos. " +
+                                        "El cambio vale hasta cerrar el programa; la sala por defecto se cambia en ⚙ Configuración.");
+            lblSalaConc.Visible = false;
+            lblSalaConc.Parent!.Controls.Add(cmbSala);
+            cmbSala.SelectedIndexChanged += cmbSala_SelectedIndexChanged;
+            RellenarSalas(new List<(int, int)>());
+        }
+
+        private void RellenarSalas(List<(int Sala, int Conc)> conDatos) {
+            int salaConfig = GetConfigInt(_config, "BingoSettings:CodSala", 1);
+            int concConfig = GetConfigInt(_config, "BingoSettings:CodConc", 1);
+            var pares = new SortedSet<(int, int)>(conDatos) { (salaConfig, concConfig), (_codSala, _codConc) };
+
+            _rellenandoSalas = true;
+            try {
+                cmbSala.Items.Clear();
+                foreach (var (s, c) in pares) {
+                    var item = new SalaItem(s, c, s == salaConfig && c == concConfig);
+                    cmbSala.Items.Add(item);
+                    if (s == _codSala && c == _codConc) cmbSala.SelectedItem = item;
+                }
+            }
+            finally { _rellenandoSalas = false; }
+        }
+
+        private async Task CargarSalasAsync() {
+            try {
+                RellenarSalas(await _db.ObtenerSalasAsync("HISTORICO", TablaImportacionLog));
+            }
+            catch (Exception ex) {
+                RellenarSalas(new List<(int, int)>());
+                EscribirLog("ERROR", $"No se pudo leer la lista de salas: {ex.Message}");
+            }
+        }
+
+        private async void cmbSala_SelectedIndexChanged(object? sender, EventArgs e) {
+            if (_rellenandoSalas || cmbSala.SelectedItem is not SalaItem item) return;
+            if (item.Sala == _codSala && item.Conc == _codConc) return;
+
+            _codSala = item.Sala;
+            _codConc = item.Conc;
+            _conexion++;          // una carga de la sala anterior aún en marcha se descarta
+            _seleccionada = null;
+            lblSalaConc.Text = $"SALA: {_codSala} | CONCESIONARIO: {_codConc}";
+            EscribirLog("SISTEMA", $"Viendo la sala {_codSala}, concesionario {_codConc}.");
+            await IrAlUltimoDiaAsync();
         }
 
         protected override async void OnLoad(EventArgs e) {
@@ -96,6 +165,8 @@ namespace BingoHistoricoEditor {
                     EscribirLog("SISTEMA", $"Error al crear tabla/trigger de auditoría: {ex.Message}");
                 }
 
+                await CargarSalasAsync();
+
                 // Cargar por defecto el último día con partidas registradas
                 await IrAlUltimoDiaAsync();
             }
@@ -104,6 +175,7 @@ namespace BingoHistoricoEditor {
                 _partidas = new();
                 grid.CurrentCell = null;
                 _bsPartidas.DataSource = _partidas;
+                RellenarSalas(new List<(int, int)>());
                 EscribirLog("ERROR", "No se pudo conectar a la base de datos. Revisa la configuración (⚙).");
             }
         }
@@ -216,13 +288,9 @@ namespace BingoHistoricoEditor {
             await CargarPartidasAsync();
         }
 
-        // Cambiar la fecha carga sus partidas. Los cambios hechos desde el
-        // código (FijarFecha) cargan por su cuenta, y con el calendario
-        // desplegado se espera a que se cierre, para no cargar cada mes por el
-        // que se pase.
+        // Cambiar la fecha (escribiéndola) carga sus partidas. Los cambios hechos
+        // desde el código (FijarFecha) cargan por su cuenta.
         private bool _fijandoFecha;
-        private bool _calendarioAbierto;
-        private DateTime _fechaAlAbrirCalendario;
 
         private void FijarFecha(DateTime fecha) {
             _fijandoFecha = true;
@@ -231,18 +299,65 @@ namespace BingoHistoricoEditor {
         }
 
         private async void dtpFecha_ValueChanged(object? sender, EventArgs e) {
-            if (_fijandoFecha || _calendarioAbierto) return;
+            if (_fijandoFecha) return;
             await CargarPartidasAsync();
         }
 
+        // El calendario desplegable del DateTimePicker no deja marcar días, así
+        // que al abrirlo se cierra en el acto y se muestra uno propio
+        // (MonthCalendar) con los días que tienen partidas en negrita, en la
+        // tabla de la pestaña que se esté viendo. Hacer clic en un día lo carga;
+        // pasar de mes no carga nada.
+        private const int DTM_CLOSEMONTHCAL = 0x1000 + 13;
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, IntPtr lParam);
+
+        private ToolStripDropDown? _popupCalendario;
+        private MonthCalendar? _calendario;
+
         private void dtpFecha_DropDown(object? sender, EventArgs e) {
-            _calendarioAbierto = true;
-            _fechaAlAbrirCalendario = dtpFecha.Value.Date;
+            // Cerrarlo dentro de su propio aviso de apertura falla: después.
+            BeginInvoke(async () => {
+                SendMessage(dtpFecha.Handle, DTM_CLOSEMONTHCAL, IntPtr.Zero, IntPtr.Zero);
+                await AbrirCalendarioAsync();
+            });
         }
 
-        private async void dtpFecha_CloseUp(object? sender, EventArgs e) {
-            _calendarioAbierto = false;
-            if (dtpFecha.Value.Date != _fechaAlAbrirCalendario) await CargarPartidasAsync();
+        private async Task AbrirCalendarioAsync() {
+            if (_popupCalendario == null || _calendario == null) {
+                _calendario = new MonthCalendar { MaxSelectionCount = 1, ShowTodayCircle = true };
+                _calendario.DateSelected += async (s, e) => {
+                    _popupCalendario!.Close();
+                    FijarFecha(e.Start.Date);
+                    await CargarPartidasAsync();
+                };
+                _calendario.KeyDown += async (s, e) => {
+                    if (e.KeyCode != Keys.Enter) return;
+                    e.Handled = true;
+                    _popupCalendario!.Close();
+                    FijarFecha(_calendario.SelectionStart.Date);
+                    await CargarPartidasAsync();
+                };
+                var host = new ToolStripControlHost(_calendario) { Margin = Padding.Empty, Padding = Padding.Empty, AutoSize = false };
+                host.Size = _calendario.Size;
+                _popupCalendario = new ToolStripDropDown { Padding = Padding.Empty };
+                _popupCalendario.Items.Add(host);
+            }
+
+            DateTime[] conDatos = Array.Empty<DateTime>();
+            try {
+                conDatos = (await _db.ObtenerSesionesAsync(_tablaActual, _codSala, _codConc))
+                    .Select(s => s.Fecha.Date).ToArray();
+            }
+            catch (Exception ex) {
+                EscribirLog("ERROR", $"No se pudieron leer los días con partidas: {ex.Message}");
+            }
+
+            _calendario.BoldedDates = conDatos;
+            _calendario.SetDate(dtpFecha.Value.Date);
+            _popupCalendario.Show(dtpFecha, new Point(0, dtpFecha.Height));
+            _calendario.Focus();
         }
 
         // Una sola carga a la vez: la del arranque, ÚLTIMO DÍA, el cambio de fecha o de pestaña

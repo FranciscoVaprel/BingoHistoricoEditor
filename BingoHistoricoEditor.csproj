@@ -10,6 +10,9 @@
     <AssemblyName>BingoHistoricoEditor</AssemblyName>
     <RootNamespace>BingoHistoricoEditor</RootNamespace>
     <Version>1.6.4</Version>
+    <!-- Icono del exe y de todas las ventanas (Program.PonerIconoEnVentanas).
+         Lo dibuja Instalador\Iconos\Crear-Icono.ps1 del repo de Gregal. -->
+    <ApplicationIcon>BingoHistoricoEditor.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>

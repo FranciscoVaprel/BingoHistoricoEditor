@@ -136,9 +136,17 @@ the designer or with care; put logic in the paired non-designer `.cs` partial):
   (`_cargando`/`_recargarAlTerminar`): rebinding with `DataSource = null` while another load (startup,
   date change, tab change) was in flight threw "Index was out of range" / "auto-filled column is being
   resized" and left blank rows — don't go back to that pattern.
-  Changing `dtpFecha` loads that day by itself (2026-11-06): not while its calendar is dropped down
-  (`DropDown`/`CloseUp`, loads on close if the day changed), and not for changes made from code —
-  set the date with `FijarFecha`, which suppresses `ValueChanged`, then load explicitly. The former
+  Changing `dtpFecha` loads that day by itself (2026-11-06), except for changes made from code —
+  set the date with `FijarFecha`, which suppresses `ValueChanged`, then load explicitly. Its native
+  drop-down calendar can't mark days, so `dtpFecha_DropDown` closes it (`DTM_CLOSEMONTHCAL`, via
+  `BeginInvoke`) and shows our own `MonthCalendar` in a `ToolStripDropDown`, with `BoldedDates` =
+  the days of the current tab's table (`ObtenerSesionesAsync`, re-read on every open); click/Enter
+  on a day loads it, changing month doesn't. `cmbSala` (created in code by `CrearSelectorSala`, in
+  place of the hidden `lblSalaConc`) lists the sala/conc pairs with rows in HISTORICO or the log table
+  (`ObtenerSalasAsync`) plus the configured one; picking one changes `_codSala`/`_codConc` for the
+  session only (not saved; saving ⚙ Configuración goes back to the configured one), bumps `_conexion`
+  and goes to its last day. Everything (load, edit, lote, log import/pass) uses `_codSala`/`_codConc`,
+  so it all follows the selected sala. The former
   BUSCAR button (`btnBuscar`, now "⏭ ÚLTIMO DÍA") runs `IrAlUltimoDiaAsync`: last `FECHA_SESION` of
   the current tab's table (`ObtenerUltimaFechaConDatosAsync(..., _tablaActual)`) and always reloads.
 - `MainForm` (cont.) — loads `HISTORICO` rows for a selected date/sala/concesionario into a grid,

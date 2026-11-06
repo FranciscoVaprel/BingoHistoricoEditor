@@ -89,7 +89,7 @@ namespace BingoHistoricoEditor {
             var info = new Label {
                 AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(0, 8, 0, 4), MaximumSize = new Size(900, 0),
                 Text = $"Se importan TODAS las partidas del log a la tabla {_tabla}, nunca a HISTORICO, como sala {_codSala} y " +
-                       $"concesionario {_codConc} (los de la configuración). Si la tabla no existe se crea con la misma estructura " +
+                       $"concesionario {_codConc} (los elegidos en la ventana principal). Si la tabla no existe se crea con la misma estructura " +
                        $"que HISTORICO. Una partida que ya esté en {_tabla} con la misma clave se sobrescribe. El fabricante decide " +
                        "cómo se interpretan algunos eventos (en MCB, A/M/p son ruido; en Metronia, premios).",
             };

@@ -269,7 +269,7 @@ namespace BingoHistoricoEditor {
             dtpFecha.Name = "dtpFecha";
             dtpFecha.Size = new Size(110, 26);
             dtpFecha.TabIndex = 1;
-            toolTip.SetToolTip(dtpFecha, "Al elegir una fecha se cargan sus partidas.");
+            toolTip.SetToolTip(dtpFecha, "Al elegir una fecha se cargan sus partidas. En el calendario, los días con partidas salen en negrita.");
             //
             // btnBuscar
             //

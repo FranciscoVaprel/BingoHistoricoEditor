@@ -16,6 +16,7 @@ namespace BingoHistoricoEditor {
         static void Main() {
             Configuration = CargarConfig();
             ApplicationConfiguration.Initialize();
+            PonerIconoEnVentanas();
 
             // Primer arranque: sin credenciales → mostrar setup
             string hashActual = Configuration["BingoSettings:AppPasswordHash"] ?? "";
@@ -40,6 +41,23 @@ namespace BingoHistoricoEditor {
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Todas las ventanas llevan el icono del exe (ApplicationIcon) en vez
+        /// del genérico de WinForms: se cambia el icono por defecto de Form, que
+        /// es privado (s_defaultIcon), en vez de ponerlo ventana a ventana. Si
+        /// una versión futura de WinForms lo renombra, simplemente se queda el
+        /// genérico.
+        /// </summary>
+        private static void PonerIconoEnVentanas() {
+            try {
+                var icono = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+                typeof(Form).GetField("s_defaultIcon",
+                        System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
+                    ?.SetValue(null, icono);
+            }
+            catch { }
+        }
 
         private static IConfigurationRoot CargarConfig() =>
             new ConfigurationBuilder()

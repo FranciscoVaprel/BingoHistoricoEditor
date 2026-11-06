@@ -6,6 +6,12 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ## 2026-11-06
 
+- **El calendario marca en negrita los días con partidas** de la pestaña que se esté viendo (HISTORICO o la del log), así se ve de un vistazo qué días se pueden cargar. El desplegable del selector de fecha de Windows no deja marcar días, así que se cierra al abrirse y sale en su lugar un calendario propio. Hacer clic en un día (o Intro) lo carga; pasar de mes no carga nada. Escribir la fecha a mano sigue funcionando igual.
+  - Probado con el programa de prueba sobre una copia de `AAMSLOG.FDB` (sala 29, 436 días): sale el calendario con los 436 días en negrita, abrirlo no carga y elegir un día lo carga.
+- **Selector de sala** bajo el título, donde estaba el texto "SALA: x | CONCESIONARIO: y": lista las salas/concesionarios que tienen partidas en HISTORICO o en la tabla del log, más la configurada (marcada "configurada"). Elegir otra la carga en su último día. Sirve para ver varias salas desde un mismo PC con una BD que tenga varias. El cambio vale hasta cerrar el programa: no se guarda, y al guardar ⚙ Configuración se vuelve a la configurada. Todo lo que se haga (editar, lote, importar el log, pasarlo a HISTORICO) es sobre la sala elegida.
+  - Probado sobre una copia de `AAMSLOG.FDB`: lista la sala 29/999 (configurada) y la 0/0, y al elegir la 0/0 carga su último día (24/04/2026, 2 partidas), todas de esa sala.
+- **Icono propio**: una bola de bingo naranja con una «H». Lo llevan el exe, todas las ventanas, el instalador y los accesos directos (también "Actualizar"). Para las ventanas se cambia el icono por defecto de `Form` en `Program.PonerIconoEnVentanas`, en vez de ponerlo ventana a ventana.
+
 - **Elegir una fecha ya carga sus partidas**, sin tener que pulsar nada. Con el calendario desplegado espera a que se cierre, para no cargar cada mes por el que se pasa. El botón BUSCAR, que ya no hacía falta, pasa a ser **"⏭ ÚLTIMO DÍA"**: va al último día con partidas de la pestaña que se esté viendo (HISTORICO o la del log) y las carga, aunque ya se esté en ese día (así se ven las que Gregal ha ido añadiendo hoy).
   - Probado con un programa de prueba que abre la `MainForm` real sobre una copia de `C:\DatosCV\AAMSLOG.FDB` (sala 29, 436 días): arranque en el último día, cambio de fecha, calendario abierto (no carga) y al cerrarlo (carga), un día sin partidas y el botón.
 

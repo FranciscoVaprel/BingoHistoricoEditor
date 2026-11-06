@@ -797,6 +797,24 @@ namespace BingoHistoricoEditor.Data {
             public int Huecos => Diferencias.Count(d => d.EsHueco);
         }
 
+        /// <summary>
+        /// Pares sala/concesionario con alguna partida en cualquiera de las
+        /// tablas (las que no existan se saltan), ordenados.
+        /// </summary>
+        public async Task<List<(int Sala, int Conc)>> ObtenerSalasAsync(params string[] tablas) {
+            var salas = new SortedSet<(int, int)>();
+            foreach (string t in tablas) {
+                string tabla = Gregal.Data.FilaHistorico.ValidarNombreTabla(t).ToUpperInvariant();
+                if ((await ObtenerColumnasAsync(tabla)).Count == 0) continue;
+                using var conn = new FbConnection(_cs);
+                using var cmd  = new FbCommand($"SELECT DISTINCT COD_SALA, COD_CONC FROM {tabla}", conn);
+                await conn.OpenAsync();
+                using var rd = await cmd.ExecuteReaderAsync();
+                while (await rd.ReadAsync()) salas.Add((Convert.ToInt32(rd.GetValue(0)), Convert.ToInt32(rd.GetValue(1))));
+            }
+            return salas.ToList();
+        }
+
         /// <summary>Días (FECHA_SESION) que hay en la tabla para la sala/concesionario, del más reciente al más antiguo.</summary>
         public async Task<List<(DateTime Fecha, int Partidas)>> ObtenerSesionesAsync(string tabla, int codSala, int codConc) {
             tabla = Gregal.Data.FilaHistorico.ValidarNombreTabla(tabla).ToUpperInvariant();
