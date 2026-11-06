@@ -269,19 +269,19 @@ namespace BingoHistoricoEditor {
             dtpFecha.Name = "dtpFecha";
             dtpFecha.Size = new Size(110, 26);
             dtpFecha.TabIndex = 1;
-            toolTip.SetToolTip(dtpFecha, "Selecciona la fecha para filtrar partidas.");
+            toolTip.SetToolTip(dtpFecha, "Al elegir una fecha se cargan sus partidas.");
             //
             // btnBuscar
             //
             btnBuscar.Anchor = AnchorStyles.None;
             btnBuscar.FlatStyle = FlatStyle.Standard;
             btnBuscar.ForeColor = SystemColors.ControlText;
-            btnBuscar.Location = new Point(939, 19);
+            btnBuscar.Location = new Point(934, 19);
             btnBuscar.Name = "btnBuscar";
-            btnBuscar.Size = new Size(120, 35);
+            btnBuscar.Size = new Size(140, 35);
             btnBuscar.TabIndex = 2;
-            btnBuscar.Text = "🔍 BUSCAR";
-            toolTip.SetToolTip(btnBuscar, "Buscar partidas por la fecha seleccionada.");
+            btnBuscar.Text = "⏭ ÚLTIMO DÍA";
+            toolTip.SetToolTip(btnBuscar, "Ir al último día con partidas y cargarlas. Al elegir una fecha, sus partidas se cargan solas.");
             btnBuscar.UseVisualStyleBackColor = true;
             btnBuscar.Click += btnBuscar_Click;
             //

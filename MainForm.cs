@@ -47,14 +47,18 @@ namespace BingoHistoricoEditor {
             if (btnAuditoria != null) btnAuditoria.Visible = _esAdmin;
 
             // Suscribir a eventos después de que InitializeComponent() ha creado todos los controles
-            if (dtpFecha != null) dtpFecha.ValueChanged += dtpFecha_ValueChanged;
+            if (dtpFecha != null) {
+                dtpFecha.ValueChanged += dtpFecha_ValueChanged;
+                dtpFecha.DropDown += dtpFecha_DropDown;
+                dtpFecha.CloseUp += dtpFecha_CloseUp;
+            }
             this.FormClosed += (s, e) => BingoHistoricoEditor.Services.LogService.Close();
         }
 
         protected override async void OnLoad(EventArgs e) {
             base.OnLoad(e);
 
-            dtpFecha.Value = DateTime.Today;
+            FijarFecha(DateTime.Today);
             await ConectarAsync();
         }
 
@@ -93,21 +97,7 @@ namespace BingoHistoricoEditor {
                 }
 
                 // Cargar por defecto el último día con partidas registradas
-                try {
-                    DateTime? ultimaFecha = await _db.ObtenerUltimaFechaConDatosAsync(_codSala, _codConc);
-                    if (ultimaFecha.HasValue) {
-                        dtpFecha.Value = ultimaFecha.Value.Date;
-                        EscribirLog("SISTEMA", $"Último día con datos: {ultimaFecha.Value:yyyy-MM-dd}.");
-                    }
-                    else {
-                        EscribirLog("SISTEMA", "No hay partidas registradas todavía; se muestra la fecha de hoy.");
-                    }
-                }
-                catch (Exception ex) {
-                    EscribirLog("ERROR", $"No se pudo determinar el último día con datos: {ex.Message}");
-                }
-
-                await CargarPartidasAsync();
+                await IrAlUltimoDiaAsync();
             }
             else {
                 // Sin conexión no se dejan a la vista las partidas de la BD anterior.
@@ -203,9 +193,59 @@ namespace BingoHistoricoEditor {
             }
         }
 
-        private async void btnBuscar_Click(object sender, EventArgs e) => await CargarPartidasAsync();
+        // El antiguo BUSCAR: elegir la fecha ya carga sus partidas, así que el
+        // botón lleva al último día con partidas (y recarga, aunque ya se esté
+        // en ese día: es donde Gregal va añadiendo las de hoy).
+        private async void btnBuscar_Click(object sender, EventArgs e) => await IrAlUltimoDiaAsync();
 
-        // Una sola carga a la vez: la del arranque, BUSCAR, el cambio de pestaña
+        private async Task IrAlUltimoDiaAsync() {
+            try {
+                DateTime? ultimaFecha = await _db.ObtenerUltimaFechaConDatosAsync(_codSala, _codConc, _tablaActual);
+                if (ultimaFecha.HasValue) {
+                    FijarFecha(ultimaFecha.Value.Date);
+                    EscribirLog("SISTEMA", $"Último día con datos: {ultimaFecha.Value:yyyy-MM-dd}.");
+                }
+                else {
+                    EscribirLog("SISTEMA", $"{_tablaActual} no tiene partidas de esta sala todavía.");
+                }
+            }
+            catch (Exception ex) {
+                EscribirLog("ERROR", $"No se pudo determinar el último día con datos: {ex.Message}");
+            }
+
+            await CargarPartidasAsync();
+        }
+
+        // Cambiar la fecha carga sus partidas. Los cambios hechos desde el
+        // código (FijarFecha) cargan por su cuenta, y con el calendario
+        // desplegado se espera a que se cierre, para no cargar cada mes por el
+        // que se pase.
+        private bool _fijandoFecha;
+        private bool _calendarioAbierto;
+        private DateTime _fechaAlAbrirCalendario;
+
+        private void FijarFecha(DateTime fecha) {
+            _fijandoFecha = true;
+            try { dtpFecha.Value = fecha; }
+            finally { _fijandoFecha = false; }
+        }
+
+        private async void dtpFecha_ValueChanged(object? sender, EventArgs e) {
+            if (_fijandoFecha || _calendarioAbierto) return;
+            await CargarPartidasAsync();
+        }
+
+        private void dtpFecha_DropDown(object? sender, EventArgs e) {
+            _calendarioAbierto = true;
+            _fechaAlAbrirCalendario = dtpFecha.Value.Date;
+        }
+
+        private async void dtpFecha_CloseUp(object? sender, EventArgs e) {
+            _calendarioAbierto = false;
+            if (dtpFecha.Value.Date != _fechaAlAbrirCalendario) await CargarPartidasAsync();
+        }
+
+        // Una sola carga a la vez: la del arranque, ÚLTIMO DÍA, el cambio de fecha o de pestaña
         // o el final de una importación pueden coincidir. Si llega una petición
         // con otra en curso, se repite la carga al acabar (con la fecha y la
         // tabla de ese momento) en vez de llenar la rejilla dos veces a la vez.
@@ -683,10 +723,6 @@ namespace BingoHistoricoEditor {
             }
         }
 
-        private void dtpFecha_ValueChanged(object sender, EventArgs e) {
-            //AsignarLimitesPartidasLote();
-        }
-
         private void AsignarLimitesPartidasLote() {
             // Aseguramos que los labels tengan color claro para que no se vuelvan invisibles con el fondo oscuro
             if (lblIni != null) lblIni.ForeColor = System.Drawing.Color.LightGray;
@@ -820,7 +856,7 @@ namespace BingoHistoricoEditor {
             if (importada == null) return;
 
             // Enseñar lo importado: pestaña del log, en el último día importado.
-            dtpFecha.Value = importada.Value;
+            FijarFecha(importada.Value);
             if (tabTablas.SelectedTab == tabPageLog) await CargarPartidasAsync();
             else tabTablas.SelectedTab = tabPageLog;   // tabTablas_SelectedIndexChanged recarga
         }

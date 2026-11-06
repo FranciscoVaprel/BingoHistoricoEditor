@@ -4,6 +4,11 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ---
 
+## 2026-11-06
+
+- **Elegir una fecha ya carga sus partidas**, sin tener que pulsar nada. Con el calendario desplegado espera a que se cierre, para no cargar cada mes por el que se pasa. El botón BUSCAR, que ya no hacía falta, pasa a ser **"⏭ ÚLTIMO DÍA"**: va al último día con partidas de la pestaña que se esté viendo (HISTORICO o la del log) y las carga, aunque ya se esté en ese día (así se ven las que Gregal ha ido añadiendo hoy).
+  - Probado con un programa de prueba que abre la `MainForm` real sobre una copia de `C:\DatosCV\AAMSLOG.FDB` (sala 29, 436 días): arranque en el último día, cambio de fecha, calendario abierto (no carga) y al cerrarlo (carga), un día sin partidas y el botón.
+
 ## 2026-11-04
 
 - **Actualizar con un clic**: el instalador deja en el escritorio "Actualizar Bingo Histórico Editor". Mira en GitHub si hay una versión más nueva que la instalada, enseña sus cambios y, si se acepta, cierra la aplicación (como con la X, así que avisa si hay cambios sin guardar), descarga el instalador, lo ejecuta en silencio y vuelve a abrirla. Conserva la configuración, los usuarios, los logs y la BD local, como cualquier actualización. No pide administrador. Antes había que entrar en GitHub desde cada PC, descargar y ejecutar el instalador a mano.

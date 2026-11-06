@@ -16,7 +16,7 @@
 ; IMPORTANTE: si cambias el número de versión, actualiza MyAppVersion aquí Y
 ; <Version> en BingoHistoricoEditor.csproj para que coincidan.
 
-#define MyAppVersion "1.6.3"
+#define MyAppVersion "1.6.4"
 #define MyAppPublisher "Vaprel"
 #define MyAppExeName "BingoHistoricoEditor.exe"
 #define MyPublishDir "..\bin\Release\net10.0-windows\publish\win-x64"

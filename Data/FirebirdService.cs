@@ -135,11 +135,14 @@ namespace BingoHistoricoEditor.Data {
 
         /// <summary>
         /// Devuelve la fecha de sesión más reciente con partidas registradas para
-        /// la sala/concesionario indicados, o null si todavía no hay ninguna.
+        /// la sala/concesionario indicados, o null si todavía no hay ninguna
+        /// (o la tabla del log aún no existe).
         /// </summary>
-        public async Task<DateTime?> ObtenerUltimaFechaConDatosAsync(int codSala, int codConc) {
-            const string sql = @"SELECT MAX(FECHA_SESION) FROM HISTORICO
-                                   WHERE COD_SALA=@sala AND COD_CONC=@conc";
+        public async Task<DateTime?> ObtenerUltimaFechaConDatosAsync(int codSala, int codConc, string tabla = "HISTORICO") {
+            tabla = Gregal.Data.FilaHistorico.ValidarNombreTabla(tabla).ToUpperInvariant();
+            if (tabla != "HISTORICO" && (await ObtenerColumnasAsync(tabla)).Count == 0) return null;
+            string sql = $@"SELECT MAX(FECHA_SESION) FROM {tabla}
+                             WHERE COD_SALA=@sala AND COD_CONC=@conc";
             try {
                 using var conn = new FbConnection(_cs);
                 using var cmd  = new FbCommand(sql, conn);

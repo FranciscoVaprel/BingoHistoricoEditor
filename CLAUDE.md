@@ -134,8 +134,13 @@ the designer or with care; put logic in the paired non-designer `.cs` partial):
   After an import the screen jumps to that tab and day (`ImportarLogForm.UltimaSesionImportada`).
   The grid is bound once to a fixed `BindingSource` (`_bsPartidas`) and loads are serialized
   (`_cargando`/`_recargarAlTerminar`): rebinding with `DataSource = null` while another load (startup,
-  BUSCAR, tab change) was in flight threw "Index was out of range" / "auto-filled column is being
+  date change, tab change) was in flight threw "Index was out of range" / "auto-filled column is being
   resized" and left blank rows — don't go back to that pattern.
+  Changing `dtpFecha` loads that day by itself (2026-11-06): not while its calendar is dropped down
+  (`DropDown`/`CloseUp`, loads on close if the day changed), and not for changes made from code —
+  set the date with `FijarFecha`, which suppresses `ValueChanged`, then load explicitly. The former
+  BUSCAR button (`btnBuscar`, now "⏭ ÚLTIMO DÍA") runs `IrAlUltimoDiaAsync`: last `FECHA_SESION` of
+  the current tab's table (`ObtenerUltimaFechaConDatosAsync(..., _tablaActual)`) and always reloads.
 - `MainForm` (cont.) — loads `HISTORICO` rows for a selected date/sala/concesionario into a grid,
   supports single-record edit/save/delete and batch (lote) operations over a `PARTIDA_DIA` range
   (search for gaps, batch save, batch delete), backed by `nudPartidaInicial`/`nudPartidaFinal`.
