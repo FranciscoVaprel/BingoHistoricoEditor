@@ -66,6 +66,13 @@ namespace BingoHistoricoEditor {
                 lblTitulo, _lstUsuarios, _lblInfo,
                 _btnAnadir, _btnCambiarPass, _btnEliminar, _btnCerrar
             });
+
+            var ayuda = new ToolTip { AutoPopDelay = 15000 };
+            ayuda.SetToolTip(_lstUsuarios, "Usuarios que pueden entrar en el programa. Elige uno para cambiar su contraseña o eliminarlo.");
+            ayuda.SetToolTip(_btnAnadir, "Crea un usuario nuevo. Antes pide el usuario y la contraseña de alguien que ya tenga acceso.");
+            ayuda.SetToolTip(_btnCambiarPass, "Cambia la contraseña del usuario elegido en la lista. Pide antes confirmar tu identidad.");
+            ayuda.SetToolTip(_btnEliminar, "Elimina el usuario elegido en la lista. Siempre tiene que quedar al menos uno.");
+            ayuda.SetToolTip(_btnCerrar, "Cierra la ventana.");
         }
 
         private static Button Boton(string texto, Point loc, Size size) {
@@ -204,6 +211,11 @@ namespace BingoHistoricoEditor {
             btnOk.Click += (_, _) => Guardar();
 
             Controls.AddRange(new Control[] { lbl1, _txtNueva, lbl2, _txtRepetir, _lblErr, btnOk });
+
+            var ayuda = new ToolTip { AutoPopDelay = 15000 };
+            ayuda.SetToolTip(_txtNueva, "Contraseña nueva, de al menos 4 caracteres.");
+            ayuda.SetToolTip(_txtRepetir, "Escribe otra vez la contraseña nueva, para evitar errores.");
+            ayuda.SetToolTip(btnOk, "Guarda la contraseña nueva.");
         }
 
         private void Guardar() {

@@ -87,7 +87,7 @@ namespace BingoHistoricoEditor {
             tlp.Controls.Add(_cmbFabricante, 1, 1);
 
             var info = new Label {
-                AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(0, 8, 0, 4), MaximumSize = new Size(900, 0),
+                AutoSize = true, ForeColor = SystemColors.GrayText, Margin = new Padding(0, 8, 0, 4),
                 Text = $"Se importan TODAS las partidas del log a la tabla {_tabla}, nunca a HISTORICO, como sala {_codSala} y " +
                        $"concesionario {_codConc} (los elegidos en la ventana principal). Si la tabla no existe se crea con la misma estructura " +
                        $"que HISTORICO. Una partida que ya esté en {_tabla} con la misma clave se sobrescribe. El fabricante decide " +
@@ -95,6 +95,9 @@ namespace BingoHistoricoEditor {
             };
             tlp.Controls.Add(info, 0, 2);
             tlp.SetColumnSpan(info, 3);
+            // El texto se parte al ancho de la ventana, también al estrecharla.
+            void AjustarInfo() => info.MaximumSize = new Size(Math.Max(200, ClientSize.Width - tlp.Padding.Horizontal - 4), 0);
+            Resize += (_, _) => AjustarInfo();
 
             _txtResultado = new TextBox {
                 Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Both, WordWrap = false, Dock = DockStyle.Fill,
@@ -120,10 +123,21 @@ namespace BingoHistoricoEditor {
             Controls.Add(flp);
             FormClosing += (_, e) => { if (!_btnCerrar.Enabled) e.Cancel = true; };   // importando: esperar
             ActualizarBotones();
+            AjustarInfo();
+
+            var ayuda = new ToolTip { AutoPopDelay = 15000 };
+            ayuda.SetToolTip(_txtRuta, "Log de Gregal que se va a importar. Elígelo con Examinar…");
+            ayuda.SetToolTip(_btnExaminar, "Buscar el log: en la carpeta logs junto a Gregal.exe, ficheros gregal<AAAAMMDD>.log.");
+            ayuda.SetToolTip(_cmbFabricante, "Fabricante del sistema de bingo de la sala: cambia cómo se leen algunos eventos del log.");
+            ayuda.SetToolTip(_txtResultado, "Aquí sale el resumen de la importación: partidas leídas, guardadas y avisos.");
+            ayuda.SetToolTip(_btnImportar, $"Lee el log y guarda sus partidas en {_tabla} (no toca HISTORICO).");
+            ayuda.SetToolTip(_btnCerrar, "Cierra la ventana.");
         }
 
+        // Ancho mínimo; si el texto no cabe (letra más grande), el botón crece.
         private static Button CrearBoton(string texto, int ancho) => new() {
-            Text = texto, Size = new Size(ancho, 32), FlatStyle = FlatStyle.Standard,
+            Text = texto, Size = new Size(ancho, 32), MinimumSize = new Size(ancho, 32),
+            AutoSize = true, AutoSizeMode = AutoSizeMode.GrowOnly, FlatStyle = FlatStyle.Standard,
             ForeColor = SystemColors.ControlText, UseVisualStyleBackColor = true, Cursor = Cursors.Hand,
         };
 

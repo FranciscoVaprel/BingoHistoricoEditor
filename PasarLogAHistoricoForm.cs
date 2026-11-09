@@ -116,8 +116,14 @@ namespace BingoHistoricoEditor {
             split.Panel2.Controls.Add(_lblDetalle);
             Shown += (_, _) => split.SplitterDistance = (int)(split.Height * 0.55);
 
-            var pnlAbajo = new Panel { Dock = DockStyle.Bottom, Height = 50 };
-            _lblResumen = new Label { AutoSize = true, Location = new Point(10, 17) };
+            var pnlAbajo = new Panel { Dock = DockStyle.Bottom, Height = 76 };
+            // En su propia línea, encima de los botones y a todo el ancho: antes
+            // compartía la línea con ellos y un resumen largo se metía debajo.
+            // Si aun así no cabe, acaba en "…" con el texto entero al pasar el ratón.
+            _lblResumen = new Label {
+                Dock = DockStyle.Top, Height = 28, AutoSize = false, AutoEllipsis = true,
+                TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(10, 6, 8, 0),
+            };
             _btnMarcarFaltan = CrearBoton("Marcar las que faltan", 160);
             _btnMarcarFaltan.Click += (_, _) => Marcar(c => c.Estado == EstadoComparacion.FaltaEnHistorico && Dudosa(c) == null);
             _btnDesmarcar = CrearBoton("Desmarcar todo", 120);
@@ -131,17 +137,32 @@ namespace BingoHistoricoEditor {
                 Dock = DockStyle.Right, AutoSize = true, WrapContents = false, Padding = new Padding(0, 8, 8, 0),
             };
             flpBotones.Controls.AddRange(new Control[] { _btnMarcarFaltan, _btnDesmarcar, _btnPasar, _btnCerrar });
-            pnlAbajo.Controls.Add(_lblResumen);
+            // El último añadido se acopla primero: la línea del resumen arriba,
+            // los botones en lo que queda.
             pnlAbajo.Controls.Add(flpBotones);
+            pnlAbajo.Controls.Add(_lblResumen);
 
             Controls.Add(split);
             Controls.Add(flpArriba);
             Controls.Add(pnlAbajo);
             FormClosing += (_, e) => { if (!_btnCerrar.Enabled) e.Cancel = true; };   // trabajando: esperar
+
+            var ayuda = new ToolTip { AutoPopDelay = 15000 };
+            ayuda.SetToolTip(_cmbSesion, $"Día de {_tabla} que se compara con HISTORICO. Al cambiarlo se compara solo.");
+            ayuda.SetToolTip(_btnComparar, "Vuelve a comparar el día elegido (por si HISTORICO ha cambiado mientras tanto).");
+            ayuda.SetToolTip(_btnMarcarFaltan, "Marca las partidas que están en el log y no en HISTORICO, salvo las dudosas (⚠ en Notas).");
+            ayuda.SetToolTip(_btnDesmarcar, "Quita todas las marcas de la columna Pasar.");
+            ayuda.SetToolTip(_btnPasar, "Copia a HISTORICO las partidas marcadas, después de pedir confirmación.");
+            ayuda.SetToolTip(_btnCerrar, "Cierra la ventana sin pasar nada más.");
+            _grid.Columns[ColPasar].ToolTipText = "Marca las partidas que quieres copiar a HISTORICO.";
+            _grid.Columns[ColPasar + 2].ToolTipText = "Cómo está la partida del log respecto a HISTORICO.";
+            _gridDetalle.Columns[0].ToolTipText = "Campos de la partida elegida arriba, con su valor en cada tabla.";
         }
 
+        // Ancho mínimo; si el texto no cabe (letra más grande), el botón crece.
         private static Button CrearBoton(string texto, int ancho) => new() {
-            Text = texto, Size = new Size(ancho, 32), FlatStyle = FlatStyle.Standard,
+            Text = texto, Size = new Size(ancho, 32), MinimumSize = new Size(ancho, 32),
+            AutoSize = true, AutoSizeMode = AutoSizeMode.GrowOnly, FlatStyle = FlatStyle.Standard,
             ForeColor = SystemColors.ControlText, UseVisualStyleBackColor = true, Cursor = Cursors.Hand,
         };
 

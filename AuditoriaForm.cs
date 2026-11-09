@@ -65,6 +65,11 @@ namespace BingoHistoricoEditor {
 
             pnlBottom.Controls.AddRange(new Control[] { _btnRefrescar, _btnCerrar, _lblInfo });
 
+            var ayuda = new ToolTip { AutoPopDelay = 15000 };
+            ayuda.SetToolTip(_btnRefrescar, "Vuelve a leer las últimas operaciones de la base de datos.");
+            ayuda.SetToolTip(_btnCerrar, "Cierra la ventana.");
+            ayuda.SetToolTip(_grid, "Últimas operaciones hechas con el programa: quién, cuándo y qué cambió.");
+
             Controls.Add(_grid);
             Controls.Add(pnlBottom);
         }

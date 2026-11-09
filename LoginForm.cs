@@ -17,6 +17,14 @@ namespace BingoHistoricoEditor {
             UserStore.AsegurarAdminExiste();
 
             InitializeComponent();
+
+            var ayuda = new ToolTip { AutoPopDelay = 15000 };
+            ayuda.SetToolTip(txtUsuario, "Tu usuario del programa (no el de Windows ni el de la base de datos).");
+            ayuda.SetToolTip(txtPassword, "Tu contraseña. Intro para entrar.");
+            ayuda.SetToolTip(btnEntrar, "Entrar en el programa.");
+            ayuda.SetToolTip(btnGestionar, "Añadir o eliminar usuarios y cambiar contraseñas. Pide el usuario y la contraseña de alguien con acceso.");
+            ayuda.SetToolTip(btnCerrar, "Salir sin entrar.");
+            ayuda.SetToolTip(lnkRestablecer, "Solo si nadie recuerda su contraseña: borra todos los usuarios y deja crear un administrador nuevo.");
         }
 
         protected override void OnLoad(EventArgs e) {
@@ -176,6 +184,11 @@ namespace BingoHistoricoEditor {
             _txtPass.KeyDown += (_, e) => { if (e.KeyCode == Keys.Enter) { e.SuppressKeyPress = true; Verificar(); } };
 
             Controls.AddRange(new Control[] { lbl1, lbl2, lbl3, _txtUser, _txtPass, _lblErr, btnOk });
+
+            var ayuda = new ToolTip { AutoPopDelay = 15000 };
+            ayuda.SetToolTip(_txtUser, "Usuario de alguien que ya tenga acceso al programa.");
+            ayuda.SetToolTip(_txtPass, "Su contraseña.");
+            ayuda.SetToolTip(btnOk, "Comprueba el usuario y la contraseña para seguir.");
         }
 
         private void Verificar() {
@@ -249,6 +262,11 @@ namespace BingoHistoricoEditor {
             btnCancelar.Click += (_, _) => { DialogResult = DialogResult.Cancel; Close(); };
 
             Controls.AddRange(new Control[] { lblAviso, lblInstruccion, _txtConfirmar, _btnConfirmar, btnCancelar });
+
+            var ayuda = new ToolTip { AutoPopDelay = 15000 };
+            ayuda.SetToolTip(_txtConfirmar, "Escribe ELIMINAR para activar el botón de abajo.");
+            ayuda.SetToolTip(_btnConfirmar, "Borra todos los usuarios. Al volver a abrir el programa se crea un administrador nuevo.");
+            ayuda.SetToolTip(btnCancelar, "No borra nada.");
         }
     }
 }

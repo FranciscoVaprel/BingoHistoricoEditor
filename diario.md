@@ -4,6 +4,15 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ---
 
+## 2026-11-09
+
+- **Textos que se cortaban en las ventanas de "⇩ LOG DE GREGAL"**:
+  - En "Pasar a HISTORICO", el resumen del pie (p. ej. "No hay partidas de la sala… Importa antes un log de Gregal.") compartía línea con los botones y se metía debajo de ellos. Ahora va en su propia línea, encima, a todo el ancho; si aun así no cabe, acaba en "…" y muestra el texto entero al pasar el ratón. En la ficha de partida, el contador de cambios del pie se ajusta igual al espacio que dejan los botones.
+  - En "Importar log", la explicación tenía un ancho fijo de 900 px: con la ventana más estrecha se cortaba por la derecha. Ahora se parte al ancho de la ventana.
+  - Los botones de esas ventanas y de la ficha tienen un ancho mínimo, pero crecen si su texto no cabe (letra más grande en pantallas al 125 % o 150 %).
+  - Probado con las dos ventanas a su tamaño normal y a su tamaño mínimo.
+- **Tooltips** con una explicación breve en los controles que no tenían: login, verificar identidad, restablecer administrador, crear usuario, gestión de usuarios, cambiar contraseña, Configuración (Guardar/Cancelar), Auditoría, Importar log, Pasar a HISTORICO (también en las cabeceras Pasar y Estado), la ficha (buscar, filtros, Cerrar) y la ventana principal (registro, tabla de partidas, estado de conexión y las pestañas).
+
 ## 2026-11-06
 
 - **El calendario marca en negrita los días con partidas** de la pestaña que se esté viendo (HISTORICO o la del log), así se ve de un vistazo qué días se pueden cargar. El desplegable del selector de fecha de Windows no deja marcar días, así que se cierra al abrirse y sale en su lugar un calendario propio. Hacer clic en un día (o Intro) lo carga; pasar de mes no carga nada. Escribir la fecha a mano sigue funcionando igual.

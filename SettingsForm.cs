@@ -9,6 +9,8 @@ namespace BingoHistoricoEditor {
 
         public SettingsForm(IConfiguration config) {
             InitializeComponent();
+            toolTip.SetToolTip(btnGuardar, "Guarda la configuración y la aplica sin reiniciar el programa.");
+            toolTip.SetToolTip(btnCancelar, "Cierra sin guardar nada.");
             _config = config;
             CargarValoresActuales();
         }

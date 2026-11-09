@@ -53,6 +53,21 @@ namespace BingoHistoricoEditor {
             }
             this.FormClosed += (s, e) => BingoHistoricoEditor.Services.LogService.Close();
             CrearSelectorSala();
+            PonerAyudas();
+        }
+
+        // Tooltips de los controles que no los traen del diseñador.
+        private void PonerAyudas() {
+            toolTip.AutoPopDelay = 15000;
+            toolTip.SetToolTip(txtLog, "Registro de lo que va haciendo el programa en esta sesión: cargas, cambios y errores.");
+            toolTip.SetToolTip(grid, "Partidas del día. Elige una para editarla a la derecha; con Mayús o Ctrl, varias para el lote.");
+            toolTip.SetToolTip(lblEstado, "Si el programa está conectado a la base de datos.");
+            tabControlEdicion.ShowToolTips = true;
+            tabIndividual.ToolTipText = "Editar, crear o borrar una sola partida.";
+            tabLote.ToolTipText = "Crear, cambiar o borrar varias partidas seguidas de una vez.";
+            tabTablas.ShowToolTips = true;
+            tabPageHistorico.ToolTipText = "Las partidas reales del bingo.";
+            tabPageLog.ToolTipText = "Partidas importadas de un log de Gregal. Solo consulta: para llevarlas a HISTORICO, ⇩ LOG DE GREGAL.";
         }
 
         // ── Selector de sala ──────────────────────────────────────────────────

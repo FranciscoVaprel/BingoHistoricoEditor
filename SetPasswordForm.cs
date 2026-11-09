@@ -14,6 +14,15 @@ namespace BingoHistoricoEditor {
         public SetPasswordForm(bool primerArranque = false) {
             _primerArranque = primerArranque;
             InitializeComponent();
+
+            var ayuda = new ToolTip { AutoPopDelay = 15000 };
+            ayuda.SetToolTip(txtUsuario, "Nombre con el que se entrará en el programa (al menos 2 caracteres).");
+            ayuda.SetToolTip(txtNueva, "Contraseña de al menos 4 caracteres.");
+            ayuda.SetToolTip(txtRepetir, "Escribe otra vez la contraseña, para evitar errores.");
+            ayuda.SetToolTip(chkAdmin, "Un administrador puede, además, ver el registro de auditoría.");
+            ayuda.SetToolTip(btnAceptar, "Crear el usuario.");
+            ayuda.SetToolTip(btnCancelar, "No crear nada.");
+
             if (primerArranque) {
                 lblTitulo.Text    = "Primera ejecución";
                 lblSubtitulo.Text = "Crea las credenciales de acceso a la aplicación.";

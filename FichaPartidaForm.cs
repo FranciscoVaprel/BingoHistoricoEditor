@@ -149,7 +149,10 @@ namespace BingoHistoricoEditor {
 
             // Botones.
             var pnlAbajo = new Panel { Dock = DockStyle.Bottom, Height = 48 };
-            _lblCambios = new Label { AutoSize = true, Location = new Point(10, 16) };
+            _lblCambios = new Label {
+                Dock = DockStyle.Fill, AutoSize = false, AutoEllipsis = true,
+                TextAlign = ContentAlignment.MiddleLeft, Padding = new Padding(10, 6, 8, 0),
+            };
             _btnCerrar = CrearBoton("Cerrar", 100);
             _btnCerrar.Click += (_, _) => Close();
             _btnGuardar = CrearBoton("💾 Guardar", 120);
@@ -158,6 +161,9 @@ namespace BingoHistoricoEditor {
             _btnDeshacer.Click += (_, _) => DeshacerTodo();
             _ayuda.SetToolTip(_btnDeshacer, "Vuelve a poner en todos los campos el valor que tienen en la base de datos.");
             _ayuda.SetToolTip(_btnGuardar, "Guarda solo los campos modificados, después de mostrar un resumen para confirmar.");
+            _ayuda.SetToolTip(_btnCerrar, "Cierra la ficha. Si hay cambios sin guardar, pregunta antes.");
+            _ayuda.SetToolTip(_txtBuscar, "Escribe parte del nombre o de la descripción de un campo para ver solo esos.");
+            _ayuda.SetToolTip(_chkSoloModificados, "Muestra solo los campos que has cambiado y aún no has guardado.");
             var flpBotones = new FlowLayoutPanel {
                 Dock = DockStyle.Right, AutoSize = true, FlowDirection = FlowDirection.LeftToRight,
                 Padding = new Padding(0, 7, 6, 0), WrapContents = false,
@@ -177,8 +183,10 @@ namespace BingoHistoricoEditor {
             ResumeLayout(true);
         }
 
+        // Ancho mínimo; si el texto no cabe (letra más grande), el botón crece.
         private static Button CrearBoton(string texto, int ancho) => new() {
-            Text = texto, Size = new Size(ancho, 32), FlatStyle = FlatStyle.Standard,
+            Text = texto, Size = new Size(ancho, 32), MinimumSize = new Size(ancho, 32),
+            AutoSize = true, AutoSizeMode = AutoSizeMode.GrowOnly, FlatStyle = FlatStyle.Standard,
             ForeColor = SystemColors.ControlText, UseVisualStyleBackColor = true, Cursor = Cursors.Hand,
         };
 
@@ -267,6 +275,7 @@ namespace BingoHistoricoEditor {
 
             _chkSoloConValor = new CheckBox { Text = "Solo con valor (distinto de 0 y de vacío)", AutoSize = true, Margin = new Padding(3, 5, 3, 3) };
             _chkSoloConValor.CheckedChanged += (_, _) => AplicarFiltro();
+            _ayuda.SetToolTip(_chkSoloConValor, "Oculta los premios a 0 o vacíos, para ver solo los que tienen importe.");
             var flpPremios = new FlowLayoutPanel { Dock = DockStyle.Top, AutoSize = true, Padding = new Padding(4, 4, 4, 2) };
             flpPremios.Controls.Add(_chkSoloConValor);
             flpPremios.Controls.Add(new Label {
