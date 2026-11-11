@@ -201,11 +201,11 @@ namespace BingoHistoricoEditor {
             //
             tlpHeader.ColumnCount = 6;
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120F));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160F));
             tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 170F));
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
-            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 150F));
+            tlpHeader.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 130F));
             tlpHeader.Controls.Add(pnlTextos, 0, 0);
             tlpHeader.Controls.Add(dtpFecha, 1, 0);
             tlpHeader.Controls.Add(btnBuscar, 2, 0);
@@ -215,7 +215,7 @@ namespace BingoHistoricoEditor {
             tlpHeader.Dock = DockStyle.Fill;
             tlpHeader.Location = new Point(0, 0);
             tlpHeader.Name = "tlpHeader";
-            tlpHeader.Padding = new Padding(20, 0, 20, 0);
+            tlpHeader.Padding = new Padding(12, 0, 12, 0);
             tlpHeader.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
             tlpHeader.Size = new Size(1244, 74);
             tlpHeader.TabIndex = 0;
@@ -225,6 +225,7 @@ namespace BingoHistoricoEditor {
             pnlTextos.Controls.Add(lblTitulo);
             pnlTextos.Controls.Add(lblSalaConc);
             pnlTextos.Controls.Add(lblEstado);
+            pnlTextos.Dock = DockStyle.Fill;
             pnlTextos.Location = new Point(23, 3);
             pnlTextos.Name = "pnlTextos";
             pnlTextos.Size = new Size(539, 68);
@@ -253,13 +254,13 @@ namespace BingoHistoricoEditor {
             //
             // lblEstado
             //
-            lblEstado.AutoSize = true;
+            // Posición, ancho y texto: MainForm.AjustarEstado.
             lblEstado.ForeColor = Color.DarkOrange;
             lblEstado.Location = new Point(220, 45);
             lblEstado.Name = "lblEstado";
-            lblEstado.Size = new Size(143, 19);
+            lblEstado.Size = new Size(319, 19);
             lblEstado.TabIndex = 2;
-            lblEstado.Text = "Estado: Desconectado";
+            lblEstado.Text = "Desconectado";
             //
             // dtpFecha
             //
@@ -884,6 +885,7 @@ namespace BingoHistoricoEditor {
             //
             BackColor = SystemColors.Control;
             ClientSize = new Size(1250, 750);
+            MinimumSize = new Size(1024, 768);
             Controls.Add(tlpMain);
             Name = "MainForm";
             Text = "Bingo Histórico - Editor";

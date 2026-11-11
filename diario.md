@@ -4,6 +4,14 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ---
 
+## 2026-11-11
+
+- **Ventana principal: tamaño mínimo 1024×768.** Antes se podía encoger sin límite (abre a 1266×789, como siempre). A 1024 de ancho el título y el selector de sala se cortaban, así que la cabecera se ha compactado:
+  - Columnas de los botones algo más estrechas, menos margen a los lados, y la columna de 🛡 AUDITORÍA no ocupa sitio si el usuario no es administrador.
+  - El selector de sala se ensancha lo justo para que se lea entero (antes cortaba «(configurada)»).
+  - El estado de la conexión pierde el prefijo «Estado:» y va a la derecha del selector; si no cabe (administrador con la ventana al mínimo), queda un punto ● de su color y el texto sale al pasar el ratón.
+  - Probado a 1024×768 con y sin el botón de auditoría.
+
 ## 2026-11-09
 
 - **Textos que se cortaban en las ventanas de "⇩ LOG DE GREGAL"**:

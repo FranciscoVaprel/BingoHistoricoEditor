@@ -44,7 +44,9 @@ namespace BingoHistoricoEditor {
             tabPageLog.Text = $"{TablaImportacionLog.ToUpperInvariant()} (importado del log)";
 
             // La auditoría solo la puede abrir un administrador.
+            // Sin el botón, su columna no ocupa sitio (deja más para el título).
             if (btnAuditoria != null) btnAuditoria.Visible = _esAdmin;
+            if (!_esAdmin) tlpHeader.ColumnStyles[4].Width = 0;
 
             // Suscribir a eventos después de que InitializeComponent() ha creado todos los controles
             if (dtpFecha != null) {
@@ -61,7 +63,6 @@ namespace BingoHistoricoEditor {
             toolTip.AutoPopDelay = 15000;
             toolTip.SetToolTip(txtLog, "Registro de lo que va haciendo el programa en esta sesión: cargas, cambios y errores.");
             toolTip.SetToolTip(grid, "Partidas del día. Elige una para editarla a la derecha; con Mayús o Ctrl, varias para el lote.");
-            toolTip.SetToolTip(lblEstado, "Si el programa está conectado a la base de datos.");
             tabControlEdicion.ShowToolTips = true;
             tabIndividual.ToolTipText = "Editar, crear o borrar una sola partida.";
             tabLote.ToolTipText = "Crear, cambiar o borrar varias partidas seguidas de una vez.";
@@ -95,6 +96,7 @@ namespace BingoHistoricoEditor {
                                         "El cambio vale hasta cerrar el programa; la sala por defecto se cambia en ⚙ Configuración.");
             lblSalaConc.Visible = false;
             lblSalaConc.Parent!.Controls.Add(cmbSala);
+            lblSalaConc.Parent.Resize += (_, _) => AjustarEstado();
             cmbSala.SelectedIndexChanged += cmbSala_SelectedIndexChanged;
             RellenarSalas(new List<(int, int)>());
         }
@@ -114,6 +116,29 @@ namespace BingoHistoricoEditor {
                 }
             }
             finally { _rellenandoSalas = false; }
+
+            // Ancho para que se lea entero el texto más largo (y el estado se corre a su derecha).
+            int ancho = cmbSala.Items.Cast<object>().Max(i => TextRenderer.MeasureText(i.ToString(), cmbSala.Font).Width) + SystemInformation.VerticalScrollBarWidth + 12;
+            cmbSala.Width = Math.Max(150, ancho);
+            lblEstado.Left = cmbSala.Right + 6;
+            AjustarEstado();
+        }
+
+        // El estado de la conexión, a la derecha del selector de sala. Si no cabe
+        // entero (ventana estrecha, sobre todo con el botón de auditoría), solo
+        // un punto de su color; el texto sale al pasar el ratón.
+        private string _estado = "Desconectado";
+
+        private void PonerEstado(string texto, Color color) {
+            _estado = texto;
+            lblEstado.ForeColor = color;
+            AjustarEstado();
+        }
+
+        private void AjustarEstado() {
+            lblEstado.Width = Math.Max(0, lblEstado.Parent!.ClientSize.Width - lblEstado.Left);
+            lblEstado.Text = TextRenderer.MeasureText(_estado, lblEstado.Font).Width <= lblEstado.Width ? _estado : "●";
+            toolTip.SetToolTip(lblEstado, $"{_estado}. Si el programa está conectado a la base de datos.");
         }
 
         private async Task CargarSalasAsync() {
@@ -165,8 +190,7 @@ namespace BingoHistoricoEditor {
             EscribirLog("SISTEMA", "Probando conexión a base de datos...");
             bool ok = await _db.TestConnectionAsync(); //
 
-            lblEstado.Text = ok ? "Estado: Conectado a Firebird" : "Estado: ERROR DE CONEXIÓN";
-            lblEstado.ForeColor = ok ? Color.Green : Color.Red;
+            PonerEstado(ok ? "Conectado a Firebird" : "ERROR DE CONEXIÓN", ok ? Color.Green : Color.Red);
 
             if (ok) {
                 EscribirLog("SISTEMA", "Conexión establecida correctamente.");
