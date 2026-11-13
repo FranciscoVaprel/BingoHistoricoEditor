@@ -198,6 +198,7 @@ namespace BingoHistoricoEditor {
                     });
             }
             catch (Exception ex) {
+                Services.LogService.Error("Error al importar un log de Gregal.", ex);
                 _txtResultado.Text = $"{ruta}\r\n\r\nNo se ha importado nada:\r\n{ex.Message}";
             }
             finally {

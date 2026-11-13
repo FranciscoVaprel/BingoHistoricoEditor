@@ -85,6 +85,7 @@ namespace BingoHistoricoEditor {
                 _lblInfo.Text = $"{operaciones.Count} operaciones (máx. {MaxOperaciones} más recientes) — actualizado {DateTime.Now:HH:mm:ss}";
             }
             catch (Exception ex) {
+                Services.LogService.Error("Error al cargar el registro de auditoría.", ex);
                 MessageBox.Show($"Error al cargar el registro de auditoría:\n{ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

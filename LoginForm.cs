@@ -124,6 +124,7 @@ namespace BingoHistoricoEditor {
                 Application.Restart();
             }
             catch (Exception ex) {
+                Services.LogService.Error("No se pudo restablecer el acceso de administrador.", ex);
                 MessageBox.Show($"No se pudo restablecer el acceso:\n{ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

@@ -1,4 +1,5 @@
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
 using Serilog.Formatting;
 using System;
@@ -10,13 +11,16 @@ using BingoHistoricoEditor.Data;
 
 namespace BingoHistoricoEditor.Services {
     public static class LogService {
-        private static ILogger _logger;
+        private static Logger? _logger;
+        // Log de fallos (logs\errores<fecha>.log): texto legible con la traza
+        // completa de cada excepción, aparte de la auditoría de operaciones.
+        private static Logger? _errores;
         private static string _currentUser = "SISTEMA";
-        private static FirebirdService _dbService;
+        private static FirebirdService? _dbService;
 
         static LogService() {
+            string logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
             try {
-                string logDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
                 if (!Directory.Exists(logDir)) Directory.CreateDirectory(logDir);
 
                 string logPath = Path.Combine(logDir, "operaciones.json");
@@ -33,6 +37,37 @@ namespace BingoHistoricoEditor.Services {
             catch (Exception ex) {
                 System.Diagnostics.Debug.WriteLine($"Error LogService: {ex.Message}");
             }
+            try {
+                _errores = new LoggerConfiguration()
+                    .MinimumLevel.Debug()
+                    .WriteTo.File(Path.Combine(logDir, "errores.log"),
+                                 rollingInterval: RollingInterval.Day,
+                                 retainedFileCountLimit: 60,
+                                 shared: true,
+                                 outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}")
+                    .CreateLogger();
+            }
+            catch (Exception ex) {
+                System.Diagnostics.Debug.WriteLine($"Error LogService (errores): {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Anota un fallo en logs\errores&lt;fecha&gt;.log, con la traza de la
+        /// excepción. Solo va al fichero: si el fallo es de la BD, intentar
+        /// registrarlo en ella fallaría también.
+        /// </summary>
+        public static void Error(string mensaje, Exception? ex = null) {
+            try { _errores?.Error(ex, "{Usuario}: {Mensaje}", _currentUser, mensaje); }
+            catch { }
+        }
+
+        /// <summary>
+        /// Fallo que cierra el programa: se escribe al momento, sin esperar.
+        /// </summary>
+        public static void Fatal(string mensaje, Exception? ex = null) {
+            try { _errores?.Fatal(ex, "{Usuario}: {Mensaje}", _currentUser, mensaje); }
+            catch { }
         }
 
         public static void SetCurrentUser(string username) => _currentUser = username?.ToUpper() ?? "SISTEMA";
@@ -87,7 +122,12 @@ namespace BingoHistoricoEditor.Services {
             }
         }
 
-        public static void Close() => Log.CloseAndFlush();
+        // Cierra (y vacía a disco) los dos ficheros. Log.CloseAndFlush() no
+        // servía: cierra el logger global de Serilog, que aquí no se usa.
+        public static void Close() {
+            _logger?.Dispose();
+            _errores?.Dispose();
+        }
     }
 
     public class JsonLogFormatter : ITextFormatter {

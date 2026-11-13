@@ -4,6 +4,13 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ---
 
+## 2026-11-13
+
+- **Log de errores: `logs\errores<fecha>.log`**, junto al de operaciones. Texto legible, una entrada por fallo con fecha, usuario y la traza completa de la excepción; se guardan los 60 últimos días. Antes los fallos solo se veían en pantalla (o ni eso: los de la tabla de operaciones iban a la salida de depuración) y no quedaba rastro para revisarlos después.
+  - Recoge los errores que ya se capturaban: cargar, guardar o eliminar partidas y lotes, la ficha, importar un log de Gregal, pasar a HISTORICO, auditoría, usuarios, configuración y la conexión a la BD.
+  - Y los que no se capturaban: un fallo inesperado en una ventana se anota y se avisa con un mensaje (el programa sigue); uno fuera de las ventanas se anota como `FTL` antes de que el programa se cierre. Antes solo dejaban rastro en el Visor de eventos de Windows.
+- **El log de operaciones se cierra bien al salir.** `LogService.Close()` cerraba el logger global de Serilog, que no se usa, en vez del suyo.
+
 ## 2026-11-11
 
 - **Ventana principal: tamaño mínimo 1024×768.** Antes se podía encoger sin límite (abre a 1266×789, como siempre). A 1024 de ancho el título y el selector de sala se cortaban, así que la cabecera se ha compactado:

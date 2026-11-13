@@ -186,6 +186,7 @@ namespace BingoHistoricoEditor {
                                           ?? _cmbSesion.Items[0];
             }
             catch (Exception ex) {
+                Services.LogService.Error("Pasar a HISTORICO: error al cargar las sesiones.", ex);
                 _lblResumen.Text = "Error: " + ex.Message;
             }
             finally {
@@ -205,6 +206,7 @@ namespace BingoHistoricoEditor {
                 MostrarDetalle();
             }
             catch (Exception ex) {
+                Services.LogService.Error("Pasar a HISTORICO: error al comparar.", ex);
                 _grid.Rows.Clear();
                 _lblResumen.Text = "Error al comparar: " + ex.Message;
             }
@@ -380,6 +382,7 @@ namespace BingoHistoricoEditor {
                 MessageBox.Show(this, ex.Message, "No se ha pasado nada", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             catch (Exception ex) {
+                Services.LogService.Error("Error al pasar las partidas a HISTORICO.", ex);
                 MessageBox.Show(this, ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally {

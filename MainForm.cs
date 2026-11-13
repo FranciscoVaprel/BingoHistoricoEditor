@@ -146,6 +146,7 @@ namespace BingoHistoricoEditor {
                 RellenarSalas(await _db.ObtenerSalasAsync("HISTORICO", TablaImportacionLog));
             }
             catch (Exception ex) {
+                Services.LogService.Error("No se pudo leer la lista de salas.", ex);
                 RellenarSalas(new List<(int, int)>());
                 EscribirLog("ERROR", $"No se pudo leer la lista de salas: {ex.Message}");
             }
@@ -201,6 +202,7 @@ namespace BingoHistoricoEditor {
                     await _db.CrearTriggerAuditoriaHistoricoAsync();
                 }
                 catch (Exception ex) {
+                    Services.LogService.Error("Error al crear la tabla o el trigger de auditoría.", ex);
                     EscribirLog("SISTEMA", $"Error al crear tabla/trigger de auditoría: {ex.Message}");
                 }
 
@@ -321,6 +323,7 @@ namespace BingoHistoricoEditor {
                 }
             }
             catch (Exception ex) {
+                Services.LogService.Error("No se pudo determinar el último día con datos.", ex);
                 EscribirLog("ERROR", $"No se pudo determinar el último día con datos: {ex.Message}");
             }
 
@@ -390,6 +393,7 @@ namespace BingoHistoricoEditor {
                     .Select(s => s.Fecha.Date).ToArray();
             }
             catch (Exception ex) {
+                Services.LogService.Error("No se pudieron leer los días con partidas.", ex);
                 EscribirLog("ERROR", $"No se pudieron leer los días con partidas: {ex.Message}");
             }
 
@@ -463,6 +467,7 @@ namespace BingoHistoricoEditor {
 
             }
             catch (Exception ex) {
+                Services.LogService.Error("Error al cargar las partidas.", ex);
                 EscribirLog("ERROR", ex.Message, false);
             }
             finally {
@@ -545,6 +550,7 @@ namespace BingoHistoricoEditor {
                 await CargarPartidasAsync();
             }
             catch (Exception ex) {
+                Services.LogService.Error("Error al guardar la partida.", ex);
                 EscribirLog("ERROR", ex.Message, registrarEnArchivo: true);
             }
             finally {
@@ -581,6 +587,7 @@ namespace BingoHistoricoEditor {
                 fila = await _db.CargarFilaCompletaAsync(clave, _tablaActual);
             }
             catch (Exception ex) {
+                Services.LogService.Error("No se pudo abrir la ficha de la partida.", ex);
                 EscribirLog("ERROR", ex.Message, registrarEnArchivo: true);
                 MessageBox.Show($"No se pudo abrir la ficha:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
@@ -668,6 +675,7 @@ namespace BingoHistoricoEditor {
                     await CargarPartidasAsync();
                 }
                 catch (Exception ex) {
+                    Services.LogService.Error("Error al eliminar la partida.", ex);
                     EscribirLog("ERROR_CRITICO", $"Fallo al eliminar: {ex.Message}", registrarEnArchivo: true);
                 }
                 finally {
@@ -791,6 +799,7 @@ namespace BingoHistoricoEditor {
                 }
             }
             catch (Exception ex) {
+                Services.LogService.Error("Error al buscar partidas que faltan.", ex);
                 EscribirLog("ERROR", $"Error al buscar faltante en BD: {ex.Message}", registrarEnArchivo: true);
                 MessageBox.Show($"Ocurrió un error al consultar la base de datos:\n{ex.Message}", "Error de Consulta", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -831,6 +840,7 @@ namespace BingoHistoricoEditor {
                 await CargarPartidasAsync();
             }
             catch (Exception ex) {
+                Services.LogService.Error("Error al guardar el lote.", ex);
                 EscribirLog("ERROR", ex.Message, true);
             }
             finally { SetBusy(false); }
@@ -870,6 +880,7 @@ namespace BingoHistoricoEditor {
                 await CargarPartidasAsync();
             }
             catch (Exception ex) {
+                Services.LogService.Error("Error al eliminar el lote.", ex);
                 EscribirLog("ERROR_CRITICO", ex.Message, true);
             }
             finally {
@@ -1091,6 +1102,7 @@ namespace BingoHistoricoEditor {
                 }
             }
             catch (Exception ex) {
+                Services.LogService.Error("Error al comprobar las operaciones.", ex);
                 EscribirLog("ERROR", $"Error verificando operaciones: {ex.Message}");
             }
         }

@@ -170,6 +170,7 @@ namespace BingoHistoricoEditor {
                 Close();
             }
             catch (Exception ex) {
+                Services.LogService.Error("Error al guardar la configuración.", ex);
                 lblMensaje.Text = $"Error al guardar: {ex.Message}";
                 MessageBox.Show($"Error al guardar la configuración:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }

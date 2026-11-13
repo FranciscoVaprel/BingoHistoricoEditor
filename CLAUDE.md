@@ -106,6 +106,12 @@ BEFORE INSERT trigger for `operacionesBGEditor` if missing) and audit read/write
   (`UserStore.MigrarDesdeAppSettings`).
   `UsuarioManager` (`usuarios.json`) is a separate, effectively unused parallel implementation
   (only self-referenced) — don't extend it; use `UserStore`.
+- Error logging: `LogService.Error(mensaje, ex)` / `Fatal` write plain text with stack traces to
+  `logs/errores<date>.log` (separate Serilog logger, file only — never the DB, which may be what
+  failed). Every UI `catch (Exception ex)` that reports an unexpected failure calls it; `Program.
+  CapturarErroresNoControlados` hooks `Application.ThreadException` (log + MessageBox, app keeps
+  running), `AppDomain.UnhandledException` (Fatal + Close) and `TaskScheduler.UnobservedTaskException`.
+  `LogService.Close()` disposes both loggers (not `Log.CloseAndFlush()` — the global logger is unused).
 - Operation logging: `Services/LogService.cs` writes structured JSON logs to `logs/operaciones-*.json`
   (via Serilog, one physical sink) **and** mirrors each entry into the `operacionesBGEditor` DB table
   (via `FirebirdService.InsertarOperacionAsync`, best-effort/non-throwing). `MainForm.EscribirLog`

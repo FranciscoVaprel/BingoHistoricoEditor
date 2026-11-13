@@ -421,6 +421,7 @@ namespace BingoHistoricoEditor {
                 }
             }
             catch (Exception ex) {
+                Services.LogService.Error("Ficha: no se pudo comprobar la clave nueva.", ex);
                 MessageBox.Show($"No se pudo comprobar la clave nueva:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -439,6 +440,7 @@ namespace BingoHistoricoEditor {
                 return;
             }
             catch (Exception ex) {
+                Services.LogService.Error("Ficha: error al guardar la partida.", ex);
                 MessageBox.Show($"Error al guardar:\n{ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }

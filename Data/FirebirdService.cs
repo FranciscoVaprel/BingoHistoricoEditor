@@ -83,7 +83,10 @@ namespace BingoHistoricoEditor.Data {
                 System.Diagnostics.Debug.WriteLine($"Versión de Firebird: {conn.ServerVersion}");
                 return true;
             }
-            catch { return false; }
+            catch (Exception ex) {
+                Services.LogService.Error("No se pudo conectar a la base de datos.", ex);
+                return false;
+            }
         }
 
         // ── Cargar partidas de una fecha ──────────────────────────────────────
@@ -1022,7 +1025,7 @@ namespace BingoHistoricoEditor.Data {
                 }
             }
             catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"✗ Error al crear tabla de operaciones: {ex.Message}");
+                Services.LogService.Error("Error al crear la tabla de operaciones.", ex);
             }
         }
 
@@ -1111,7 +1114,7 @@ namespace BingoHistoricoEditor.Data {
                 System.Diagnostics.Debug.WriteLine($"✓ Trigger '{triggerName}' creado.");
             }
             catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"✗ Error al crear el trigger de auditoría de HISTORICO: {ex.Message}");
+                Services.LogService.Error("Error al crear el trigger de auditoría de HISTORICO.", ex);
             }
         }
 
@@ -1132,7 +1135,7 @@ namespace BingoHistoricoEditor.Data {
                 await cmd.ExecuteNonQueryAsync();
             }
             catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"Error al insertar operación: {ex.Message}");
+                Services.LogService.Error("Error al registrar una operación en la BD.", ex);
                 // No lanzar excepción, el log no debe interrumpir la operación principal
             }
         }
@@ -1171,7 +1174,7 @@ namespace BingoHistoricoEditor.Data {
                 }
             }
             catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"Error al obtener operaciones: {ex.Message}");
+                Services.LogService.Error("Error al leer las operaciones.", ex);
             }
 
             return operaciones;
@@ -1192,7 +1195,7 @@ namespace BingoHistoricoEditor.Data {
                 return result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
             }
             catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"Error al contar operaciones: {ex.Message}");
+                Services.LogService.Error("Error al contar las operaciones.", ex);
                 return 0;
             }
         }
@@ -1227,7 +1230,7 @@ namespace BingoHistoricoEditor.Data {
                 }
             }
             catch (Exception ex) {
-                System.Diagnostics.Debug.WriteLine($"Error al obtener operaciones del usuario: {ex.Message}");
+                Services.LogService.Error("Error al leer las operaciones del usuario.", ex);
             }
             return operaciones;
         }

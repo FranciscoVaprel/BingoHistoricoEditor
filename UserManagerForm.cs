@@ -118,6 +118,7 @@ namespace BingoHistoricoEditor {
                 MostrarInfo($"Contraseña de '{seleccionado}' actualizada.");
             }
             catch (Exception ex) {
+                Services.LogService.Error("Error al cambiar la contraseña de un usuario.", ex);
                 MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

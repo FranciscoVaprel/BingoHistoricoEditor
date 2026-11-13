@@ -1,4 +1,5 @@
 using BingoHistoricoEditor.Data;
+using BingoHistoricoEditor.Services;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -14,6 +15,7 @@ namespace BingoHistoricoEditor {
 
         [STAThread]
         static void Main() {
+            CapturarErroresNoControlados();
             Configuration = CargarConfig();
             ApplicationConfiguration.Initialize();
             PonerIconoEnVentanas();
@@ -41,6 +43,38 @@ namespace BingoHistoricoEditor {
         }
 
         // ── Helpers ───────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Red de seguridad: un fallo que se escapa de todos los try/catch queda
+        /// anotado en logs\errores&lt;fecha&gt;.log (antes solo dejaba rastro en el
+        /// Visor de eventos de Windows, que en una sala nadie mira).
+        /// </summary>
+        private static void CapturarErroresNoControlados() {
+            // Fallo en un evento de una ventana (también los async void): se
+            // anota, se avisa y el programa sigue, como ya hacía WinForms.
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            Application.ThreadException += (_, e) => {
+                LogService.Error("Excepción no controlada en la interfaz.", e.Exception);
+                try {
+                    MessageBox.Show($"Ha ocurrido un error inesperado:\n{e.Exception.Message}\n\n"
+                        + "Queda anotado en la carpeta logs (errores<fecha>.log).",
+                        "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                catch { }
+            };
+            // Fallo fuera del hilo de las ventanas: el proceso se va a cerrar.
+            AppDomain.CurrentDomain.UnhandledException += (_, e) => {
+                LogService.Fatal($"Excepción no controlada: el programa se va a cerrar (IsTerminating={e.IsTerminating}).",
+                    e.ExceptionObject as Exception);
+                LogService.Close();
+            };
+            // Una Task que falla sin que nadie espere su resultado: no cierra el
+            // programa, pero el error se perdería sin más.
+            TaskScheduler.UnobservedTaskException += (_, e) => {
+                LogService.Error("Excepción no observada en una tarea en segundo plano.", e.Exception);
+                e.SetObserved();
+            };
+        }
 
         /// <summary>
         /// Todas las ventanas llevan el icono del exe (ApplicationIcon) en vez
