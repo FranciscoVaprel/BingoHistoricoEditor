@@ -42,8 +42,9 @@ namespace BingoHistoricoEditor {
         private static readonly Dictionary<string, string> Descripciones = new(StringComparer.OrdinalIgnoreCase) {
             ["COD_SALA"]      = "Código de la sala",
             ["COD_CONC"]      = "Código del concesionario",
-            ["FECHA_SESION"]  = "Día de la sesión a la que pertenece la partida",
-            ["PARTIDA_DIA"]   = "Número de la partida dentro del día",
+            ["FECHA_SESION"]  = "Día de la sesión a la que pertenece la partida (la sesión acaba a las 07:00: lo jugado de madrugada es del día anterior)",
+            ["PARTIDA_DIA"]   = "Número de la partida dentro de la sesión (empieza en 1 cada sesión)",
+            ["FECHA_SESION_MES"] = "Mes de la sesión (1-12): el de FECHA_SESION. Al cambiar FECHA_SESION se recalcula solo",
             ["FECHA"]         = "Fecha y hora de inicio de la partida",
             ["NUM_DECIMALES"] = "Decimales de los importes (normalmente 2)",
             ["HORA_VENTA"]    = "Hora de inicio de la venta",

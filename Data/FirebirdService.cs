@@ -167,9 +167,9 @@ namespace BingoHistoricoEditor.Data {
             e.Venta = e.Precio * e.Vendidos;   // recalcular siempre
 
             const string sql = @"UPDATE OR INSERT INTO HISTORICO
-                (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA,
+                (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA, FECHA_SESION_MES,
                  FECHA, PRECIO, VENDIDOS, VENTA, PREMIO1, PREMIO2)
-                VALUES (@sala, @conc, @sesion, @pdia,
+                VALUES (@sala, @conc, @sesion, @pdia, @mes,
                         'NOW', @precio, @vendidos, @venta, @premio1, @premio2)
                 MATCHING (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA)";
             try {
@@ -179,6 +179,7 @@ namespace BingoHistoricoEditor.Data {
                 cmd.Parameters.Add("@conc",     FbDbType.Integer).Value = e.CodConc;
                 cmd.Parameters.Add("@sesion",   FbDbType.Date).Value    = e.FechaSesion.Date;
                 cmd.Parameters.Add("@pdia",     FbDbType.Integer).Value = e.PartidaDia;
+                cmd.Parameters.Add("@mes",      FbDbType.Integer).Value = e.FechaSesion.Month;
                 cmd.Parameters.Add("@precio",   FbDbType.Decimal).Value = e.Precio;
                 cmd.Parameters.Add("@vendidos", FbDbType.Integer).Value = e.Vendidos;
                 cmd.Parameters.Add("@venta",    FbDbType.Decimal).Value = e.Venta;
@@ -201,9 +202,9 @@ namespace BingoHistoricoEditor.Data {
         /// </summary>
         public async Task GuardarLoteAsync(IEnumerable<HistoricoEntry> entradas) {
             const string sql = @"UPDATE OR INSERT INTO HISTORICO
-                (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA,
+                (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA, FECHA_SESION_MES,
                  FECHA, PRECIO, VENDIDOS, VENTA, PREMIO1, PREMIO2)
-                VALUES (@sala, @conc, @sesion, @pdia,
+                VALUES (@sala, @conc, @sesion, @pdia, @mes,
                         'NOW', @precio, @vendidos, @venta, @premio1, @premio2)
                 MATCHING (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA)";
 
@@ -219,6 +220,7 @@ namespace BingoHistoricoEditor.Data {
                     cmd.Parameters.Add("@conc",     FbDbType.Integer).Value = e.CodConc;
                     cmd.Parameters.Add("@sesion",   FbDbType.Date).Value    = e.FechaSesion.Date;
                     cmd.Parameters.Add("@pdia",     FbDbType.Integer).Value = e.PartidaDia;
+                    cmd.Parameters.Add("@mes",      FbDbType.Integer).Value = e.FechaSesion.Month;
                     cmd.Parameters.Add("@precio",   FbDbType.Decimal).Value = e.Precio;
                     cmd.Parameters.Add("@vendidos", FbDbType.Integer).Value = e.Vendidos;
                     cmd.Parameters.Add("@venta",    FbDbType.Decimal).Value = e.Venta;
@@ -565,7 +567,11 @@ namespace BingoHistoricoEditor.Data {
                 }
 
                 if (claveNueva != claveOriginal) {
-                    await MoverPartidaAsync(conn, tx, claveOriginal, claveNueva);
+                    // FECHA_SESION_MES sigue a la fecha de sesión nueva, salvo
+                    // que se haya cambiado a mano en esta misma edición.
+                    bool recalcularMes = claveNueva.FechaSesion != claveOriginal.FechaSesion
+                        && !cambios.Any(c => c.Columna.Nombre.Equals("FECHA_SESION_MES", StringComparison.OrdinalIgnoreCase));
+                    await MoverPartidaAsync(conn, tx, claveOriginal, claveNueva, recalcularMes);
                 }
                 await tx.CommitAsync();
             }
@@ -605,7 +611,7 @@ namespace BingoHistoricoEditor.Data {
         /// Copia la fila con la clave nueva (todas las columnas que se pueden
         /// escribir, tal cual) y borra la original. Ver ActualizarCamposAsync.
         /// </summary>
-        private async Task MoverPartidaAsync(FbConnection conn, FbTransaction tx, ClaveHistorico origen, ClaveHistorico destino) {
+        private async Task MoverPartidaAsync(FbConnection conn, FbTransaction tx, ClaveHistorico origen, ClaveHistorico destino, bool recalcularMes) {
             var columnas = (await ObtenerColumnasHistoricoAsync())
                 .Where(c => !c.EsCalculada && IdentificadorSimple.IsMatch(c.Nombre))
                 .ToList();
@@ -614,6 +620,7 @@ namespace BingoHistoricoEditor.Data {
                 "COD_CONC"     => "@nconc",
                 "FECHA_SESION" => "@nsesion",
                 "PARTIDA_DIA"  => "@npdia",
+                "FECHA_SESION_MES" when recalcularMes => destino.FechaSesion.Month.ToString(CultureInfo.InvariantCulture),
                 _ => c.Nombre,
             });
 

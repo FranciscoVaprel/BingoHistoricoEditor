@@ -4,6 +4,19 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ---
 
+## 2026-11-16
+
+- **La sesión acaba a las 07:00, no a medianoche.** Lo jugado de madrugada pertenece a la sesión del día anterior (`FECHA_SESION`), igual que en Gregal 1.0.21; la regla está en la librería compartida (`Gregal.Config.SesionBingo`).
+  - Al abrir, la ventana principal se coloca en el día de la sesión en curso: a las 02:00 del 15, en el 14.
+  - Importar un log de Gregal asigna las partidas de madrugada a la sesión del día anterior.
+  - La ayuda del campo FECHA_SESION en la ficha lo explica.
+  - Los datos ya guardados no se cambian: las partidas de madrugada anteriores a este cambio siguen con la fecha de calendario.
+  - Comprobado en `aamslog.FDB`: el sistema anterior a Gregal ya aplicaba esta regla (las 16.043 partidas empezadas antes de las 07:00 tienen la sesión del día anterior).
+- **`FECHA_SESION_MES` (mes de la sesión, 1-12) se rellena.** El sistema anterior lo rellenaba siempre (el mes de `FECHA_SESION`, en las 50.295 filas de `aamslog.FDB`), pero Gregal y BHE lo dejaban a 0.
+  - Al guardar desde la ventana principal (una partida o un lote) y al importar un log de Gregal.
+  - Al cambiar la fecha de sesión de una partida en la ficha, el mes pasa a ser el de la fecha nueva, salvo que se cambie también a mano en la misma edición.
+  - Probado contra una copia de la base: guardar, guardar en lote, mover a otro mes, mover con el mes puesto a mano, y cambiar solo el número.
+
 ## 2026-11-13
 
 - **Log de errores: `logs\errores<fecha>.log`**, junto al de operaciones. Texto legible, una entrada por fallo con fecha, usuario y la traza completa de la excepción; se guardan los 60 últimos días. Antes los fallos solo se veían en pantalla (o ni eso: los de la tabla de operaciones iban a la salida de depuración) y no quedaba rastro para revisarlos después.

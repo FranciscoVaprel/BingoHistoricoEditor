@@ -168,7 +168,9 @@ namespace BingoHistoricoEditor {
         protected override async void OnLoad(EventArgs e) {
             base.OnLoad(e);
 
-            FijarFecha(DateTime.Today);
+            // El día de la sesión en curso: hasta las 07:00 sigue siendo la
+            // del día anterior (Gregal.Config.SesionBingo, igual que Gregal).
+            FijarFecha(Gregal.Config.SesionBingo.FechaDe(DateTime.Now));
             await ConectarAsync();
         }
 
