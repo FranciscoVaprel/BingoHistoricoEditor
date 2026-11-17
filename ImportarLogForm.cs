@@ -102,7 +102,7 @@ namespace BingoHistoricoEditor {
             _txtResultado = new TextBox {
                 Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Both, WordWrap = false, Dock = DockStyle.Fill,
                 Font = new Font("Consolas", 9f), BackColor = SystemColors.Window,
-                Text = "Elige un log de Gregal (carpeta logs junto a Gregal.exe, ficheros gregal<AAAAMMDD>.log) y el fabricante de la sala.",
+                Text = "Elige un log de Gregal (carpeta logs junto a Gregal.exe, ficheros gregal-sesion<AAAAMMDD>.log, o gregal<AAAAMMDD>.log en versiones antiguas) y el fabricante de la sala.",
             };
 
             _btnImportar = CrearBoton("⇩ Importar", 130);
@@ -127,7 +127,7 @@ namespace BingoHistoricoEditor {
 
             var ayuda = new ToolTip { AutoPopDelay = 15000 };
             ayuda.SetToolTip(_txtRuta, "Log de Gregal que se va a importar. Elígelo con Examinar…");
-            ayuda.SetToolTip(_btnExaminar, "Buscar el log: en la carpeta logs junto a Gregal.exe, ficheros gregal<AAAAMMDD>.log.");
+            ayuda.SetToolTip(_btnExaminar, "Buscar el log: en la carpeta logs junto a Gregal.exe, ficheros gregal-sesion<AAAAMMDD>.log, o gregal<AAAAMMDD>.log en versiones antiguas.");
             ayuda.SetToolTip(_cmbFabricante, "Fabricante del sistema de bingo de la sala: cambia cómo se leen algunos eventos del log.");
             ayuda.SetToolTip(_txtResultado, "Aquí sale el resumen de la importación: partidas leídas, guardadas y avisos.");
             ayuda.SetToolTip(_btnImportar, $"Lee el log y guarda sus partidas en {_tabla} (no toca HISTORICO).");
