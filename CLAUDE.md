@@ -93,7 +93,9 @@ JSON via `System.Text.Json.Nodes.JsonNode`/`JsonObject` and writing it back with
 **Data access** (`Data/FirebirdService.cs`): the only class that talks to Firebird. It builds its own
 connection string from `IConfiguration` (`BuildConnectionString`/`ResolverRuta`, supporting Local,
 Remote, and Alias `DbModo` values), and exposes CRUD for `HISTORICO` (`CargarPorFechaAsync`,
-`GuardarAsync` using `UPDATE OR INSERT`, `EliminarAsync`, range variants for batch operations) plus
+`GuardarAsync`/`GuardarLoteAsync` → `GuardarUnaAsync`: `UPDATE` without `FECHA`, and only if it
+touched 0 rows an `INSERT` with `FECHA = 'NOW'` (1.6.9; editing an existing game must keep its original
+`FECHA` — the old `UPDATE OR INSERT` overwrote it), `EliminarAsync`, range variants for batch operations) plus
 self-provisioning of the audit table (`CrearTablaOperacionesAsync` creates the table, generator, and
 BEFORE INSERT trigger for `operacionesBGEditor` if missing) and audit read/write methods
 (`InsertarOperacionAsync`, `ObtenerOperacionesAsync`, ...). Every `HISTORICO` query is scoped by
@@ -103,9 +105,8 @@ BEFORE INSERT trigger for `operacionesBGEditor` if missing) and audit read/write
 - App login credentials: `UserStore` (`users.json`) is the active implementation used by
   `LoginForm`/`UserManagerForm`. `Program`/`LoginForm` migrate the single legacy
   `AppUser`/`AppPasswordHash` pair from `appsettings.json` into `users.json` on first login
-  (`UserStore.MigrarDesdeAppSettings`).
-  `UsuarioManager` (`usuarios.json`) is a separate, effectively unused parallel implementation
-  (only self-referenced) — don't extend it; use `UserStore`.
+  (`UserStore.MigrarDesdeAppSettings`). (The unused parallel `UsuarioManager`/`usuarios.json` was
+  removed in 1.6.9.)
 - Error logging: `LogService.Error(mensaje, ex)` / `Fatal` write plain text with stack traces to
   `logs/errores<date>.log` (separate Serilog logger, file only — never the DB, which may be what
   failed). Every UI `catch (Exception ex)` that reports an unexpected failure calls it; `Program.
@@ -191,7 +192,8 @@ the designer or with care; put logic in the paired non-designer `.cs` partial):
   data now. The import table is never modified. Available to every user (user's choice). Logged as
   `DB_LOG_A_HISTORICO` with each field's before/after.
 - `ImportarLogForm` — first entry of the header menu "⇩ LOG DE GREGAL ▾": rebuilds **all** the games in a Gregal log
-  (`gregal<AAAAMMDD>.log`) and saves them to a separate table, never `HISTORICO`:
+  (`gregal-sesion<AAAAMMDD>.log` since Gregal 1.0.22, one per bingo session; older `gregal<AAAAMMDD>.log`
+  per calendar day work too) and saves them to a separate table, never `HISTORICO`:
   `BingoSettings:TablaImportacionLog`, default `HISTORICO_LOG` (`FirebirdService.TablaImportacionPorDefecto`).
   Games are rebuilt by Gregal's own code (`Gregal.Parsing.ReproductorLogGregal`, replaying the
   `Fragmento tag recibido` lines through `PartidaAccumulator` with each line's timestamp as the clock),
@@ -217,7 +219,6 @@ the designer or with care; put logic in the paired non-designer `.cs` partial):
 - `UserManagerForm` — add/remove app users, change passwords, via `UserStore`. Users have an
   `IsAdmin` flag; only admins see/open `AuditoriaForm` (lists `operacionesBGEditor`) from `MainForm`.
 - `AuditoriaForm` — read-only grid over `operacionesBGEditor`, admin-only.
-- `ConfirmDialog` — generic Yes/No confirmation dialog, currently unreferenced dead code.
 
 `SettingsValidator` centralizes field validation (ranges, allowed enums like charset/dialect) used by
 `SettingsForm` before persisting.
