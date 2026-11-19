@@ -52,13 +52,6 @@ namespace BingoHistoricoEditor {
             return CryptographicOperations.FixedTimeEquals(actualHash, expectedHash);
         }
 
-        /// <summary>
-        /// Devuelve true si el valor almacenado es claramente texto plano
-        /// (no empieza por "pbkdf2$"), para detectar configuraciones heredadas.
-        /// </summary>
-        public static bool EsTextoPlano(string valor) =>
-            !string.IsNullOrWhiteSpace(valor) && !valor.StartsWith("pbkdf2$");
-
         // ── Internos ──────────────────────────────────────────────────────────
 
         private static byte[] Pbkdf2(string password, byte[] salt, int iterations = Iterations) {

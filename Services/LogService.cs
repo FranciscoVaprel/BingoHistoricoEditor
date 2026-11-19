@@ -101,13 +101,6 @@ namespace BingoHistoricoEditor.Services {
         }
 
         /// <summary>
-        /// Registro de auditoría para cambios en base de datos
-        /// </summary>
-        public static void AuditDB(string operacion, object datos) {
-            Write(operacion, datos);
-        }
-
-        /// <summary>
         /// Registra la operación en la base de datos de forma asíncrona
         /// </summary>
         private static async Task RegistrarEnBDAsync(string operacion, object datos) {

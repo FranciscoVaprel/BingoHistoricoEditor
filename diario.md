@@ -4,6 +4,19 @@ Registro cronológico de los cambios relevantes hechos en el proyecto (qué se c
 
 ---
 
+## 2026-11-19
+
+Revisión de código (fallos y código muerto). Arreglos del panel principal:
+
+- **Guardar ya no cambia la hora de inicio (`FECHA`) de una partida existente.** Antes el `UPDATE OR INSERT` la ponía a la hora de la edición, también al guardar en lote. Ahora una partida existente se actualiza sin tocar `FECHA` y solo la nueva se crea con la hora actual (`GuardarUnaAsync`). Probado sobre una copia de `AAMSLOG.FDB`.
+- **"Guardar lote" pide confirmación** y dice cuántas partidas se crean y cuántas existentes se sobrescriben (precio, vendidos, línea y bingo a 0). Al cargar un día el rango se pone solo de la primera a la última partida, así que un clic sobrescribía la sesión entera. Las sobrescritas quedan en el log de operaciones.
+- **Guardar con el número de otra partida que ya existe pregunta antes de sobrescribirla.** Además, se guarda una copia: si falla, la rejilla no enseña valores que no están en la BD.
+- **Al cambiar de día se olvida la partida seleccionada.** En un día sin partidas seguía seleccionada la del día anterior, y Eliminar o Guardar actuaban sobre ella.
+- **Precio, línea y bingo con 2 decimales.** Antes un 12,50 se veía como 13 y, si se tocaba el campo, se guardaba redondeado.
+- **"Buscar faltante" con un hueco de una sola partida** daba un error falso de base de datos.
+- **Lote (guardar y eliminar)**: la fecha y la sala se fijan antes de consultar la BD, para que lo que se confirma sea lo que se cambia.
+- Código muerto eliminado: `UsuarioManager`, `ConfirmDialog`, `btnNueva_Click`, `AgregarControlEdicion` (dos copias), `AsignarLimitesPartidasLote`, `VerificarOperacionesAsync`, `ObtenerCountOperacionesAsync`, `ObtenerOperacionesPorUsuarioAsync`, `LogService.AuditDB`, `UserStore.AgregarUsuario`, `PasswordHelper.EsTextoPlano` y los paquetes `Serilog.Extensions.Logging`, `Serilog.Formatting.Compact`, `Serilog.Settings.Configuration` y `Serilog.Sinks.Console`.
+
 ## 2026-11-16
 
 - **La sesión acaba a las 07:00, no a medianoche.** Lo jugado de madrugada pertenece a la sesión del día anterior (`FECHA_SESION`), igual que en Gregal 1.0.21; la regla está en la librería compartida (`Gregal.Config.SesionBingo`).

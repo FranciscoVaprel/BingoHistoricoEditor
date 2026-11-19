@@ -256,6 +256,14 @@ namespace BingoHistoricoEditor {
             nudLinea.Maximum = 99999;
             nudBingo.Maximum = 99999;
 
+            // Importes en euros con céntimos. Con 0 decimales (lo que dejaba el
+            // diseñador) un 12,50 se veía como 13 y, si se tocaba el campo, se
+            // guardaba redondeado.
+            nudPrecio.DecimalPlaces = 2;
+            nudPrecio.Increment = 0.01m;
+            nudLinea.DecimalPlaces = 2;
+            nudBingo.DecimalPlaces = 2;
+
             // Cargar el precio de partida por defecto desde configuración
             decimal precioPartida = Program.ObtenerPrecioPartida();
             nudPrecio.Value = precioPartida;
@@ -265,29 +273,6 @@ namespace BingoHistoricoEditor {
             nudPartidaInicial.Minimum = 0;
             nudPartidaInicial.Maximum = 99999;
             nudPartidaFinal.Maximum = 99999;
-        }
-
-        /// <summary>
-        /// Agrega un par Label + NumericUpDown a una fila específica del TableLayoutPanel.
-        /// Se usa solo si se necesita agregar dinámicamente controles.
-        /// </summary>
-        private void AgregarControlEdicion(string etiqueta, NumericUpDown control, int fila) {
-            if (tlpEdicion == null) return;
-
-            var lbl = new Label {
-                Text = etiqueta,
-                ForeColor = SystemColors.ControlText,
-                BackColor = Color.Transparent,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Dock = DockStyle.Fill
-            };
-
-            control.BackColor = SystemColors.Window;
-            control.ForeColor = SystemColors.WindowText;
-            control.Dock = DockStyle.Fill;
-
-            tlpEdicion.Controls.Add(lbl, 0, fila);
-            tlpEdicion.Controls.Add(control, 1, fila);
         }
 
         // Método de Log actualizado con el usuario
@@ -439,6 +424,10 @@ namespace BingoHistoricoEditor {
                 if (conexion != _conexion) return;
                 _partidas = partidas;
 
+                // La partida seleccionada era del día anterior: si el nuevo no
+                // tiene partidas, la rejilla no cambia la selección y Guardar o
+                // Eliminar actuarían sobre la partida del otro día.
+                _seleccionada = null;
                 grid.CurrentCell = null;
                 _bsPartidas.DataSource = _partidas;
 
@@ -525,20 +514,37 @@ namespace BingoHistoricoEditor {
         }
 
         private async void btnGuardar_Click(object sender, EventArgs e) {
+            // Una copia: si el guardado falla, la rejilla no debe enseñar
+            // valores que no están en la BD.
+            var entry = new HistoricoEntry {
+                CodSala = _seleccionada?.CodSala ?? _codSala,
+                CodConc = _seleccionada?.CodConc ?? _codConc,
+                FechaSesion = _seleccionada?.FechaSesion ?? dtpFecha.Value.Date,
+                Fecha = _seleccionada?.Fecha ?? DateTime.Now,
+                PartidaDia = (int)nudPartida.Value,
+                Precio = nudPrecio.Value,
+                Vendidos = (int)nudVendidos.Value,
+                Premio1 = nudLinea.Value,
+                Premio2 = nudBingo.Value
+            };
+
+            // Guardar con el número de otra partida que ya existe la
+            // sobrescribe (precio, vendidos, línea y bingo): se pregunta antes.
+            bool otraPartida = _seleccionada == null || _seleccionada.PartidaDia != entry.PartidaDia;
+            if (otraPartida && _partidas.Any(p => p.PartidaDia == entry.PartidaDia)) {
+                string aviso = _seleccionada == null
+                    ? $"La partida {entry.PartidaDia} ya existe."
+                    : $"Has cambiado el número de la partida {_seleccionada.PartidaDia} a {entry.PartidaDia}, y la {entry.PartidaDia} ya existe.";
+                var r = MessageBox.Show(
+                    $"{aviso}\n\nSi continúas se sobrescribirán su precio, vendidos, línea y bingo con los valores del panel." +
+                    (_seleccionada == null ? "" : $"\nLa partida {_seleccionada.PartidaDia} se queda como está.") +
+                    "\n\n¿Continuar?",
+                    "Sobrescribir partida", MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2);
+                if (r != DialogResult.Yes) return;
+            }
+
             try {
                 SetBusy(true);
-                var entry = _seleccionada ?? new HistoricoEntry {
-                    CodSala = _codSala,
-                    CodConc = _codConc,
-                    FechaSesion = dtpFecha.Value.Date,
-                    Fecha = DateTime.Now
-                };
-
-                entry.PartidaDia = (int)nudPartida.Value;
-                entry.Precio = nudPrecio.Value;
-                entry.Vendidos = (int)nudVendidos.Value;
-                entry.Premio1 = nudLinea.Value;
-                entry.Premio2 = nudBingo.Value;
 
                 EscribirLog("DB_INSERT/UPDATE", $"Iniciando guardado de Partida {entry.PartidaDia}", registrarEnArchivo: true);
                 await _db.GuardarAsync(entry);
@@ -645,17 +651,6 @@ namespace BingoHistoricoEditor {
                     return;
                 }
             }
-        }
-
-        private void btnNueva_Click(object sender, EventArgs e) {
-            _seleccionada = null;
-            grid.ClearSelection();
-            nudPartida.Value = _partidas.Count + 1;
-            nudPrecio.Value = 1.50m;
-            nudVendidos.Value = 0;
-            nudLinea.Value = 0;
-            nudBingo.Value = 0;
-            //EscribirLog("ACCION", "Limpieza de campos para nueva partida.", registrarEnArchivo: false);
         }
 
         private async void btnEliminar_Click(object sender, EventArgs e) {
@@ -772,6 +767,7 @@ namespace BingoHistoricoEditor {
                     // Si encontramos el primer hueco libre
                     if (!ocupados.Contains(i) && primerFaltante == -1) {
                         primerFaltante = i;
+                        ultimoFaltante = i; // un hueco de una sola partida también es un grupo
                     }
                     // Si ya tenemos el primer hueco, buscamos dónde termina la secuencia
                     else if (primerFaltante != -1 && !ocupados.Contains(i)) {
@@ -815,19 +811,41 @@ namespace BingoHistoricoEditor {
             int fin = (int)nudPartidaFinal.Value;
             if (inicio > fin) { EscribirLog("ADVERTENCIA", "Rango inválido"); return; }
 
+            // Fijados antes de cualquier espera: lo que se confirma es lo que se guarda.
+            DateTime fecha = dtpFecha.Value.Date;
+            int codSala = _codSala, codConc = _codConc;
+
             try {
                 SetBusy(true);
+
+                // Al cargar un día el rango se pone solo de la primera a la
+                // última partida: sin esta pregunta, un clic sobrescribía la
+                // sesión entera.
+                var existentes = await _db.ObtenerPartidasExistentesEnRangoAsync(fecha, codSala, codConc, inicio, fin);
+                int nuevas = fin - inicio + 1 - existentes.Count;
+                string texto = $"Lote del {fecha:dd/MM/yyyy}, partidas {inicio} a {fin}:\n\n" +
+                    (nuevas > 0 ? $"• Se crearán {nuevas} partidas nuevas.\n" : "") +
+                    (existentes.Count > 0
+                        ? $"• Se SOBRESCRIBIRÁN {existentes.Count} partidas que ya existen: precio {nudLotePrecio.Value:0.00}, " +
+                          $"vendidos {nudLoteVendidos.Value:0}, línea y bingo a 0.\n"
+                        : "") +
+                    "\n¿Continuar?";
+                var r = MessageBox.Show(texto, "Guardar lote", MessageBoxButtons.YesNo,
+                    existentes.Count > 0 ? MessageBoxIcon.Warning : MessageBoxIcon.Question, MessageBoxDefaultButton.Button2);
+                if (r != DialogResult.Yes) return;
+
                 EscribirLog("INFO", $"Guardando lote {inicio}-{fin}", true, datos: new {
-                    Fecha = dtpFecha.Value.Date, PartidaInicial = inicio, PartidaFinal = fin,
-                    Precio = nudLotePrecio.Value, Vendidos = nudLoteVendidos.Value
+                    Fecha = fecha, PartidaInicial = inicio, PartidaFinal = fin,
+                    Precio = nudLotePrecio.Value, Vendidos = nudLoteVendidos.Value,
+                    PartidasSobrescritas = existentes.OrderBy(p => p).ToList()
                 });
 
                 var entradas = new List<HistoricoEntry>();
                 for (int p = inicio; p <= fin; p++) {
                     entradas.Add(new HistoricoEntry {
-                        CodSala = _codSala,
-                        CodConc = _codConc,
-                        FechaSesion = dtpFecha.Value.Date,
+                        CodSala = codSala,
+                        CodConc = codConc,
+                        FechaSesion = fecha,
                         PartidaDia = p,
                         Fecha = DateTime.Now,
                         Precio = nudLotePrecio.Value,
@@ -865,18 +883,22 @@ namespace BingoHistoricoEditor {
 
             if (confirm != DialogResult.Yes) return;
 
+            // Fijados antes de la espera: se borra el día y la sala confirmados.
+            DateTime fecha = dtpFecha.Value.Date;
+            int codSala = _codSala, codConc = _codConc;
+
             try {
                 SetBusy(true);
 
                 var partidasExistentes = await _db.ObtenerPartidasExistentesEnRangoAsync(
-                    dtpFecha.Value, _codSala, _codConc, inicio, fin);
+                    fecha, codSala, codConc, inicio, fin);
 
                 EscribirLog("DB_DELETE_LOTE", $"Eliminando rango {inicio}-{fin}", true, datos: new {
-                    Fecha = dtpFecha.Value.Date, PartidaInicial = inicio, PartidaFinal = fin,
+                    Fecha = fecha, PartidaInicial = inicio, PartidaFinal = fin,
                     PartidasEliminadas = partidasExistentes.OrderBy(p => p).ToList()
                 });
 
-                await _db.EliminarRangoAsync(dtpFecha.Value.Date, _codSala, _codConc, inicio, fin);
+                await _db.EliminarRangoAsync(fecha, codSala, codConc, inicio, fin);
 
                 EscribirLog("EXITO", $"Lote {inicio}-{fin} eliminado correctamente", true);
                 await CargarPartidasAsync();
@@ -890,36 +912,6 @@ namespace BingoHistoricoEditor {
             }
         }
 
-        private void AsignarLimitesPartidasLote() {
-            // Aseguramos que los labels tengan color claro para que no se vuelvan invisibles con el fondo oscuro
-            if (lblIni != null) lblIni.ForeColor = System.Drawing.Color.LightGray;
-            if (lblFin != null) lblFin.ForeColor = System.Drawing.Color.LightGray;
-
-            // CORRECCIÓN CRÍTICA: Comprobar que la lista NO esté vacía (_partidas.Count > 0)
-            if (_partidas != null && _partidas.Count > 0) {
-                int min = int.MaxValue;
-                int max = int.MinValue;
-
-                // Buscamos los extremos reales en la lista de la fecha seleccionada
-                foreach (var partida in _partidas) {
-                    if (partida.PartidaDia < min) min = partida.PartidaDia;
-                    if (partida.PartidaDia > max) max = partida.PartidaDia;
-                }
-
-                // Controlamos que los valores estén dentro del rango permitido por tus NumericUpDown
-                nudPartidaInicial.Value = Math.Max(nudPartidaInicial.Minimum, Math.Min(nudPartidaInicial.Maximum, min));
-                nudPartidaFinal.Value = Math.Max(nudPartidaFinal.Minimum, Math.Min(nudPartidaFinal.Maximum, max));
-
-                EscribirLog("INFO", $"Lote preestablecido automáticamente: Rango [{min} - {max}] para la fecha actual.", registrarEnArchivo: false);
-            }
-            else {
-                // Si no hay datos cargados en el Grid, asignamos el valor mínimo configurado (evita el 99999 y 0)
-                nudPartidaInicial.Value = nudPartidaInicial.Minimum;
-                nudPartidaFinal.Value = nudPartidaFinal.Minimum;
-
-                EscribirLog("ADVERTENCIA", "No hay partidas cargadas en esta fecha. Selecciona una fecha con datos y pulsa Buscar.", registrarEnArchivo: false);
-            }
-        }
         private void ConfigurarEstilosLote() {
             // Aplicar estilos a los controles existentes en grpLote
             // SIN recrear ningún control - solo aplicar propiedades visuales
@@ -1080,33 +1072,6 @@ namespace BingoHistoricoEditor {
 
             EscribirLog("SISTEMA", "Configuración guardada. Aplicando sin reiniciar...");
             await ConectarAsync();
-        }
-
-        /// <summary>
-        /// Método de DEBUG: Verifica las operaciones guardadas en la BD
-        /// Llama esto desde la consola de debug con: await MainFormInstance.VerificarOperacionesAsync();
-        /// </summary>
-        public async Task VerificarOperacionesAsync() {
-            try {
-                int totalOps = await _db.ObtenerCountOperacionesAsync();
-                EscribirLog("DEBUG", $"Total de operaciones en BD: {totalOps}");
-
-                var ultimas = await _db.ObtenerOperacionesAsync(ultimasN: 10);
-
-                if (ultimas.Count == 0) {
-                    EscribirLog("DEBUG", "No hay operaciones registradas aún.");
-                } else {
-                    EscribirLog("DEBUG", $"Últimas {ultimas.Count} operaciones:");
-                    foreach (var op in ultimas) {
-                        string detalles = op.Detalles.Length > 50 ? op.Detalles.Substring(0, 50) + "..." : op.Detalles;
-                        EscribirLog("DEBUG", $"  [{op.ID}] {op.Fecha:yyyy-MM-dd HH:mm:ss} | {op.Usuario} | {op.Operacion} | {detalles}");
-                    }
-                }
-            }
-            catch (Exception ex) {
-                Services.LogService.Error("Error al comprobar las operaciones.", ex);
-                EscribirLog("ERROR", $"Error verificando operaciones: {ex.Message}");
-            }
         }
 
     }

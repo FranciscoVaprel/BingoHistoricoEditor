@@ -164,34 +164,56 @@ namespace BingoHistoricoEditor.Data {
         // ── Guardar (INSERT OR UPDATE) ────────────────────────────────────────
 
         public async Task GuardarAsync(HistoricoEntry e) {
-            e.Venta = e.Precio * e.Vendidos;   // recalcular siempre
-
-            const string sql = @"UPDATE OR INSERT INTO HISTORICO
-                (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA, FECHA_SESION_MES,
-                 FECHA, PRECIO, VENDIDOS, VENTA, PREMIO1, PREMIO2)
-                VALUES (@sala, @conc, @sesion, @pdia, @mes,
-                        'NOW', @precio, @vendidos, @venta, @premio1, @premio2)
-                MATCHING (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA)";
             try {
                 using var conn = new FbConnection(_cs);
-                using var cmd  = new FbCommand(sql, conn);
-                cmd.Parameters.Add("@sala",     FbDbType.Integer).Value = e.CodSala;
-                cmd.Parameters.Add("@conc",     FbDbType.Integer).Value = e.CodConc;
-                cmd.Parameters.Add("@sesion",   FbDbType.Date).Value    = e.FechaSesion.Date;
-                cmd.Parameters.Add("@pdia",     FbDbType.Integer).Value = e.PartidaDia;
-                cmd.Parameters.Add("@mes",      FbDbType.Integer).Value = e.FechaSesion.Month;
-                cmd.Parameters.Add("@precio",   FbDbType.Decimal).Value = e.Precio;
-                cmd.Parameters.Add("@vendidos", FbDbType.Integer).Value = e.Vendidos;
-                cmd.Parameters.Add("@venta",    FbDbType.Decimal).Value = e.Venta;
-                cmd.Parameters.Add("@premio1",  FbDbType.Decimal).Value = e.Premio1;
-                cmd.Parameters.Add("@premio2",  FbDbType.Decimal).Value = e.Premio2;
-                
                 await conn.OpenAsync();
-                await cmd.ExecuteNonQueryAsync();
+                using var tx = conn.BeginTransaction();
+                await GuardarUnaAsync(conn, tx, e);
+                await tx.CommitAsync();
             }
             catch (Exception ex) {
                 throw new Exception($"Error al guardar partida {e.PartidaDia}: {ex.Message}", ex);
             }
+        }
+
+        // Partida existente: solo se tocan los campos del panel. FECHA (inicio
+        // de la partida) se queda como estaba; antes un UPDATE OR INSERT la
+        // ponía a 'NOW' también al editar, y la hora real se perdía.
+        // Partida nueva: se crea con FECHA = ahora.
+        private const string SqlActualizar = @"UPDATE HISTORICO SET
+                FECHA_SESION_MES = @mes, PRECIO = @precio, VENDIDOS = @vendidos, VENTA = @venta,
+                PREMIO1 = @premio1, PREMIO2 = @premio2
+            WHERE COD_SALA = @sala AND COD_CONC = @conc AND FECHA_SESION = @sesion AND PARTIDA_DIA = @pdia";
+
+        private const string SqlInsertar = @"INSERT INTO HISTORICO
+                (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA, FECHA_SESION_MES,
+                 FECHA, PRECIO, VENDIDOS, VENTA, PREMIO1, PREMIO2)
+            VALUES (@sala, @conc, @sesion, @pdia, @mes,
+                    'NOW', @precio, @vendidos, @venta, @premio1, @premio2)";
+
+        private static async Task GuardarUnaAsync(FbConnection conn, FbTransaction tx, HistoricoEntry e) {
+            e.Venta = e.Precio * e.Vendidos;   // recalcular siempre
+
+            using (var upd = new FbCommand(SqlActualizar, conn, tx)) {
+                AñadirParametros(upd, e);
+                if (await upd.ExecuteNonQueryAsync() > 0) return;
+            }
+            using var ins = new FbCommand(SqlInsertar, conn, tx);
+            AñadirParametros(ins, e);
+            await ins.ExecuteNonQueryAsync();
+        }
+
+        private static void AñadirParametros(FbCommand cmd, HistoricoEntry e) {
+            cmd.Parameters.Add("@sala",     FbDbType.Integer).Value = e.CodSala;
+            cmd.Parameters.Add("@conc",     FbDbType.Integer).Value = e.CodConc;
+            cmd.Parameters.Add("@sesion",   FbDbType.Date).Value    = e.FechaSesion.Date;
+            cmd.Parameters.Add("@pdia",     FbDbType.Integer).Value = e.PartidaDia;
+            cmd.Parameters.Add("@mes",      FbDbType.Integer).Value = e.FechaSesion.Month;
+            cmd.Parameters.Add("@precio",   FbDbType.Decimal).Value = e.Precio;
+            cmd.Parameters.Add("@vendidos", FbDbType.Integer).Value = e.Vendidos;
+            cmd.Parameters.Add("@venta",    FbDbType.Decimal).Value = e.Venta;
+            cmd.Parameters.Add("@premio1",  FbDbType.Decimal).Value = e.Premio1;
+            cmd.Parameters.Add("@premio2",  FbDbType.Decimal).Value = e.Premio2;
         }
 
         // ── Guardar en lote (una sola conexión + transacción) ──────────────────
@@ -201,33 +223,12 @@ namespace BingoHistoricoEditor.Data {
         /// todas o, si alguna falla, no queda ninguna a medio guardar.
         /// </summary>
         public async Task GuardarLoteAsync(IEnumerable<HistoricoEntry> entradas) {
-            const string sql = @"UPDATE OR INSERT INTO HISTORICO
-                (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA, FECHA_SESION_MES,
-                 FECHA, PRECIO, VENDIDOS, VENTA, PREMIO1, PREMIO2)
-                VALUES (@sala, @conc, @sesion, @pdia, @mes,
-                        'NOW', @precio, @vendidos, @venta, @premio1, @premio2)
-                MATCHING (COD_SALA, COD_CONC, FECHA_SESION, PARTIDA_DIA)";
-
             using var conn = new FbConnection(_cs);
             await conn.OpenAsync();
             using var tx = conn.BeginTransaction();
             try {
                 foreach (var e in entradas) {
-                    e.Venta = e.Precio * e.Vendidos;   // recalcular siempre
-
-                    using var cmd = new FbCommand(sql, conn, tx);
-                    cmd.Parameters.Add("@sala",     FbDbType.Integer).Value = e.CodSala;
-                    cmd.Parameters.Add("@conc",     FbDbType.Integer).Value = e.CodConc;
-                    cmd.Parameters.Add("@sesion",   FbDbType.Date).Value    = e.FechaSesion.Date;
-                    cmd.Parameters.Add("@pdia",     FbDbType.Integer).Value = e.PartidaDia;
-                    cmd.Parameters.Add("@mes",      FbDbType.Integer).Value = e.FechaSesion.Month;
-                    cmd.Parameters.Add("@precio",   FbDbType.Decimal).Value = e.Precio;
-                    cmd.Parameters.Add("@vendidos", FbDbType.Integer).Value = e.Vendidos;
-                    cmd.Parameters.Add("@venta",    FbDbType.Decimal).Value = e.Venta;
-                    cmd.Parameters.Add("@premio1",  FbDbType.Decimal).Value = e.Premio1;
-                    cmd.Parameters.Add("@premio2",  FbDbType.Decimal).Value = e.Premio2;
-
-                    await cmd.ExecuteNonQueryAsync();
+                    await GuardarUnaAsync(conn, tx, e);
                 }
                 await tx.CommitAsync();
             }
@@ -1187,60 +1188,6 @@ namespace BingoHistoricoEditor.Data {
             return operaciones;
         }
 
-        /// <summary>
-        /// Obtiene el conteo total de operaciones registradas
-        /// </summary>
-        public async Task<int> ObtenerCountOperacionesAsync() {
-            const string sql = "SELECT COUNT(*) FROM operacionesBGEditor";
-
-            try {
-                using var conn = new FbConnection(_cs);
-                using var cmd = new FbCommand(sql, conn);
-
-                await conn.OpenAsync();
-                var result = await cmd.ExecuteScalarAsync();
-                return result != null && result != DBNull.Value ? Convert.ToInt32(result) : 0;
-            }
-            catch (Exception ex) {
-                Services.LogService.Error("Error al contar las operaciones.", ex);
-                return 0;
-            }
-        }
-
-        /// <summary>
-        /// Obtiene operaciones de un usuario específico
-        /// </summary>
-        public async Task<List<OperacionLog>> ObtenerOperacionesPorUsuarioAsync(string usuario, int? ultimasN = null) {
-            var operaciones = new List<OperacionLog>();
-
-            string limitClause = ultimasN.HasValue && ultimasN.Value > 0 ? $"FIRST {ultimasN.Value} " : "";
-            string sql = $@"SELECT {limitClause}ID, FECHA, USUARIO, OPERACION, DETALLES 
-                          FROM operacionesBGEditor 
-                          WHERE USUARIO = @usuario 
-                          ORDER BY ID DESC";
-            try {
-                using var conn = new FbConnection(_cs);
-                using var cmd = new FbCommand(sql, conn);
-                cmd.Parameters.Add("@usuario", FbDbType.VarChar).Value = usuario ?? "";
-
-                await conn.OpenAsync();
-                using var rd = await cmd.ExecuteReaderAsync();
-
-                while (await rd.ReadAsync()) {
-                    operaciones.Add(new OperacionLog {
-                        ID = rd.GetInt32(0),
-                        Fecha = rd.IsDBNull(1) ? DateTime.MinValue : rd.GetDateTime(1),
-                        Usuario = rd.IsDBNull(2) ? "" : rd.GetString(2),
-                        Operacion = rd.IsDBNull(3) ? "" : rd.GetString(3),
-                        Detalles = rd.IsDBNull(4) ? "" : rd.GetString(4)
-                    });
-                }
-            }
-            catch (Exception ex) {
-                Services.LogService.Error("Error al leer las operaciones del usuario.", ex);
-            }
-            return operaciones;
-        }
     }
 }
 

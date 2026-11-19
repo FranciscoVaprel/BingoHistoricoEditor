@@ -43,10 +43,6 @@ namespace BingoHistoricoEditor {
             Guardar(usuarios);
         }
 
-        /// <summary>Añade usuario con contraseña en claro (se hashea aquí).</summary>
-        public static void AgregarUsuario(string username, string password, bool isAdmin = false) =>
-            AgregarUsuarioConHash(username, PasswordHelper.Hash(password), isAdmin);
-
         /// <summary>Añade usuario con hash ya generado (desde SetPasswordForm).</summary>
         public static void AgregarUsuarioConHash(string username, string hash, bool isAdmin = false) {
             var usuarios = CargarUsuarios();

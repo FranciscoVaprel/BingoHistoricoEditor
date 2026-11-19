@@ -925,18 +925,6 @@ namespace BingoHistoricoEditor {
             ResumeLayout(false);
         }
 
-        private void AgregarControlEdicion(string texto, System.Windows.Forms.Control ctrl, int row) {
-            var lbl = new System.Windows.Forms.Label {
-                Text = texto,
-                ForeColor = System.Drawing.SystemColors.ControlText,
-                TextAlign = System.Drawing.ContentAlignment.MiddleLeft,
-                Dock = System.Windows.Forms.DockStyle.Fill
-            };
-            ctrl.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tlpEdicion.Controls.Add(lbl, 0, row);
-            this.tlpEdicion.Controls.Add(ctrl, 1, row);
-        }
-
         #endregion
     }
 }
